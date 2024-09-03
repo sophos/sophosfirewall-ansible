@@ -1,0 +1,218 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTMACHOST DOES NOT EXIST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: absent
+
+    
+- name: CREATE MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    xml_tag: MACHost
+    data: |
+          <MACHost>
+              <Name>IGT_TESTMACHOST</Name>
+              <Description>Created by Ansible xmlapi module during integration test</Description>
+              <Type>MACAddress</Type>
+              <MACAddress>00:16:76:49:43:01</MACAddress>
+          </MACHost>
+    state: present
+  register: create_machost
+
+- name: ASSERTION CHECK FOR CREATE MAC HOST
+  assert:
+    that: 
+      - create_machost is changed
+      - create_machost['api_response']['Response']['MACHost']['Status']['@code'] == '200'
+      - create_machost['api_response']['Response']['MACHost']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: query
+  register: query_machost
+
+- name: ASSERTION CHECK FOR QUERY MAC HOST 
+  assert:
+    that: 
+      - query_machost is not changed
+      - query_machost['api_response']['Response']['MACHost']['Name'] == 'IGT_TESTMACHOST'
+      - query_machost['api_response']['Response']['MACHost']['MACAddress'] == '00:16:76:49:43:01'
+
+- name: CREATE EXISTING MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    xml_tag: MACHost
+    data: |
+          <MACHost>
+              <Name>IGT_TESTMACHOST</Name>
+              <Description>Created by Ansible xmlapi module during integration test</Description>
+              <Type>MACAddress</Type>
+              <MACAddress>00:16:76:49:43:01</MACAddress>
+          </MACHost>
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING MAC HOST 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['MACHost']['Name'] == 'IGT_TESTMACHOST'
+
+- name: UPDATE TESTMACHOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    xml_tag: MACHost
+    data: |
+      <MACHost>
+          <Name>IGT_TESTMACHOST</Name>
+          <Description>Updated by Ansible xmlapi module during integration test</Description>
+          <Type>MACAddress</Type>
+          <MACAddress>00:16:76:49:43:02</MACAddress>
+      </MACHost>
+    state: updated
+  register: update_machost
+
+- name: ASSERTION CHECK FOR UPDATE MAC HOST
+  assert:
+    that: 
+      - update_machost is changed
+      - update_machost['api_response']['Response']['MACHost']['Status']['@code'] == '200'
+      - update_machost['api_response']['Response']['MACHost']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: UPDATE MAC HOST NO CHANGE
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    data: |
+      <MACHost>
+          <Name>IGT_TESTMACHOST</Name>
+          <Description>Updated by Ansible xmlapi module during integration test</Description>
+          <Type>MACAddress</Type>
+          <MACAddress>00:16:76:49:43:02</MACAddress>
+      </MACHost>
+    state: updated
+  register: update_nochange
+
+- name: ASSERTION CHECK FOR UPDATE MAC HOST NO CHANGE
+  assert:
+    that: 
+      - update_nochange is not changed
+      - update_nochange['api_response']['Response']['MACHost']['Name'] == 'IGT_TESTMACHOST'
+      - update_nochange['api_response']['Response']['MACHost']['MACAddress'] == '00:16:76:49:43:02'
+      - update_nochange['api_response']['Response']['MACHost']['Description'] == 'Updated by Ansible xmlapi module during integration test'
+
+- name: QUERY MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: query
+  register: query_machost
+
+- name: CHECK QUERY RESPONSE
+  assert:
+    that: 
+      - query_machost is not changed
+      - query_machost['api_response']['Response']['MACHost']['MACAddress'] == '00:16:76:49:43:02'
+      - query_machost['api_response']['Response']['MACHost']['Description'] == 'Updated by Ansible xmlapi module during integration test'
+
+- name: REMOVE IGT_TESTMACHOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: absent
+  register: remove_machost
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTMACHOST
+  assert:
+    that: 
+      - remove_machost is changed
+      - remove_machost['api_response']['Response']['MACHost']['Status']['@code'] == '200'
+      - remove_machost['api_response']['Response']['MACHost']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: REMOVE NONEXISTING MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING MAC HOST
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == 'No. of records Zero.'
+
+- name: UPDATE NONEXISTING MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    xml_tag: MACHost
+    data: |
+      <MACHost>
+          <Name>IGT_TESTMACHOST</Name>
+          <Description>Updated by Ansible xmlapi module during integration test</Description>
+          <Type>MACAddress</Type>
+          <MACAddress>00:16:76:49:43:02</MACAddress>
+      </MACHost>
+    state: updated
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING MAC HOST
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == 'No. of records Zero.'
+
+- name: REMOVE MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: absent
+
+- name: QUERY NONEXISTING MAC HOST
+  sophos.sophos_firewall.sfos_xmlapi:
+    <<: *sfos_connection_params
+    name: IGT_TESTMACHOST
+    xml_tag: MACHost
+    state: query
+  register: query_machost
+
+- name: CHECK QUERY RESPONSE
+  assert:
+    that: 
+      - query_machost is not changed
+      - query_machost['api_response'] == 'No. of records Zero.'

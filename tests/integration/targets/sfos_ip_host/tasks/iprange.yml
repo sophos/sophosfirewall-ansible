@@ -1,0 +1,146 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTRANGE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    state: absent
+
+- name: CREATE IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    start_ip: 1.1.1.1
+    end_ip: 1.1.1.10
+    host_type: range
+    state: present
+  register: create_testhost
+
+- name: ASSERTION CHECK FOR CREATE IGT_TESTRANGE
+  assert:
+    that: 
+      - create_testhost is changed
+      - create_testhost['api_response']['Response']['IPHost']['Status']['@code'] == "200"
+      - create_testhost['api_response']['Response']['IPHost']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    state: query
+  register: query_testhost
+
+- name: ASSERTION CHECK FOR QUERY IGT_TESTRANGE 
+  assert:
+    that: 
+      - query_testhost is not changed
+      - query_testhost['api_response']['Response']['IPHost']['Name'] == "IGT_TESTRANGE"
+      - query_testhost['api_response']['Response']['IPHost']['StartIPAddress'] == "1.1.1.1"
+      - query_testhost['api_response']['Response']['IPHost']['EndIPAddress'] == "1.1.1.10"
+
+
+- name: CREATE EXISTING IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    start_ip: 1.1.1.1
+    end_ip: 1.1.1.10
+    host_type: range
+    state: present
+  register: create_testhost_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING IGT_TESTRANGE
+  assert:
+    that: 
+      - create_testhost_existing is not changed
+      - create_testhost_existing['api_response']['Response']['IPHost']['Name'] == "IGT_TESTRANGE"
+
+- name: UPDATE IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    start_ip: 2.2.2.1
+    end_ip: 2.2.2.10
+    host_type: range
+    state: updated
+  register: update_testhost
+
+- name: ASSERTION CHECK FOR UPDATE IGT_TESTRANGE
+  assert:
+    that: 
+      - update_testhost is changed
+      - update_testhost['api_response']['Response']['IPHost']['Status']['@code'] == "200"
+      - update_testhost['api_response']['Response']['IPHost']['Status']['#text'] == "Configuration applied successfully."
+
+- name: UPDATE IGT_TESTRANGE NO CHANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    start_ip: 2.2.2.1
+    end_ip: 2.2.2.10
+    host_type: range
+    state: updated
+  register: update_testhost_nochange
+
+- name: ASSERTION CHECK FOR UPDATE IGT_TESTRANGE NO CHANGE
+  assert:
+    that: 
+      - update_testhost_nochange is not changed
+      - update_testhost_nochange['api_response']['Response']['IPHost']['Name'] == "IGT_TESTRANGE"
+      - update_testhost_nochange['api_response']['Response']['IPHost']['StartIPAddress'] == "2.2.2.1"
+      - update_testhost_nochange['api_response']['Response']['IPHost']['EndIPAddress'] == "2.2.2.10"
+
+- name: REMOVE IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    state: absent
+  register: remove_testhost
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTRANGE
+  assert:
+    that: 
+      - remove_testhost is changed
+      - remove_testhost['api_response']['Response']['IPHost']['Status']['@code'] == "200"
+      - remove_testhost['api_response']['Response']['IPHost']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING IGT_TESTRANGE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING IGT_TESTRANGE
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: IGT_TESTRANGE
+    start_ip: 2.2.2.1
+    end_ip: 2.2.2.10
+    host_type: range
+    state: updated
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING IGT_TESTRANGE
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."

@@ -1,0 +1,348 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTSERVICE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: absent
+  
+- name: CREATE SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 80
+    state: present
+  register: create_service
+
+- name: ASSERTION CHECK FOR CREATE SERVICE
+  assert:
+    that: 
+      - create_service is changed
+      - create_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - create_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: query
+  register: query_service
+
+- name: ASSERTION CHECK FOR CREATE SERVICE 
+  assert:
+    that: 
+      - query_service is not changed
+      - query_service['api_response']['Response']['Services']['Name'] == "IGT_TESTSERVICE"
+      - query_service['api_response']['Response']['Services']['Type'] == "TCPorUDP"
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['DestinationPort'] == '80'
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['SourcePort'] == '1:65535'
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['Protocol'] == 'TCP'
+
+- name: CREATE EXISTING SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 80
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING SERVICE 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['Services']['Name'] == "IGT_TESTSERVICE"
+
+- name: UPDATE SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 443
+    state: updated
+    action: add
+  register: update_service
+
+- name: ASSERTION CHECK FOR UPDATE SERVICE 
+  assert:
+    that: 
+      - update_service is changed
+      - update_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - update_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: UPDATE SERVICE NO CHANGE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 80
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 443
+    state: updated
+    action: add
+  register: update_nochange
+
+- name: ASSERTION CHECK FOR UPDATE SERVICE NO CHANGE
+  assert:
+    that: 
+      - update_nochange is not changed
+      - update_nochange['api_response']['Response']['Services']['Name'] == "IGT_TESTSERVICE"
+      - "{'DestinationPort': '80', 'Protocol': 'TCP', 'SourcePort': '1:65535'} in update_nochange['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+      - "{'DestinationPort': '443', 'Protocol': 'TCP', 'SourcePort': '1:65535'} in update_nochange['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+
+- name: REMOVE FROM SERVICE LIST
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 80
+    state: updated
+    action: remove
+  register: update_service
+
+- name: ASSERTION CHECK FOR REMOVE FROM SERVICE LIST
+  assert:
+    that: 
+      - update_service is changed
+      - update_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - update_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: query
+  register: query_service
+
+- name: CHECK THAT SERVICE WAS REMOVED
+  assert:
+    that: 
+      - query_service is not changed
+      - query_service['api_response']['Response']['Services']['Name'] == "IGT_TESTSERVICE"
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['Protocol'] == 'TCP'
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['SourcePort'] == '1:65535'
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['DestinationPort'] == '443'
+
+- name: REPLACE SERVICE LIST
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 8000
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 8888
+    state: updated
+    action: replace
+  register: replace_service
+
+- name: ASSERTION CHECK FOR REPLACE HOST LIST 
+  assert:
+    that: 
+      - replace_service is changed
+      - replace_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - replace_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: query
+  register: query_service
+
+- name: CHECK THAT SERVICE LIST WAS REPLACED
+  assert:
+    that: 
+      - query_service is not changed
+      - query_service['api_response']['Response']['Services']['Name'] == "IGT_TESTSERVICE"
+      - "{'DestinationPort': '80', 'Protocol': 'TCP', 'SourcePort': '1:65535'} not in query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+      - "{'DestinationPort': '443', 'Protocol': 'TCP', 'SourcePort': '1:65535'} not in query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+      - "{'DestinationPort': '8888', 'Protocol': 'TCP', 'SourcePort': '1:65535'} in query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+      - "{'DestinationPort': '8000', 'Protocol': 'TCP', 'SourcePort': '1:65535'} in query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']"
+
+- name: REMOVE IGT_TESTSERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: absent
+  register: remove_service
+
+- name: ASSERTION CHECK FOR REMOVE SERVICE
+  assert:
+    that: 
+      - remove_service is changed
+      - remove_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - remove_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING SERVICE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTSERVICE
+    type: tcporudp
+    service_list:
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 8000
+      - protocol: tcp
+        src_port: 1:65535
+        dst_port: 8888
+    state: updated
+    action: add
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING TESTHOST
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."
+
+- name: CREATE ICMP SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTICMPSERVICE
+    type: icmp
+    service_list:
+      - icmp_type: Echo Reply
+        icmp_code: Any Code
+    state: present
+  register: create_service
+
+- name: ASSERTION CHECK FOR CREATE SERVICE
+  assert:
+    that: 
+      - create_service is changed
+      - create_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - create_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTICMPSERVICE
+    state: query
+  register: query_service
+
+- name: ASSERTION CHECK FOR CREATE ICMP SERVICE 
+  assert:
+    that: 
+      - query_service is not changed
+      - query_service['api_response']['Response']['Services']['Name'] == "IGT_TESTICMPSERVICE"
+      - query_service['api_response']['Response']['Services']['Type'] == "ICMP"
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['ICMPType'] == 'Echo Reply'
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['ICMPCode'] == 'Any Code'
+
+- name: REMOVE IGT_TESTICMPSERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTICMPSERVICE
+    state: absent
+  register: remove_service
+
+- name: ASSERTION CHECK FOR REMOVE ICMP SERVICE
+  assert:
+    that: 
+      - remove_service is changed
+      - remove_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - remove_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: CREATE IP SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTIPSERVICE
+    type: ip
+    service_list:
+      - protocol: ESP
+    state: present
+  register: create_service
+
+- name: ASSERTION CHECK FOR CREATE SERVICE
+  assert:
+    that: 
+      - create_service is changed
+      - create_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - create_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY SERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTIPSERVICE
+    state: query
+  register: query_service
+
+- name: ASSERTION CHECK FOR CREATE IP SERVICE 
+  assert:
+    that: 
+      - query_service is not changed
+      - query_service['api_response']['Response']['Services']['Name'] == "IGT_TESTIPSERVICE"
+      - query_service['api_response']['Response']['Services']['Type'] == "IP"
+      - query_service['api_response']['Response']['Services']['ServiceDetails']['ServiceDetail']['ProtocolName'] == 'ESP'
+
+- name: REMOVE IGT_TESTIPSERVICE
+  sophos.sophos_firewall.sfos_service:
+    <<: *sfos_connection_params
+    name: IGT_TESTIPSERVICE
+    state: absent
+  register: remove_service
+
+- name: ASSERTION CHECK FOR REMOVE IP SERVICE
+  assert:
+    that: 
+      - remove_service is changed
+      - remove_service['api_response']['Response']['Services']['Status']['@code'] == "200"
+      - remove_service['api_response']['Response']['Services']['Status']['#text'] == "Configuration applied successfully."

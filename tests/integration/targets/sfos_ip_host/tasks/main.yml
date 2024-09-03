@@ -1,0 +1,25 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: TESTS FOR HOST OF TYPE IP
+  ansible.builtin.include_tasks: ipaddress.yml
+
+- name: TESTS FOR HOST OF TYPE NETWORK
+  ansible.builtin.include_tasks: network.yml
+
+- name: TESTS FOR HOST OF TYPE IP RANGE
+  ansible.builtin.include_tasks: iprange.yml
+
+

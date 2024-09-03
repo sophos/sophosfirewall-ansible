@@ -1,0 +1,208 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTRULE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    state: absent
+
+- name: CREATE NETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    network: "{{ item.ip_address }}"
+    mask: "{{ item.mask }}"
+    host_type: network
+    state: present   
+  loop:
+    - name: IGT_TESTNETWORK1
+      ip_address: 1.1.1.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK2
+      ip_address: 2.2.2.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK3
+      ip_address: 3.3.3.0
+      mask: 255.255.255.0
+    
+- name: CREATE FIREWALL RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    position: bottom
+    status: enable
+    src_networks:
+      - IGT_TESTNETWORK1
+    dst_networks:
+      - IGT_TESTNETWORK2
+    service_list:
+      - HTTPS
+    action: accept
+    state: present
+  register: create_rule
+
+- name: ASSERTION CHECK FOR CREATE FIREWALL RULE
+  assert:
+    that: 
+      - create_rule is changed
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    state: query
+  register: query_rule
+
+- name: ASSERTION CHECK FOR QUERY FIREWALL RULE
+  assert:
+    that: 
+      - query_rule is not changed
+      - query_rule['api_response']['Response']['FirewallRule']['Name'] == "IGT_TESTRULE"
+      - query_rule['api_response']['Response']['FirewallRule']['Status'] == "Enable"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Action'] == "Accept"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['SourceNetworks']['Network'] == "IGT_TESTNETWORK1"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['DestinationNetworks']['Network'] == "IGT_TESTNETWORK2"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Services']['Service'] == "HTTPS"
+
+- name: CREATE EXISTING FIREWALL RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    position: bottom
+    status: enable
+    src_networks:
+      - IGT_TESTNETWORK1
+    dst_networks:
+      - IGT_TESTNETWORK2
+    service_list:
+      - HTTPS
+    action: accept
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING FIREWALL RULE 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['FirewallRule']['Name'] == "IGT_TESTRULE"
+
+- name: UPDATE FIREWALL RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    dst_networks:
+      - IGT_TESTNETWORK2
+      - IGT_TESTNETWORK3
+    state: updated
+  register: update_rule
+
+- name: ASSERTION CHECK FOR UPDATE FIREWALL RULE
+  assert:
+    that: 
+      - update_rule is changed
+      - update_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - update_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    state: query
+  register: query_rule
+
+- name: ASSERTION CHECK FOR UPDATED FIREWALL RULE
+  assert:
+    that: 
+      - query_rule is not changed
+      - query_rule['api_response']['Response']['FirewallRule']['Status'] == 'Enable'
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Action'] == 'Accept'
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['SourceNetworks']['Network'] == 'IGT_TESTNETWORK1'
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['DestinationNetworks']['Network'] == ['IGT_TESTNETWORK2', 'IGT_TESTNETWORK3']
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Services']['Service'] == "HTTPS"
+
+- name: REMOVE IGT_TESTRULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    state: absent
+  register: remove_rule
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTRULE
+  assert:
+    that: 
+      - remove_rule is changed
+      - remove_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - remove_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING RULE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING RULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE
+    dst_networks:
+      - IGT_TESTNETWORK2
+    state: updated
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING RULE
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."
+
+- name: REMOVE TEST NETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    network: "{{ item.ip_address }}"
+    mask: "{{ item.mask }}"
+    state: absent
+    host_type: network
+  loop:
+    - name: IGT_TESTNETWORK1
+      ip_address: 1.1.1.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK2
+      ip_address: 2.2.2.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK3
+      ip_address: 3.3.3.0
+      mask: 255.255.255.0

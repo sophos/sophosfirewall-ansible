@@ -1,0 +1,6 @@
+---
+sfos_username: ${SFOS_USERNAME}
+sfos_password: ${SFOS_PASSWORD}
+sfos_hostname: ${SFOS_HOSTNAME}
+sfos_port: ${SFOS_PORT}
+sfos_verify: ${SFOS_VERIFY}

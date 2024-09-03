@@ -1,0 +1,284 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTEXCEPTIONRULE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: absent
+
+- name: CREATE TEST HOSTS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    ip_address: "{{ item.ip_address }}"
+    state: present
+  loop:
+    - name: IGT_TESTHOST1
+      ip_address: 1.1.1.1
+    - name: IGT_TESTHOST2
+      ip_address: 2.2.2.2
+    - name: IGT_TESTHOST3
+      ip_address: 3.3.3.3
+    
+- name: CREATE IGT_TESTEXCEPTIONRULE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_zone: LAN
+    source_list:
+      - IGT_TESTHOST1
+    dest_list:
+      - IGT_TESTHOST3
+    service_list:
+      - HTTPS
+    action: drop
+    state: present
+  register: create_exceptionrule
+
+- name: ASSERTION CHECK FOR IGT_TESTEXCEPTIONRULE CREATION
+  assert:
+    that: 
+      - create_exceptionrule is changed
+      - create_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['@code'] == "200"
+      - create_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY IGT_TESTEXCEPTIONRULE POST-CREATION
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: query
+  register: query_exceptionrule
+
+- name: ASSERTION CHECK FOR QUERY IGT_TESTEXCEPTIONRULE POST-CREATION
+  assert:
+    that: 
+      - query_exceptionrule is not changed
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['RuleName'] == "IGT_TESTEXCEPTIONRULE"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['SourceZone'] == "LAN"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["Host"] == "IGT_TESTHOST1"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["DstHost"] == "IGT_TESTHOST3"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Services']["Service"] == "HTTPS"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Action'] == "drop"
+
+- name: CREATE EXISTING IGT_TESTEXCEPTIONRULE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST1
+      - IGT_TESTHOST2
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING IGT_TESTEXCEPTIONRULE
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['LocalServiceACL']['RuleName'] == "IGT_TESTEXCEPTIONRULE"
+
+- name: ADD HOST TO SRC_LIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST2
+    state: updated
+    update_action: add
+  register: update_exceptionrule
+
+- name: ASSERTION CHECK FOR ADD HOST TO SRC_LIST
+  assert:
+    that: 
+      - update_exceptionrule is changed
+      - update_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['@code'] == "200"
+      - update_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY IGT_TESTEXCEPTIONRULE POST UPDATE ADD HOST TO SRC_LIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: query
+  register: query_exceptionrule
+
+- name: ASSERTION CHECK FOR QUERY IGT_TESTEXCEPTIONRULE POST UPDATE ADD HOST TO SRC_LIST
+  assert:
+    that: 
+      - query_exceptionrule is not changed
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['RuleName'] == 'IGT_TESTEXCEPTIONRULE'
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['SourceZone'] == 'LAN'
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']['Host'] == ['IGT_TESTHOST1', 'IGT_TESTHOST2']
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']['DstHost'] == 'IGT_TESTHOST3'
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Services']['Service'] == 'HTTPS'
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Action'] == 'drop'
+
+- name: UPDATE SOURCE_LIST NO CHANGE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST1
+      - IGT_TESTHOST2
+    state: updated
+    update_action: add
+  register: update_nochange
+
+- name: ASSERTION CHECK FOR UPDATE SOURCE_LIST NO CHANGE
+  assert:
+    that: 
+      - update_nochange is not changed
+      - update_nochange['api_response']['Response']['LocalServiceACL']['RuleName'] == "IGT_TESTEXCEPTIONRULE"
+      - "'IGT_TESTHOST1' in update_nochange['api_response']['Response']['LocalServiceACL']['Hosts']['Host']"
+      - "'IGT_TESTHOST2' in update_nochange['api_response']['Response']['LocalServiceACL']['Hosts']['Host']"
+
+- name: REMOVE HOST FROM SOURCE_LIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST1
+    state: updated
+    update_action: remove
+  register: update_exceptionrule
+
+- name: ASSERTION CHECK FOR REMOVE HOST FROM SOURCE_LIST 
+  assert:
+    that: 
+      - update_exceptionrule is changed
+      - update_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['@code'] == "200"
+      - update_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY IGT_TESTEXCEPTIONRULE POST UPDATE REMOVE HOST FROM SRC_LIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: query
+  register: query_exceptionrule
+
+- name: ASSERTION CHECK FOR QUERY IGT_TESTEXCEPTIONRULE POST UPDATE REMOVE HOST FROM SRC_LIST
+  assert:
+    that: 
+      - query_exceptionrule is not changed
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['RuleName'] == "IGT_TESTEXCEPTIONRULE"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['SourceZone'] == "LAN"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["Host"] == "IGT_TESTHOST2"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["DstHost"] == "IGT_TESTHOST3"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Services']["Service"] == "HTTPS"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Action'] == "drop"
+
+- name: REPLACE DEST_LIST
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST1
+    dest_list:
+      - IGT_TESTHOST2
+    state: updated
+    update_action: replace
+  register: replace_exceptionrule
+
+- name: ASSERTION CHECK FOR REPLACE DEST_LIST
+  assert:
+    that: 
+      - replace_exceptionrule is changed
+      - replace_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['@code'] == "200"
+      - replace_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY IGT_TESTEXCEPTIONRULE POST REPLACE DST_LIST 
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: query
+  register: query_exceptionrule
+
+- name: CHECK THAT DST_LIST WAS REPLACED
+  assert:
+    that: 
+      - query_exceptionrule is not changed
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['RuleName'] == "IGT_TESTEXCEPTIONRULE"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['SourceZone'] == "LAN"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["Host"] == "IGT_TESTHOST1"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Hosts']["DstHost"] == "IGT_TESTHOST2"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Services']["Service"] == "HTTPS"
+      - query_exceptionrule['api_response']['Response']['LocalServiceACL']['Action'] == "drop"
+
+- name: REMOVE IGT_TESTEXCEPTIONRULE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: absent
+  register: remove_exceptionrule
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTEXCEPTIONRULE
+  assert:
+    that: 
+      - remove_exceptionrule is changed
+      - remove_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['@code'] == "200"
+      - remove_exceptionrule['api_response']['Response']['LocalServiceACL']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING IGT_TESTEXCEPTIONRULE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING IGT_TESTEXCEPTIONRULE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING IGT_TESTEXCEPTIONRULE
+  sophos.sophos_firewall.sfos_service_acl_exception:
+    <<: *sfos_connection_params
+    name: IGT_TESTEXCEPTIONRULE
+    source_list:
+      - IGT_TESTHOST1
+    state: updated
+    update_action: add
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING IGT_TESTEXCEPTIONRULE
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."
+
+- name: REMOVE TEST HOSTS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    ip_address: "{{ item.ip_address }}"
+    state: absent
+  loop:
+    - name: IGT_TESTHOST1
+      ip_address: 1.1.1.1
+    - name: IGT_TESTHOST2
+      ip_address: 2.2.2.2
+    - name: IGT_TESTHOST3
+      ip_address: 3.3.3.3
