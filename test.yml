@@ -1,0 +1,220 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    # - name: ADD IP HOST
+    #   sophos.sophos_firewall.sfos_ip_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTHOST
+    #     ip_address: 3.3.3.3
+    #     state: query
+    #   delegate_to: localhost
+
+    # - name: ADD IP HOST TYPE NETWORK
+    #   sophos.sophos_firewall.sfos_ip_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTNETWORK
+    #     network: 2.2.2.0
+    #     mask: 255.255.255.0
+    #     host_type: network
+    #     state: query
+    #   delegate_to: localhost
+
+    # - name: ADD IP HOST TYPE IPRANGE
+    #   sophos.sophos_firewall.sfos_ip_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTRANGE
+    #     start_ip: 1.1.1.1
+    #     end_ip: 1.1.1.10
+    #     host_type: range
+    #     state: query
+    #   delegate_to: localhost
+
+    # - name: ADD IP HOSTGROUP
+    #   sophos.sophos_firewall.sfos_ip_hostgroup:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: IGT_TESTHOSTGROUP
+    #     # host_list:
+    #     #   - TESTHOST3
+    #     # description: Test hostgroup
+    #     # action: remove        
+    #     state: absent
+    #   delegate_to: localhost
+
+    # - name: ADD LOCAL ACL EXCEPTION RULE
+    #   sophos.sophos_firewall.sfos_service_acl_exception:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TestExceptionRule
+    #     # description: Test Exception Rule 3
+    #     source_zone: Any
+    #     source_list:
+    #       # - TESTHOST1
+    #       - TESTHOST2
+    #     # dest_list:
+    #     #   - TESTHOST3
+    #     # service_list:
+    #     #   - HTTPS
+    #     action: drop
+    #     update_action: replace
+    #     state: absent
+    #   delegate_to: localhost
+
+    # - name: ADD FIREWALL RULE
+    #   sophos.sophos_firewall.sfos_firewall_rule:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: IGT_TESTRULE
+    #     position: before
+    #     status: disable
+    #     before_rulename: TestFirewallRule3
+    #     src_networks:
+    #       - testhost1
+    #     dst_networks:
+    #       - testhost3
+    #     service_list:
+    #       - HTTPS
+    #     action: accept
+    #     state: query
+    #   delegate_to: localhost
+
+  # - name: CREATE SERVICE
+  #   sophos.sophos_firewall.sfos_service:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: IGT_TESTSERVICE
+  #     type: tcporudp
+  #     service_list:
+  #       # - protocol: tcp
+  #       #   src_port: 1:65535
+  #       #   dst_port: 80
+  #       # - protocol: tcp
+  #       #   src_port: 1:65535
+  #       #   dst_port: 443
+  #       - protocol: tcp
+  #         dst_port: 9999
+  #     action: replace
+  #     state: query
+  #   delegate_to: localhost
+
+  # - name: CREATE IP SERVICE
+  #   sophos.sophos_firewall.sfos_service:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: IGT_TESTIPSERVICE
+  #     type: icmp
+  #     service_list:
+  #       - icmp_type: "Echo Reply"
+  #         icmp_code: "Any Code"
+  #     state: absent
+  #   delegate_to: localhost
+
+    # - name: ADD SERVICE GROUP
+    #   sophos.sophos_firewall.sfos_servicegroup:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTSERVICEGROUP
+    #     service_list:
+    #       # - HTTPS
+    #       # - HTTP
+    #       # - FTP
+    #       - SMTP
+    #     description: Test Service Group
+    #     action: replace        
+    #     state: absent
+    #   delegate_to: localhost
+
+    # - name: ADD FQDN HOST
+    #   sophos.sophos_firewall.sfos_fqdn_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: "{{ item.name }}"
+    #     fqdn: "{{ item.fqdn }}"
+    #     # fqdn_group_list:
+    #     #   - TESTFQDNHOSTGROUP
+    #     description: Test FQDN host again       
+    #     state: present
+    #   loop:
+    #     - name: TESTFQDNHOST1
+    #       fqdn: testsophos1.com
+    #     - name: TESTFQDNHOST2
+    #       fqdn: testsophos2.com
+    #   delegate_to: localhost
+
+    # - name: ADD FQDN HOSTGROUP
+    #   sophos.sophos_firewall.sfos_fqdn_hostgroup:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTFQDNHOSTGROUP
+    #     fqdn_host_list:
+    #       - TESTFQDNHOST1
+    #     description: Test hostgroup
+    #     # action: remove        
+    #     state: present
+    #   delegate_to: localhost
+
+    - name: XMLAPI MODULE
+      sophos.sophos_firewall.sfos_xmlapi:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        xml_tag: MACHost
+        name: "{{ item.name }}"
+        # key: Name
+        # value: TEST
+        # operator: "="
+        data: |
+              <MACHost>
+                  <Name>{{ item.name }}</Name>
+                  <Description>Created by Ansible xmlapi module</Description>
+                  <Type>MACAddress</Type>
+                  <MACAddress>{{ item.mac }}</MACAddress>
+              </MACHost>
+        state: query
+      delegate_to: localhost
+      loop:
+        - name: TESTMACHOST1
+          mac: 00:16:76:49:33:01
+        - name: TESTMACHOST2
+          mac: 00:16:76:49:33:02
