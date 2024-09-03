@@ -103,15 +103,10 @@ try:
         SophosFirewallAuthFailure,
         SophosFirewallAPIError,
     )
-    PREREQ_MET = {"result": True}
-except ImportError:
-    PREREQ_MET = {"result": False, "missing_module": "sophosfirewall-python"}
-
-try:
     from requests.exceptions import RequestException
     PREREQ_MET = {"result": True}
-except ImportError:
-    PREREQ_MET = {"result": False, "missing_module": "requests"}
+except ImportError as errMsg:
+    PREREQ_MET = {"result": False, "missing_module": errMsg.name}
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -273,7 +268,7 @@ def main():
                            supports_check_mode=True)
 
     if not PREREQ_MET["result"]:
-        module.fail_json(msg=missing_required_lib(PREREQ_MET["msg"]))
+        module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
         
 
     fw = SophosFirewall(
