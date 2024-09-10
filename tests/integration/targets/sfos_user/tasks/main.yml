@@ -1,0 +1,160 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE igt_testuser DOES NOT EXIST
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    state: absent
+   
+- name: CREATE USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    name: Integration TestUser
+    description: Created by integration testing
+    user_password: Sup3rS3cr3tP@ssw0rd
+    user_type: Administrator
+    group: Open Group
+    profile: Administrator
+    email: igt_testuser@sophos.com
+    state: present
+  register: create_user
+
+- name: ASSERTION CHECK FOR CREATE USER
+  assert:
+    that: 
+      - create_user is changed
+      - create_user['api_response']['Response']['User']['Status']['@code'] == "200"
+      - create_user['api_response']['Response']['User']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    state: query
+  register: query_user
+
+- name: ASSERTION CHECK FOR QUERY USER
+  assert:
+    that: 
+      - query_user is not changed
+      - query_user['api_response']['Response']['User']['Username'] == "igt_testuser"
+      - query_user['api_response']['Response']['User']['Name'] == "Integration TestUser"
+      - query_user['api_response']['Response']['User']['UserType'] == "Administrator"
+      - query_user['api_response']['Response']['User']['Group'] == "Open Group"
+      - query_user['api_response']['Response']['User']['EmailList']['EmailID'] == "igt_testuser@sophos.com"
+
+- name: CREATE EXISTING USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    name: Integration TestUser
+    description: Created by integration testing
+    user_password: Sup3rS3cr3tP@ssw0rd
+    user_type: Administrator
+    group: Open Group
+    profile: Administrator
+    email: igt_testuser@sophos.com
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING USER 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['User']['Username'] == "igt_testuser"
+
+- name: UPDATE USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    name: Integration TestUser
+    description: Updated by integration test
+    state: updated
+  register: update_user
+
+- name: ASSERTION CHECK FOR UPDATE USER
+  assert:
+    that: 
+      - update_user is changed
+      - update_user['api_response']['Response']['User']['Status']['@code'] == "200"
+      - update_user['api_response']['Response']['User']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    state: query
+  register: query_user
+
+- name: ASSERTION CHECK FOR UPDATED USER
+  assert:
+    that: 
+      - query_user is not changed
+      - query_user['api_response']['Response']['User']['Description'] == 'Updated by integration test'
+
+- name: REMOVE igt_testuser
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    state: absent
+  register: remove_user
+
+- name: ASSERTION CHECK FOR REMOVE igt_testuser
+  assert:
+    that: 
+      - remove_user is changed
+      - remove_user['api_response']['Response']['User']['Status']['@code'] == "200"
+      - remove_user['api_response']['Response']['User']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING USER
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING USER
+  sophos.sophos_firewall.sfos_user:
+    <<: *sfos_connection_params
+    user: igt_testuser
+    description:  Updated description
+    state: updated
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING USER
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."
+
