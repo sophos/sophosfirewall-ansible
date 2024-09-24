@@ -195,7 +195,7 @@ from ansible.module_utils.basic import missing_required_lib
 
 
 def get_user(fw_obj, module, result):
-    """Get user rule from Sophos Firewall
+    """Get user from Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -267,7 +267,7 @@ def create_user(fw_obj, module, result):
         return resp
 
 def remove_user(fw_obj, module, result):
-    """Remove a firewall rule from Sophos Firewall.
+    """Remove a user from Sophos Firewall.
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -292,7 +292,7 @@ def remove_user(fw_obj, module, result):
 
 
 def update_user(fw_obj, module, result):
-    """Update an existing IP Host on Sophos Firewall
+    """Update an existing user on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object

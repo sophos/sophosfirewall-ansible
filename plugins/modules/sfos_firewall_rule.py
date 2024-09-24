@@ -246,7 +246,7 @@ def remove_firewallrule(fw_obj, module, result):
 
 
 def update_firewallrule(fw_obj, module, result):
-    """Update an existing IP Host on Sophos Firewall
+    """Update an existing firewall rule on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object

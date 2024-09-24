@@ -1,0 +1,356 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY ADMIN SETTINGS
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+- name: SET VARS FOR EXISTING SETTINGS
+  ansible.builtin.set_fact:
+    hstname: "{{ query_settings['api_response']['Response']['AdminSettings']['HostnameSettings']['HostName'] }}"
+    hstnamedesc: "{{ query_settings['api_response']['Response']['AdminSettings']['HostnameSettings']['HostNameDesc'] }}"
+    userportalhttps: "{{ query_settings['api_response']['Response']['AdminSettings']['WebAdminSettings']['UserPortalHTTPSPort'] }}"
+    vpnportalhttps: "{{ query_settings['api_response']['Response']['AdminSettings']['WebAdminSettings']['VPNPortalHTTPSPort'] }}"
+    blocklogin: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLogin'] }}"
+    logoutsession: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginSecurity']['LogoutSession'] }}"
+    unsuccessfulatt: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['UnsucccessfulAttempt'] }}"
+    duration: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['Duration'] }}"
+    minutes: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['ForMinutes'] }}"
+    complexitycheck: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexityCheck'] }}"
+    minpasswordchk: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLength'] }}"
+    minpasswordlen: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLengthValue'] }}"
+    includealpha: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeAlphabeticCharacters'] }}"
+    includenumeric: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeNumericCharacter'] }}"
+    includespecial: "{{ query_settings['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeSpecialCharacter'] }}"
+    logindisclaimer: "{{ query_settings['api_response']['Response']['AdminSettings']['LoginDisclaimer'] }}"
+
+- name: SET BASELINE SETTINGS FOR TESTS
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    hostname_settings:
+      hostname: sophos-firewall-dev1
+      description: Automation Testing 1
+    webadmin_settings:
+      vpnportal_https_port: 444
+      userportal_https_port: 4445
+    login_security:
+      logout_session: 120
+      block_login: Enable
+      unsuccessful_attempt: 3
+      duration: 30
+      minutes: 1
+    password_complexity:
+      complexity_check: Enable
+      enforce_min_length: Enable
+      include_alpha: Enable
+      include_numeric: Enable
+      include_special: Enable
+      min_length: 10
+    login_disclaimer: Disable
+    state: updated
+  delegate_to: localhost
+
+- name: SET HOSTNAME
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    hostname_settings:
+      hostname: INTG-HOSTNAME
+      description: INTG-DESCRIPTION
+    state: updated
+  register: set_hostname
+
+- name: ASSERTION CHECK FOR SET HOSTNAME 
+  assert:
+    that: 
+      - set_hostname is changed
+      - set_hostname['api_response'][0]['Response']['HostnameSettings']['Status']['@code'] == '200'
+      - set_hostname['api_response'][0]['Response']['HostnameSettings']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY HOSTNAME SETTINGS
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_hostname
+
+- name: ASSERTION CHECK FOR QUERY HOSTNAME SETTINGS
+  assert:
+    that: 
+      - query_hostname is not changed
+      - query_hostname['api_response']['Response']['AdminSettings']['HostnameSettings']['HostName'] == 'INTG-HOSTNAME'
+      - query_hostname['api_response']['Response']['AdminSettings']['HostnameSettings']['HostNameDesc'] == 'INTG-DESCRIPTION'
+
+- name: SET HOSTNAME NO CHANGE
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    hostname_settings:
+      hostname: INTG-HOSTNAME
+      description: INTG-DESCRIPTION
+    state: updated
+  register: set_hostname_nochg
+
+- name: ASSERTION CHECK FOR SET HOSTNAME NO CHANGE
+  assert:
+    that: 
+      - set_hostname_nochg is not changed
+
+- name: SET WEBADMIN SETTINGS
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    webadmin_settings:
+      vpnportal_https_port: 445
+      userportal_https_port: 4446
+    state: updated
+  register: set_webadmin
+
+- name: ASSERTION CHECK FOR SET WEBADMIN SETTINGS
+  assert:
+    that: 
+      - set_webadmin is changed
+      - set_webadmin['api_response'][0]['Response']['WebAdminSettings']['Status']['@code'] == '200'
+      - set_webadmin['api_response'][0]['Response']['WebAdminSettings']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY WEBADMIN SETTINGS
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_webadmin
+
+- name: ASSERTION CHECK FOR QUERY WEBADMIN SETTINGS 
+  assert:
+    that: 
+      - query_webadmin is not changed
+      - query_webadmin['api_response']['Response']['AdminSettings']['WebAdminSettings']['VPNPortalHTTPSPort'] == '445'
+      - query_webadmin['api_response']['Response']['AdminSettings']['WebAdminSettings']['UserPortalHTTPSPort'] == '4446'
+
+- name: SET WEBADMIN SETTINGS NO CHANGE
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    webadmin_settings:
+      vpnportal_https_port: 445
+      userportal_https_port: 4446
+    state: updated
+  register: set_webadmin_nochg
+
+- name: ASSERTION CHECK FOR SET WEBADMIN SETTINGS NO CHANGE
+  assert:
+    that: 
+      - set_webadmin_nochg is not changed
+
+- name: SET LOGIN SECURITY
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    login_security:
+      logout_session: 60
+      block_login: Enable
+      unsuccessful_attempt: 5
+      duration: 15
+      minutes: 5
+    state: updated
+  register: set_loginsecurity
+
+- name: ASSERTION CHECK FOR SET LOGIN SECURITY
+  assert:
+    that: 
+      - set_loginsecurity is changed
+      - set_loginsecurity['api_response'][0]['Response']['LoginSecurity']['Status']['@code'] == '200'
+      - set_loginsecurity['api_response'][0]['Response']['LoginSecurity']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY LOGIN SECURITY
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_loginsecurity
+
+- name: ASSERTION CHECK FOR QUERY LOGIN SECURITY
+  assert:
+    that: 
+      - query_loginsecurity is not changed
+      - query_loginsecurity['api_response']['Response']['AdminSettings']['LoginSecurity']['LogoutSession'] == '60'
+      - query_loginsecurity['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLogin'] == 'Enable'
+      - query_loginsecurity['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['UnsucccessfulAttempt'] == '5'
+      - query_loginsecurity['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['Duration'] == '15'
+      - query_loginsecurity['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['ForMinutes'] == '5'
+
+- name: SET LOGIN SECURITY NO CHANGE
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    login_security:
+      logout_session: 60
+      block_login: Enable
+      unsuccessful_attempt: 5
+      duration: 15
+      minutes: 5
+    state: updated
+  register: set_loginsecurity_nochg
+
+- name: ASSERTION CHECK FOR SET LOGIN SECURITY NO CHANGE
+  assert:
+    that: 
+      - set_loginsecurity_nochg is not changed
+
+- name: SET PASSWORD COMPLEXITY
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    password_complexity:
+      complexity_check: Enable
+      enforce_min_length: Enable
+      include_alpha: Enable
+      include_numeric: Enable
+      include_special: Enable
+      min_length: 8
+    state: updated
+  register: set_passwordcomplexity
+
+- name: ASSERTION CHECK FOR SET PASSWORD COMPLEXITY
+  assert:
+    that: 
+      - set_passwordcomplexity is changed
+      - set_passwordcomplexity['api_response'][0]['Response']['PasswordComplexitySettings']['Status']['@code'] == '200'
+      - set_passwordcomplexity['api_response'][0]['Response']['PasswordComplexitySettings']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY PASSWORD COMPLEXITY
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_passwordcomplexity
+
+- name: ASSERTION CHECK FOR QUERY PASSWORD COMPLEXITY
+  assert:
+    that: 
+      - query_passwordcomplexity is not changed
+      - query_passwordcomplexity['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexityCheck'] == 'Enable'
+      - query_passwordcomplexity['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLength'] == 'Enable'
+      - query_passwordcomplexity['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeAlphabeticCharacters'] == 'Enable'
+      - query_passwordcomplexity['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeSpecialCharacter'] == 'Enable'
+      - query_passwordcomplexity['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLengthValue'] == '8'
+
+- name: SET PASSWORD COMPLEXITY NO CHANGE
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    password_complexity:
+      complexity_check: Enable
+      enforce_min_length: Enable
+      include_alpha: Enable
+      include_numeric: Enable
+      include_special: Enable
+      min_length: 8
+    state: updated
+  register: set_passwordcomplexity_nochg
+
+- name: ASSERTION CHECK FOR SET PASSWORD COMPLEXITY NO CHANGE
+  assert:
+    that: 
+      - set_passwordcomplexity_nochg is not changed
+
+- name: SET LOGIN DISCLAIMER
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    login_disclaimer: Enable
+    state: updated
+  register: set_logindisclaimer
+
+- name: ASSERTION CHECK FOR SET LOGIN DISCLAIMER
+  assert:
+    that: 
+      - set_logindisclaimer is changed
+      - set_logindisclaimer['api_response'][0]['Response']['LoginDisclaimer']['Status']['@code'] == '200'
+      - set_logindisclaimer['api_response'][0]['Response']['LoginDisclaimer']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY LOGIN DISCLAIMER
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_logindisclaimer
+
+- name: ASSERTION CHECK FOR QUERY LOGIN DISCLAIMER 
+  assert:
+    that: 
+      - query_logindisclaimer is not changed
+      - query_logindisclaimer['api_response']['Response']['AdminSettings']['LoginDisclaimer'] == 'Enable'
+
+- name: SET LOGIN DISCLAIMER NO CHANGE
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    login_disclaimer: Enable
+    state: updated
+  register: set_logindisclaimer_nochg
+
+- name: ASSERTION CHECK FOR SET LOGIN DISCLAIMER NO CHANGE
+  assert:
+    that: 
+      - set_logindisclaimer_nochg is not changed
+
+- name: REVERT SETTINGS TO INITIAL
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params 
+    hostname_settings:
+      hostname: "{{ hstname }}"
+      description: "{{ hstnamedesc }}"
+    webadmin_settings:
+      vpnportal_https_port: "{{ vpnportalhttps }}"
+      userportal_https_port: "{{ userportalhttps }}"
+    login_security:
+      logout_session: "{{ logoutsession }}"
+      block_login: "{{ blocklogin }}"
+      unsuccessful_attempt: "{{ unsuccessfulatt }}"
+      duration: "{{ duration }}"
+      minutes: "{{ minutes }}"
+    password_complexity:
+      complexity_check: "{{ complexitycheck }}"
+      enforce_min_length: "{{ minpasswordchk }}"
+      include_alpha: "{{ includealpha }}"
+      include_numeric: "{{ includenumeric }}"
+      include_special: "{{ includespecial }}"
+      min_length: "{{ minpasswordlen }}"
+    login_disclaimer: "{{ logindisclaimer }}"
+    state: updated
+
+- name: QUERY ADMIN SETTINGS FINAL
+  sophos.sophos_firewall.sfos_admin_settings:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings_final
+
+- name: ASSERTION CHECK REVERT TO INITIAL
+  assert:
+    that:
+      - query_settings_final['api_response']['Response']['AdminSettings']['HostnameSettings']['HostName'] == hstname
+      - query_settings_final['api_response']['Response']['AdminSettings']['HostnameSettings']['HostNameDesc'] == hstnamedesc
+      - query_settings_final['api_response']['Response']['AdminSettings']['WebAdminSettings']['VPNPortalHTTPSPort'] == vpnportalhttps
+      - query_settings_final['api_response']['Response']['AdminSettings']['WebAdminSettings']['UserPortalHTTPSPort'] == userportalhttps
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginSecurity']['LogoutSession'] == logoutsession
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLogin'] == blocklogin
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['UnsucccessfulAttempt'] == unsuccessfulatt
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['Duration'] == duration
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginSecurity']['BlockLoginSettings']['ForMinutes'] == minutes
+      - query_settings_final['api_response']['Response']['AdminSettings']['LoginDisclaimer'] == logindisclaimer
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexityCheck'] == complexitycheck
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLength'] == minpasswordchk
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeAlphabeticCharacters'] == includealpha
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeNumericCharacter'] == includenumeric
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['IncludeSpecialCharacter'] == includespecial
+      - query_settings_final['api_response']['Response']['AdminSettings']['PasswordComplexitySettings']['PasswordComplexity']['MinimumPasswordLengthValue'] == minpasswordlen
