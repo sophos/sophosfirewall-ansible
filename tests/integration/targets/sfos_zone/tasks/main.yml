@@ -1,0 +1,383 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_ZONE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: absent
+   
+- name: CREATE ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    zone_type: LAN
+    description: Created by Ansible integration testing
+    state: present
+  register: create_zone
+
+- name: ASSERTION CHECK FOR CREATE ZONE
+  assert:
+    that: 
+      - create_zone is changed
+      - create_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - create_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR QUERY ZONE
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['Name'] == 'IGT_TESTZONE'
+      - query_zone['api_response']['Response']['Zone']['Type'] == 'LAN'
+      - query_zone['api_response']['Response']['Zone']['Description'] == 'Created by Ansible integration testing'
+
+- name: CREATE EXISTING ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    zone_type: LAN
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING ZONE 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['Zone']['Name'] == "IGT_TESTZONE"
+
+- name: UPDATE ZONE ADMIN SERVICES
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    https: Enable
+    ssh: Enable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE ADMINSERVICES
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE ADMINSERVICES
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']['HTTPS'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']['SSH'] == 'Enable'
+
+- name: UPDATE ZONE ADMIN SERVICES NO CHANGE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    https: Enable
+    ssh: Enable
+    state: updated
+  register: update_zone_nochange
+
+- name: ASSERTION CHECK FOR UPDATED ZONE ADMINSERVICES NO CHANGE
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']['HTTPS'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']['SSH'] == 'Enable'
+
+- name: UPDATE ZONE ADMINSERVICES DISABLE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    ssh: Disable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE ADMINSERVICES DISABLE
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE ADMINSERVICES DISABLE
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']['HTTPS'] == 'Enable'
+      - "'SSH' not in query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AdminServices']"
+
+- name: UPDATE ZONE NETWORKSERVICES
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    ping: Enable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE NETWORKSERVICES
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE NETWORKSERVICES
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['NetworkServices']['Ping'] == 'Enable'
+
+- name: UPDATE ZONE NETWORK SERVICES ADD SERVICE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    dns: Enable
+    state: updated
+  register: update_zone_addservice
+
+- name: ASSERTION CHECK FOR UPDATE ZONE NETWORKSERVICES ADD SERVICE
+  assert:
+    that: 
+      - update_zone_addservice is changed
+      - update_zone_addservice['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone_addservice['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE NETWORKSERVICES ADD SERVICE
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['NetworkServices']['Ping'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['NetworkServices']['DNS'] == 'Enable'
+
+
+- name: UPDATE ZONE NETWORKSERVICES DISABLE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    ping: Disable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE NETWORKSERVICES DISABLE
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE NETWORKSERVICES DISABLE
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['NetworkServices']['DNS'] == 'Enable'
+      - "'Ping' not in query_zone['api_response']['Response']['Zone']['ApplianceAccess']['NetworkServices']"
+
+- name: UPDATE ZONE OTHERSERVICES ENABLE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    user_portal: Enable
+    smtp_relay: Enable
+    dynamic_routing: Enable
+    snmp: Enable
+    web_proxy: Enable
+    wireless_protection: Enable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE OTHERSERVICES
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE OTHERSERVICES
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['WebProxy'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['UserPortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['DynamicRouting'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SMTPRelay'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SNMP'] == 'Enable'
+
+- name: UPDATE ZONE VPNSERVICES ENABLE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    red: Enable
+    sslvpn: Enable
+    vpn_portal: Enable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE VPNSERVICES
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE VPNSERVICES
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['WebProxy'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['UserPortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['DynamicRouting'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SMTPRelay'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SNMP'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['RED'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['VPNPortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['SSLVPN'] == 'Enable'
+
+- name: UPDATE ZONE AUTHENSERVICES ENABLE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    client_authen: Enable
+    ad_sso: Enable
+    radius_sso: Enable
+    chromebook_sso: Enable
+    captive_portal: Enable
+    state: updated
+  register: update_zone
+
+- name: ASSERTION CHECK FOR UPDATE ZONE AUTHENSERVICES
+  assert:
+    that: 
+      - update_zone is changed
+      - update_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - update_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: query
+  register: query_zone
+
+- name: ASSERTION CHECK FOR UPDATED ZONE AUTHENSERVICES
+  assert:
+    that: 
+      - query_zone is not changed
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['WebProxy'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['UserPortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['DynamicRouting'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SMTPRelay'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['OtherServices']['SNMP'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['RED'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['VPNPortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['VPNServices']['SSLVPN'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AuthenticationServices']['ClientAuthentication'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AuthenticationServices']['CaptivePortal'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AuthenticationServices']['ADSSO'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AuthenticationServices']['RadiusSSO'] == 'Enable'
+      - query_zone['api_response']['Response']['Zone']['ApplianceAccess']['AuthenticationServices']['ChromebookSSO'] == 'Enable'
+
+- name: REMOVE IGT_TESTZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: absent
+  register: remove_zone
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTZONE
+  assert:
+    that: 
+      - remove_zone is changed
+      - remove_zone['api_response']['Response']['Zone']['Status']['@code'] == "200"
+      - remove_zone['api_response']['Response']['Zone']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING ZONE
+  sophos.sophos_firewall.sfos_zone:
+    <<: *sfos_connection_params
+    name: IGT_TESTZONE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING RULE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
