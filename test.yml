@@ -317,32 +317,44 @@
     #     state: query
     #   delegate_to: localhost
 
-    - name: REVERT SETTINGS TO INITIAL
-      sophos.sophos_firewall.sfos_admin_settings:
+    # - name: REVERT SETTINGS TO INITIAL
+    #   sophos.sophos_firewall.sfos_admin_settings:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     hostname_settings:
+    #       hostname: sophos-firewall-dev1
+    #       description: Automation Testing 1
+    #     webadmin_settings:
+    #       vpnportal_https_port: 444
+    #       userportal_https_port: 4445
+    #     login_security:
+    #       logout_session: 120
+    #       block_login: Enable
+    #       unsuccessful_attempt: 3
+    #       duration: 30
+    #       minutes: 1
+    #     password_complexity:
+    #       complexity_check: Enable
+    #       enforce_min_length: Enable
+    #       include_alpha: Enable
+    #       include_numeric: Enable
+    #       include_special: Enable
+    #       min_length: 10
+    #     login_disclaimer: Disable
+    #     state: updated
+    #   delegate_to: localhost
+
+    - name: UPDATE ZONE ADMIN SERVICES
+      sophos.sophos_firewall.sfos_zone:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        hostname_settings:
-          hostname: sophos-firewall-dev1
-          description: Automation Testing 1
-        webadmin_settings:
-          vpnportal_https_port: 444
-          userportal_https_port: 4445
-        login_security:
-          logout_session: 120
-          block_login: Enable
-          unsuccessful_attempt: 3
-          duration: 30
-          minutes: 1
-        password_complexity:
-          complexity_check: Enable
-          enforce_min_length: Enable
-          include_alpha: Enable
-          include_numeric: Enable
-          include_special: Enable
-          min_length: 10
-        login_disclaimer: Disable
-        state: updated
+        name: IGT_TESTZONE
+        sslvpn: Enable
+        state: query
       delegate_to: localhost
