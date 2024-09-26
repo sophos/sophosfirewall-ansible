@@ -191,13 +191,13 @@ def update_dns_settings(fw_obj, module, result):
         if dns_source:
             update_params["IPv6Settings"]["ObtainDNSFrom"] = dns_source
         if dns_source == "Static":
-            dns1 = ipv4_settings.get("dns1")
+            dns1 = ipv6_settings.get("dns1")
             if dns1:
                 update_params["IPv6Settings"]["DNSIPList"]["DNS1"] = dns1
-            dns2 = ipv4_settings.get("dns2")
+            dns2 = ipv6_settings.get("dns2")
             if dns2:
                 update_params["IPv6Settings"]["DNSIPList"]["DNS2"] = dns2
-            dns3 = ipv4_settings.get("dns3")
+            dns3 = ipv6_settings.get("dns3")
             if dns3:
                 update_params["IPv6Settings"]["DNSIPList"]["DNS3"] = dns3
         

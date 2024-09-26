@@ -23,7 +23,7 @@
       verify: "{{ sfos_verify }}"
   no_log: true
 
-- name: QUERY ADMIN SETTINGS
+- name: QUERY DNS SETTINGS
   sophos.sophos_firewall.sfos_dns:
     <<: *sfos_connection_params
     state: query
@@ -32,13 +32,13 @@
 - name: SET VARS FOR EXISTING SETTINGS
   ansible.builtin.set_fact:
     ipv4_dns_source: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom'] }}"
-    ipv4_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS1'] }}"
-    ipv4_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS2'] }}"
-    ipv4_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS3'] }}"
+    ipv4_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS1'] }}"
+    ipv4_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS2'] }}"
+    ipv4_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS3'] }}"
     ipv6_dns_source: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom'] }}"
-    ipv6_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS1'] }}"
-    ipv6_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS2'] }}"
-    ipv6_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS3'] }}"
+    ipv6_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS1'] }}"
+    ipv6_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS2'] }}"
+    ipv6_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS3'] }}"
     dnsquery_config: "{{ query_settings['api_response']['Response']['DNS']['DNSQueryConfiguration'] }}"
 
 - name: SET BASELINE SETTINGS FOR TESTS
@@ -159,6 +159,16 @@
 - name: REVERT SETTINGS TO INITIAL
   sophos.sophos_firewall.sfos_dns:
     <<: *sfos_connection_params 
-      
+    ipv4_settings:
+      dns_source: "{{ ipv4_dns_source }}"
+      dns1: "{{ ipv4_dns1 }}"
+      dns2: "{{ ipv4_dns2 }}"
+      dns3: "{{ ipv4_dns3 }}"
+    ipv6_settings:
+      dns_source: "{{ ipv6_dns_source }}"
+      dns1: "{{ ipv6_dns1 }}"
+      dns2: "{{ ipv6_dns2 }}"
+      dns3: "{{ ipv6_dns3 }}"
+    dnsquery_config: "{{ dnsquery_config }}"
     state: updated
 
