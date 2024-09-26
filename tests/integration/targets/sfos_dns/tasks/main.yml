@@ -1,0 +1,164 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY ADMIN SETTINGS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+- name: SET VARS FOR EXISTING SETTINGS
+  ansible.builtin.set_fact:
+    ipv4_dns_source: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom'] }}"
+    ipv4_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS1'] }}"
+    ipv4_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS2'] }}"
+    ipv4_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom']['DNSIPList']['DNS3'] }}"
+    ipv6_dns_source: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom'] }}"
+    ipv6_dns1: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS1'] }}"
+    ipv6_dns2: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS2'] }}"
+    ipv6_dns3: "{{ query_settings['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom']['DNSIPList']['DNS3'] }}"
+    dnsquery_config: "{{ query_settings['api_response']['Response']['DNS']['DNSQueryConfiguration'] }}"
+
+- name: SET BASELINE SETTINGS FOR TESTS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    ipv4_settings:
+      dns_source: DHCP
+    ipv6_settings:
+      dns_source: Static
+    dnsquery_config: ChooseServerBasedOnIncomingRequestsRecordType
+    state: updated
+  delegate_to: localhost
+
+- name: SET IPV4 DNS SETTINGS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    ipv4_settings:
+      dns_source: Static
+      dns1: 10.10.10.10
+      dns2: 10.10.10.11
+      dns3: 10.10.10.12
+    dnsquery_config: ChooseIPv4DNSServerOverIPv6
+    state: updated
+  register: set_dns
+
+- name: ASSERTION CHECK FOR SET IPV4 DNS 
+  assert:
+    that: 
+      - set_dns is changed
+      - set_dns['api_response']['Response']['DNS']['Status']['@code'] == '200'
+      - set_dns['api_response']['Response']['DNS']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY IPV4 DNS SETTINGS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    state: query
+  register: query_dns
+
+- name: ASSERTION CHECK FOR QUERY IPV4 DNS SETTINGS
+  assert:
+    that: 
+      - query_dns is not changed
+      - query_dns['api_response']['Response']['DNS']['DNSQueryConfiguration'] == 'ChooseIPv4DNSServerOverIPv6'
+      - query_dns['api_response']['Response']['DNS']['IPv4Settings']['ObtainDNSFrom'] == 'Static'
+      - query_dns['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS1'] == '10.10.10.10'
+      - query_dns['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS2'] == '10.10.10.11'
+      - query_dns['api_response']['Response']['DNS']['IPv4Settings']['DNSIPList']['DNS3'] == '10.10.10.12'
+
+- name: SET IPV4 DNS NO CHANGE
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    ipv4_settings:
+      dns_source: Static
+      dns1: 10.10.10.10
+      dns2: 10.10.10.11
+      dns3: 10.10.10.12
+    dnsquery_config: ChooseIPv4DNSServerOverIPv6
+    state: updated
+  register: set_dns_nochg
+
+- name: ASSERTION CHECK FOR SET IPV4 DNS NO CHANGE
+  assert:
+    that: 
+      - set_dns_nochg is not changed
+
+- name: SET IPV6 DNS SETTINGS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    ipv6_settings:
+      dns_source: Static
+      dns1: fec0::1
+      dns2: fec0::2
+      dns3: fec0::3
+    dnsquery_config: ChooseIPv6DNSServerOverIPv4
+    state: updated
+  register: set_dns
+
+- name: ASSERTION CHECK FOR SET IPv6 DNS 
+  assert:
+    that: 
+      - set_dns is changed
+      - set_dns['api_response']['Response']['DNS']['Status']['@code'] == '200'
+      - set_dns['api_response']['Response']['DNS']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY DNS SETTINGS
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    state: query
+  register: query_dns
+
+- name: ASSERTION CHECK FOR QUERY DNS SETTINGS
+  assert:
+    that: 
+      - query_dns is not changed
+      - query_dns['api_response']['Response']['DNS']['DNSQueryConfiguration'] == 'ChooseIPv6DNSServerOverIPv4'
+      - query_dns['api_response']['Response']['DNS']['IPv6Settings']['ObtainDNSFrom'] == 'Static'
+      - query_dns['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS1'] == 'fec0::1'
+      - query_dns['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS2'] == 'fec0::2'
+      - query_dns['api_response']['Response']['DNS']['IPv6Settings']['DNSIPList']['DNS3'] == 'fec0::3'
+
+- name: SET IPV6 DNS NO CHANGE
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params
+    ipv6_settings:
+      dns_source: Static
+      dns1: fec0::1
+      dns2: fec0::2
+      dns3: fec0::3
+    dnsquery_config: ChooseIPv6DNSServerOverIPv4
+    state: updated
+  register: set_dns_nochg
+
+- name: ASSERTION CHECK FOR SET IPV4 DNS NO CHANGE
+  assert:
+    that: 
+      - set_dns_nochg is not changed
+
+- name: REVERT SETTINGS TO INITIAL
+  sophos.sophos_firewall.sfos_dns:
+    <<: *sfos_connection_params 
+      
+    state: updated
+
