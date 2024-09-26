@@ -347,14 +347,49 @@
     #     state: updated
     #   delegate_to: localhost
 
-    - name: UPDATE ZONE ADMIN SERVICES
-      sophos.sophos_firewall.sfos_zone:
+    # - name: UPDATE ZONE ADMIN SERVICES
+    #   sophos.sophos_firewall.sfos_zone:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTZONE
+    #     sslvpn: Enable
+    #     state: query
+    #   delegate_to: localhost
+
+  # - name: UPDATE DNS SETTINGS
+  #   sophos.sophos_firewall.sfos_dns:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     ipv4_settings:
+  #         dns_source: Static
+  #         dns1: 1.1.1.1
+  #         dns2: 2.2.2.2
+  #         dns3: 3.3.3.3
+  #     dnsquery_config: ChooseIPv4DNSServerOverIPv6
+  #     state: updated
+  #   delegate_to: localhost
+
+    - name: UPDATE TIME SETTINGS
+      sophos.sophos_firewall.sfos_time:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        name: IGT_TESTZONE
-        sslvpn: Enable
-        state: query
+        # timezone: Europe/London
+        # date:
+        #   year: 2024
+        #   month: 12
+        #   day: 25
+        time:
+          hour: 01
+          minute: 01
+          second: 01
+        state: updated
       delegate_to: localhost
