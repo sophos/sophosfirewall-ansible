@@ -1,0 +1,119 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY TIME SETTINGS
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+- name: SET VARS FOR EXISTING SETTINGS
+  ansible.builtin.set_fact:
+    year: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Date']['Year'] }}"
+    month: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Date']['Month'] }}"
+    day: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Date']['Day'] }}"
+    hour: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Time']['HH'] }}"
+    minute: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Time']['MM'] }}"
+    second: "{{ query_settings['api_response']['Response']['Time']['SetDateTime']['Time']['SS'] }}"
+
+- name: SET BASELINE SETTINGS FOR TESTS
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params
+    date:
+      year: 2024
+      month: 12
+      day: 25
+    time:
+      hour: 11
+      minute: 59
+      second: 59
+    state: updated
+  delegate_to: localhost
+
+- name: SET DATE AND TIME
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params
+    date:
+      year: 2025
+      month: 1
+      day: 1
+    time:
+      hour: 1
+      minute: 1
+      second: 1
+    state: updated
+  register: set_datetime
+
+- name: ASSERTION CHECK FOR SET DATETIME 
+  assert:
+    that: 
+      - set_datetime is changed
+      - set_datetime['api_response']['Response']['Time']['Status']['@code'] == '200'
+      - set_datetime['api_response']['Response']['Time']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY DATETIME SETTINGS
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params
+    state: query
+  register: query_datetime
+
+- name: ASSERTION CHECK FOR QUERY DATETIME SETTINGS
+  assert:
+    that: 
+      - query_datetime is not changed
+      - query_datetime['api_response']['Response']['Time']['SetDateTime']['Date']['Year'] == '2025'
+      - query_datetime['api_response']['Response']['Time']['SetDateTime']['Date']['Month'] == '1'
+      - query_datetime['api_response']['Response']['Time']['SetDateTime']['Date']['Day'] == '1'
+      - query_datetime['api_response']['Response']['Time']['SetDateTime']['Time']['HH'] == '1'
+      - query_datetime['api_response']['Response']['Time']['SetDateTime']['Time']['MM'] == '1'
+
+- name: SET DATETIME NO CHANGE
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params
+    date:
+      year: 2025
+      month: 1
+      day: 1
+    state: updated
+  register: set_datetime_nochg
+
+- name: ASSERTION CHECK FOR SET DATETIME NO CHANGE
+  assert:
+    that: 
+      - set_datetime_nochg is not changed
+
+- name: REVERT SETTINGS TO INITIAL
+  sophos.sophos_firewall.sfos_time:
+    <<: *sfos_connection_params 
+    date:
+      year: "{{ year }}"
+      month: "{{ month }}"
+      day: "{{ day }}"
+    time:
+      hour: "{{ hour }}"
+      minute: "{{ minute }}"
+      second: "{{ second }}"
+    state: updated
+
