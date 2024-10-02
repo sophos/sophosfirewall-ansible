@@ -59,8 +59,9 @@ options:
                 type: str
     action:
         description:
-            - Use with state: updated to add or remove services from the list, or replace the list entirely.
+            - When performing an update, use to add or remove services from the list, or replace the list entirely
         choices: [add, remove, replace]
+        type: str
         default: replace
     state:
         description:

@@ -4,17 +4,17 @@
   gather_facts: false
 
   tasks:
-    # - name: ADD IP HOST
-    #   sophos.sophos_firewall.sfos_ip_host:
-    #     username: "{{ username }}"
-    #     password: "{{ password }}"
-    #     hostname: "{{ inventory_hostname }}"
-    #     port: 4444
-    #     verify: false
-    #     name: TESTHOST
-    #     ip_address: 3.3.3.3
-    #     state: query
-    #   delegate_to: localhost
+    - name: ADD IP HOST
+      sophos.sophos_firewall.sfos_ip_host:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TESTHOST
+        ip_address: 2.2.2.2
+        state: query
+      delegate_to: localhost
 
     # - name: ADD IP HOST TYPE NETWORK
     #   sophos.sophos_firewall.sfos_ip_host:
@@ -27,7 +27,7 @@
     #     network: 2.2.2.0
     #     mask: 255.255.255.0
     #     host_type: network
-    #     state: query
+    #     state: present
     #   delegate_to: localhost
 
     # - name: ADD IP HOST TYPE IPRANGE
@@ -375,21 +375,21 @@
   #     state: updated
   #   delegate_to: localhost
 
-    - name: UPDATE TIME SETTINGS
-      sophos.sophos_firewall.sfos_time:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        # timezone: Europe/London
-        # date:
-        #   year: 2024
-        #   month: 12
-        #   day: 25
-        time:
-          hour: 01
-          minute: 01
-          second: 01
-        state: updated
-      delegate_to: localhost
+    # - name: UPDATE TIME SETTINGS
+    #   sophos.sophos_firewall.sfos_time:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     # timezone: Europe/London
+    #     # date:
+    #     #   year: 2024
+    #     #   month: 12
+    #     #   day: 25
+    #     time:
+    #       hour: 01
+    #       minute: 01
+    #       second: 01
+    #     state: updated
+    #   delegate_to: localhost

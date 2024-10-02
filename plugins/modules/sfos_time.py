@@ -11,52 +11,61 @@ DOCUMENTATION = r'''
 ---
 module: sfos_time
 
-short_description: Manage Time settings
+short_description: Manage Date and Time settings
 
 version_added: "1.0.0"
 
-description: Manage Time settings (System > Administration > Time) on Sophos Firewall. WARNING: Changing Timezone will cause device reboot!
+description: Manage Date and Time settings (System > Administration > Time) on Sophos Firewall. 
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
 
 options:
     timezone:
-        description: Timezone
+        description: 
+          - "Timezone setting. WARNING: WILL CAUSE DEVICE REBOOT!"
         required: false
         type: str
     date:
-        description: Date settings
+        description: 
+          - Date settings
         required: false
         type: dict
         suboptions:
             year:
-                description: Year
+                description:
+                  - Year
                 type: int
                 required: false
             month:
-                description: Month
+                description: 
+                  - Month
                 type: int
                 required: false
             day:
-                description: Day
+                description: 
+                  - Day
                 type: int
                 required: false
     time:
-        description: Time settings
+        description: 
+          - Time settings
         required: false
         type: dict
         suboptions:
             hour:
-                description: Hour
+                description: 
+                  - Hour
                 type: int
                 required: false
             minute:
-                description: Minute
+                description: 
+                  - Minute
                 type: int
                 required: false
             second:
-                description: Second
+                description: 
+                  - Second
                 type: int
                 required: false
     state:
