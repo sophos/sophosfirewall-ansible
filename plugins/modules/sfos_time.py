@@ -81,7 +81,7 @@ author:
 
 EXAMPLES = r'''
 - name: Update Time Settings
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_time:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"

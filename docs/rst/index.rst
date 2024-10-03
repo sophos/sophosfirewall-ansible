@@ -54,6 +54,7 @@ Modules
 ~~~~~~~
 
 * :ansplugin:`sfos_admin_settings module <sophos.sophos_firewall.sfos_admin_settings#module>` -- Manage Admin and user settings (System \> Administration)
+* :ansplugin:`sfos_backup module <sophos.sophos_firewall.sfos_backup#module>` -- Manage Backup settings
 * :ansplugin:`sfos_dns module <sophos.sophos_firewall.sfos_dns#module>` -- Manage DNS settings
 * :ansplugin:`sfos_firewall_rule module <sophos.sophos_firewall.sfos_firewall_rule#module>` -- Manage Firewall Rules on Sophos Firewall
 * :ansplugin:`sfos_fqdn_host module <sophos.sophos_firewall.sfos_fqdn_host#module>` -- Manage FQDN hosts on Sophos Firewall
@@ -73,6 +74,7 @@ Modules
     :hidden:
 
     sfos_admin_settings_module
+    sfos_backup_module
     sfos_dns_module
     sfos_firewall_rule_module
     sfos_fqdn_host_module

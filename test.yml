@@ -4,17 +4,17 @@
   gather_facts: false
 
   tasks:
-    - name: ADD IP HOST
-      sophos.sophos_firewall.sfos_ip_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        name: TESTHOST
-        ip_address: 2.2.2.2
-        state: query
-      delegate_to: localhost
+    # - name: ADD IP HOST
+    #   sophos.sophos_firewall.sfos_ip_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: TESTHOST
+    #     ip_address: 2.2.2.2
+    #     state: query
+    #   delegate_to: localhost
 
     # - name: ADD IP HOST TYPE NETWORK
     #   sophos.sophos_firewall.sfos_ip_host:
@@ -393,3 +393,27 @@
     #       second: 01
     #     state: updated
     #   delegate_to: localhost
+
+    - name: UPDATE BACKUP SETTINGS
+      sophos.sophos_firewall.sfos_backup:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        mode: Mail
+        prefix: devfirewall
+        # ftp_server: ftp.sophos.com
+        # ftp_username: ftpuser
+        # ftp_password: ftppassword
+        # ftp_path: home/backup
+        frequency: Monthly
+        # day: Sunday
+        hour: 20
+        minute: 30
+        date: 1
+        # encryption_password: test123
+        email_address: testfirewall@sophos.com
+        debug: true
+        state: updated
+      delegate_to: localhost
