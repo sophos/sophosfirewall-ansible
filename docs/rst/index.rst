@@ -62,6 +62,7 @@ Modules
 * :ansplugin:`sfos_fqdn_hostgroup module <sophos.sophos_firewall.sfos_fqdn_hostgroup#module>` -- Manage FQDN Host Group objects on Sophos Firewall
 * :ansplugin:`sfos_ip_host module <sophos.sophos_firewall.sfos_ip_host#module>` -- Manage IP Host objects on Sophos Firewall
 * :ansplugin:`sfos_ip_hostgroup module <sophos.sophos_firewall.sfos_ip_hostgroup#module>` -- Manage IP Hostgroup objects on Sophos Firewall
+* :ansplugin:`sfos_malware_protection module <sophos.sophos_firewall.sfos_malware_protection#module>` -- Manage Malware Protection on Sophos Firewall
 * :ansplugin:`sfos_service module <sophos.sophos_firewall.sfos_service#module>` -- Manage Service objects on Sophos Firewall
 * :ansplugin:`sfos_service_acl_exception module <sophos.sophos_firewall.sfos_service_acl_exception#module>` -- Manage Local Service Exception ACL Rules on Sophos Firewall
 * :ansplugin:`sfos_servicegroup module <sophos.sophos_firewall.sfos_servicegroup#module>` -- Manage Service Group objects on Sophos Firewall
@@ -83,6 +84,7 @@ Modules
     sfos_fqdn_hostgroup_module
     sfos_ip_host_module
     sfos_ip_hostgroup_module
+    sfos_malware_protection_module
     sfos_service_module
     sfos_service_acl_exception_module
     sfos_servicegroup_module
