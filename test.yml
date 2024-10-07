@@ -418,29 +418,40 @@
     #     state: updated
     #   delegate_to: localhost
 
-  - name: CREATE READ ONLY DEVICE ACCESS PROFILE
-    sophos.sophos_firewall.sfos_device_access_profile:
-      username: "{{ username }}"
-      password: "{{ password }}"
-      hostname: "{{ inventory_hostname }}"
-      port: 4444
-      verify: false
-      name: ReadOnlyProfile
-      default_permission: Read-Only
-      state: present
-    delegate_to: localhost
+  # - name: CREATE READ ONLY DEVICE ACCESS PROFILE
+  #   sophos.sophos_firewall.sfos_device_access_profile:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: ReadOnlyProfile
+  #     default_permission: Read-Only
+  #     state: present
+  #   delegate_to: localhost
 
-  - name: UPDATE DEVICE ACCESS PROFILE
-    sophos.sophos_firewall.sfos_device_access_profile:
+  # - name: UPDATE DEVICE ACCESS PROFILE
+  #   sophos.sophos_firewall.sfos_device_access_profile:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: ReadOnlyProfile
+  #     dashboard: Read-Write
+  #     system:
+  #       profile: Read-Only
+  #       system_password: Read-Write
+  #     state: absent
+  #   delegate_to: localhost
+  
+  - name: UPDATE MALWARE PROTECTION
+    sophos.sophos_firewall.sfos_malware_protection:
       username: "{{ username }}"
       password: "{{ password }}"
       hostname: "{{ inventory_hostname }}"
       port: 4444
       verify: false
-      name: ReadOnlyProfile
-      dashboard: Read-Write
-      system:
-        profile: Read-Only
-        system_password: Read-Write
-      state: absent
+      antivirus_engine: Avira
+      state: updated
     delegate_to: localhost
