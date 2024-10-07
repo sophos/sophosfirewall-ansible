@@ -394,26 +394,53 @@
     #     state: updated
     #   delegate_to: localhost
 
-    - name: UPDATE BACKUP SETTINGS
-      sophos.sophos_firewall.sfos_backup:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        mode: Mail
-        prefix: devfirewall
-        # ftp_server: ftp.sophos.com
-        # ftp_username: ftpuser
-        # ftp_password: ftppassword
-        # ftp_path: home/backup
-        frequency: Monthly
-        # day: Sunday
-        hour: 20
-        minute: 30
-        date: 1
-        # encryption_password: test123
-        email_address: testfirewall@sophos.com
-        debug: true
-        state: updated
-      delegate_to: localhost
+    # - name: UPDATE BACKUP SETTINGS
+    #   sophos.sophos_firewall.sfos_backup:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     mode: Mail
+    #     prefix: devfirewall
+    #     # ftp_server: ftp.sophos.com
+    #     # ftp_username: ftpuser
+    #     # ftp_password: ftppassword
+    #     # ftp_path: home/backup
+    #     frequency: Monthly
+    #     # day: Sunday
+    #     hour: 20
+    #     minute: 30
+    #     date: 1
+    #     # encryption_password: test123
+    #     email_address: testfirewall@sophos.com
+    #     debug: true
+    #     state: updated
+    #   delegate_to: localhost
+
+  - name: CREATE READ ONLY DEVICE ACCESS PROFILE
+    sophos.sophos_firewall.sfos_device_access_profile:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      hostname: "{{ inventory_hostname }}"
+      port: 4444
+      verify: false
+      name: ReadOnlyProfile
+      default_permission: Read-Only
+      state: present
+    delegate_to: localhost
+
+  - name: UPDATE DEVICE ACCESS PROFILE
+    sophos.sophos_firewall.sfos_device_access_profile:
+      username: "{{ username }}"
+      password: "{{ password }}"
+      hostname: "{{ inventory_hostname }}"
+      port: 4444
+      verify: false
+      name: ReadOnlyProfile
+      dashboard: Read-Write
+      system:
+        profile: Read-Only
+        system_password: Read-Write
+      state: absent
+    delegate_to: localhost

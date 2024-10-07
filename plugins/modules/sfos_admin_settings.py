@@ -141,7 +141,7 @@ author:
 
 EXAMPLES = r'''
 - name: Update hostname settings
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -154,7 +154,7 @@ EXAMPLES = r'''
     delegate_to: localhost
 
 - name: Update webadmin settings
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -167,7 +167,7 @@ EXAMPLES = r'''
     delegate_to: localhost
 
 - name: Update loginsecurity settings
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -183,7 +183,7 @@ EXAMPLES = r'''
     delegate_to: localhost
 
 - name: Update administrator password complexity settings
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -200,7 +200,7 @@ EXAMPLES = r'''
     delegate_to: localhost
 
 - name: Update login disclaimer
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -211,7 +211,7 @@ EXAMPLES = r'''
     delegate_to: localhost
 
 - name: Query admin settings
-    sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
