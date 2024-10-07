@@ -1,0 +1,381 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE IGT_TESTPROFILE DOES NOT EXIST
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: absent
+    
+- name: CREATE PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    default_permission: Read-Only
+    state: present
+  register: create_profile
+
+- name: ASSERTION CHECK FOR CREATE PROFILE
+  assert:
+    that: 
+      - create_profile is changed
+      - create_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - create_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY PROFILE
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == "IGT_TESTPROFILE"
+
+- name: CREATE EXISTING PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    default_permission: Read-Only
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING PROFILE 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['AdministrationProfile']['Name'] == "IGT_TESTPROFILE"
+
+- name: UPDATE PROFILE TOP LEVEL
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    dashboard: Read-Write
+    wizard: Read-Write
+    objects: Read-Write
+    network: Read-Write
+    firewall: Read-Write
+    ips: Read-Write
+    web_filter: Read-Write
+    cloud_application_dashboard: Read-Write
+    zero_day_protection: Read-Write
+    application_filter: Read-Write
+    qos: Read-Write
+    email_protection: Read-Write
+    traffic_discovery: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE TOP LEVEL
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR UPDATED PROFILE TOP LEVEL
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Dashboard'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Wizard'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Objects'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Network'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Firewall'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['IPS'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WebFilter'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['CloudApplicationDashboard'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['ZeroDayProtection'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['ApplicationFilter'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['QoS'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['EmailProtection'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['TrafficDiscovery'] == 'Read-Write'
+
+- name: UPDATE PROFILE SYSTEM
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    system:
+      profile: Read-Write
+      system_password: Read-Write
+      central_management: Read-Write
+      backup: Read-Write
+      restore: Read-Write
+      firmware: Read-Write
+      licensing: Read-Write
+      services: Read-Write
+      updates: Read-Write
+      reboot_shutdown: Read-Write
+      ha: Read-Write
+      download_certificates: Read-Write
+      other_certificate_configuration: Read-Write
+      diagnostics: Read-Write
+      other_system_configuration: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE TOP LEVEL
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY UPDATE PROFILE SYSTEM
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Profile'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Password'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['CentralManagement'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Backup'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Restore'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Firmware'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Licensing'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Services'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Updates'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['RebootShutdown'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['HA'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['DownloadCertificates'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['OtherCertificateConfiguration'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['Diagnostics'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['System']['OtherSystemConfiguration'] == 'Read-Write'
+
+- name: UPDATE PROFILE WIRELESSPROTECTION
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    wireless_protection:
+      wireless_protection_overview: Read-Write
+      wireless_protection_settings: Read-Write
+      wireless_protection_network: Read-Write
+      wireless_protection_access_point: Read-Write
+      wireless_protection_mesh: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE TOP LEVEL
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY UPDATE PROFILE WIRELESSPROTECTION
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY UPDATE PROFILE WIRELESSPROTECTION
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WirelessProtection']['WirelessProtectionOverview'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WirelessProtection']['WirelessProtectionSettings'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WirelessProtection']['WirelessProtectionNetworkNetwork'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WirelessProtection']['WirelessProtectionAccessPoint'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WirelessProtection']['WirelessProtectionMesh'] == 'Read-Write'
+
+- name: UPDATE PROFILE IDENTITY
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    identity:
+      authentication: Read-Write
+      groups: Read-Write
+      guest_users_management: Read-Write
+      other_guest_user_settings: Read-Write
+      policy: Read-Write
+      test_external_server_connectivity: Read-Write
+      disconnect_live_user: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE IDENTITY
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY UPDATE PROFILE IDENTITY
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY UPDATE PROFILE IDENTITY
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['Authentication'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['Groups'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['GuestUsersManagement'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['OtherGuestUserSettings'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['Policy'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['TestExternalServerConnectivity'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['DisconnectLiveUser'] == 'Read-Write'
+
+- name: UPDATE PROFILE VPN/WAF
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    vpn:
+      connect_tunnel: Read-Write
+      other_vpn_configurations: Read-Write
+    waf:
+      alerts: Read-Write
+      other_waf_configuration: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE VPN/WAF
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY UPDATE PROFILE VPN/WAF
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY UPDATE PROFILE VPN/WAF
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['VPN']['ConnectTunnel'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['VPN']['OtherVPNConfigurations'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WAF']['Alerts'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['WAF']['OtherWAFConfiguration'] == 'Read-Write'
+
+- name: UPDATE PROFILE LOGS/REPORTS
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    logs_reports:
+      configuration: Read-Write
+      log_viewer: Read-Write
+      reports_access: Read-Write
+      four_eye_authentication_settings: Read-Write
+      de_anonymization: Read-Write
+    state: updated
+  register: update_profile
+
+- name: ASSERTION CHECK FOR UPDATE PROFILE VPN/WAF
+  assert:
+    that: 
+      - update_profile is changed
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - update_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY UPDATE PROFILE LOGS/REPORTS
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: query
+  register: query_profile
+
+- name: ASSERTION CHECK FOR QUERY UPDATE PROFILE LOGS/REPORTS
+  assert:
+    that: 
+      - query_profile is not changed
+      - query_profile['api_response']['Response']['AdministrationProfile']['Name'] == 'IGT_TESTPROFILE'
+      - query_profile['api_response']['Response']['AdministrationProfile']['LogsReports']['Configuration'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['LogsReports']['LogViewer'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['LogsReports']['ReportsAccess'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['LogsReports']['Four-EyeAuthenticationSettings'] == 'Read-Write'
+      - query_profile['api_response']['Response']['AdministrationProfile']['LogsReports']['De-Anonymization'] == 'Read-Write'
+
+
+- name: REMOVE IGT_TESTPROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: absent
+  register: remove_profile
+
+- name: ASSERTION CHECK FOR REMOVE IGT_TESTPROFILE
+  assert:
+    that: 
+      - remove_profile is changed
+      - remove_profile['api_response']['Response']['AdministrationProfile']['Status']['@code'] == "200"
+      - remove_profile['api_response']['Response']['AdministrationProfile']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    state: absent
+  register: remove_nonexist
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING RULE
+  assert:
+    that: 
+      - remove_nonexist is not changed
+      - remove_nonexist['api_response'] == "No. of records Zero."
+
+- name: UPDATE NONEXISTING PROFILE
+  sophos.sophos_firewall.sfos_device_access_profile:
+    <<: *sfos_connection_params
+    name: IGT_TESTPROFILE
+    dashboard: Read-Write
+    state: updated
+  register: update_nonexist
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPDATE NONEXISTING RULE
+  assert:
+    that: 
+      - update_nonexist is failed
+      - update_nonexist['api_response'] == "No. of records Zero."
