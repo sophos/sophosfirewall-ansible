@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_service_acl_exception module -- Manage Local Service Exception ACL Rules on Sophos Firewall
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_service_acl_exception module -- Manage Local Service Exception ACL Rules (System \> Administration \> Device Access)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -777,13 +777,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

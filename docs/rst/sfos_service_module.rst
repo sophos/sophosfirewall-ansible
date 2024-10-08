@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_service module -- Manage Service objects on Sophos Firewall
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_service module -- Manage Service (System \> Hosts and services \> Services)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Creates, updates or removes a Service object on Sophos Firewall
+- Creates, updates or removes a Service (System \> Hosts and services \> Services) on Sophos Firewall
 
 
 .. Aliases
@@ -845,13 +845,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

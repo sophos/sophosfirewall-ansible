@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_device_access_profile module -- Manage Device Access Profiles
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_device_access_profile module -- Manage Device Access Profiles (System \> Profiles \> Device Access)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Manage Device Access Profiles on Sophos Firewall (System \> Profiles \> Device Access)
+- Manage Device Access Profiles (System \> Profiles \> Device Access) on Sophos Firewall
 
 
 .. Aliases
@@ -3011,13 +3011,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

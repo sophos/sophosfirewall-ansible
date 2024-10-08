@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Manage settings under System \> Administration \> Admin and user settings
+- Manage settings under System \> Administration \> Admin and user settings on Sophos Firewall
 
 
 .. Aliases
@@ -1527,13 +1527,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

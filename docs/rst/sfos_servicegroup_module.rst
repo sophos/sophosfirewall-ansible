@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_servicegroup module -- Manage Service Group objects on Sophos Firewall
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_servicegroup module -- Manage Service Group (System \> Hosts and services \> Service Group)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Creates, updates or removes a Service Group object on Sophos Firewall
+- Creates, updates or removes a Service Group (System \> Hosts and services \> Service Group) on Sophos Firewall
 
 
 .. Aliases
@@ -558,13 +558,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

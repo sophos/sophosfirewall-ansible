@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_firewall_rule module -- Manage Firewall Rules on Sophos Firewall
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_firewall_rule module -- Manage Firewall Rules (Protect \> Rules & policies)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Creates, updates or removes firewall rules on Sophos Firewall
+- Creates, updates or removes firewall rules (Protect \> Rules & policies) on Sophos Firewall
 
 
 .. Aliases
@@ -920,13 +920,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

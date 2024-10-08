@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_ip_hostgroup module -- Manage IP Hostgroup objects on Sophos Firewall
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_ip_hostgroup module -- Manage IP Hostgroup (System \> Hosts & services \> IP host group)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Creates, updates or removes an IP Host Group object on Sophos Firewall
+- Creates, updates or removes an IP Host Group (System \> Hosts & services \> IP host group) on Sophos Firewall
 
 
 .. Aliases
@@ -601,13 +601,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 

@@ -16,8 +16,8 @@
 
 .. Title
 
-sophos.sophos_firewall.sfos_ip_host module -- Manage IP Host objects on Sophos Firewall
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_ip_host module -- Manage IP Host (System \> Hosts & services \> IP host)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Creates, updates or removes IP Host objects from Sophos Firewall
+- Creates, updates or removes IP Host (System \> Hosts & services \> IP host) from Sophos Firewall
 
 
 .. Aliases
@@ -701,13 +701,13 @@ Collection links
 .. ansible-links::
 
   - title: "Issue Tracker"
-    url: "http://example.com/issue/tracker"
+    url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
   - title: "Homepage"
     url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
-    url: "http://example.com/repository"
+    url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
 
 
