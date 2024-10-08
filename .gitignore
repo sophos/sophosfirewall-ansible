@@ -1,3 +1,4 @@
 integration_config.yml
 inventory.yml
 tests/output/
+tests/integration/inventory
