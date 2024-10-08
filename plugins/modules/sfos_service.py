@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_service
 
-short_description: Manage Service objects on Sophos Firewall
+short_description: Manage Service (System > Hosts and services > Services)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes a Service object on Sophos Firewall
+description: Creates, updates or removes a Service (System > Hosts and services > Services) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

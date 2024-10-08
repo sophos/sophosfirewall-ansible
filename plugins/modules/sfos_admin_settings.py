@@ -15,7 +15,7 @@ short_description: Manage Admin and user settings (System > Administration)
 
 version_added: "1.0.0"
 
-description: Manage settings under System > Administration > Admin and user settings
+description: Manage settings under System > Administration > Admin and user settings on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

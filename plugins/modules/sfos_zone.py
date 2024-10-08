@@ -11,7 +11,7 @@ DOCUMENTATION = r'''
 ---
 module: sfos_zone
 
-short_description: Manage Zones on Sophos Firewall
+short_description: Manage Zones (Configure > Network > Zones)
 
 version_added: "1.0.0"
 

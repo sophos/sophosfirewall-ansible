@@ -11,7 +11,7 @@ DOCUMENTATION = r'''
 ---
 module: sfos_dns
 
-short_description: Manage DNS settings
+short_description: Manage DNS settings (Configure > Network > DNS)
 
 version_added: "1.0.0"
 

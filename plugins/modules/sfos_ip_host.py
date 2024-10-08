@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_ip_host
 
-short_description: Manage IP Host objects on Sophos Firewall
+short_description: Manage IP Host (System > Hosts & services > IP host)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes IP Host objects from Sophos Firewall
+description: Creates, updates or removes IP Host (System > Hosts & services > IP host) from Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

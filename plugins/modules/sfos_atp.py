@@ -9,23 +9,30 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sfos_malware_protection
+module: sfos_atp
 
-short_description: Manage Malware Protection (Configure > System services > Malware protection)
+short_description: Manage Active Threat Protection (Protect > Active threat response > Sophos X-Ops threat feeds)
 
 version_added: "1.0.0"
 
-description: Manage Malware Protection (Configure > System services > Malware protection) on Sophos Firewall
+description: Manage Active Threat Protection (Protect > Active threat response > Sophos X-Ops threat feeds) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
 
 options:
-    antivirus_engine: 
-        description: Set the primary Antivirus engine
-        type: str
-        choices: ["Sophos", "Avira"]
+    enabled: 
+        description: Enable (true) or disable (false) threat feeds
+        type: bool
         required: false
+    inspect_content:
+        description: Configure inspection of only untrusted or both trusted and untrusted content
+        type: str
+        choices: ["all", "untrusted"]
+    logging_policy:
+        description: Configure logging policy
+        type: str
+        choices: ["Log only", "Log and Drop"]
     state:
         description:
             - Use C(query) to retrieve or C(updated) to modify
@@ -38,19 +45,21 @@ author:
 '''
 
 EXAMPLES = r'''
-- name: Update malware protection settings
-  sophos.sophos_firewall.sfos_malware_protection:
+- name: Update advanced threat protection settings
+  sophos.sophos_firewall.sfos_atp:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
     port: 4444
     verify: false
-    antivirus_engine: Sophos
+    enabled: true
+    inspect_content: untrusted
+    logging_policy: Log and Drop
     state: updated
     delegate_to: localhost
 
-- name: Query malware protection settings
-  sophos.sophos_firewall.sfos_malware_protection:
+- name: Query advanced threat protection settings
+  sophos.sophos_firewall.sfos_atp:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -88,7 +97,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 
 
-def get_malware_protection(fw_obj, module, result):
+def get_atp(fw_obj, module, result):
     """Get current malware protection setting from Sophos Firewall
 
     Args:
@@ -100,7 +109,7 @@ def get_malware_protection(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("MalwareProtection")
+        resp = fw_obj.get_tag("ATP")
     except SophosFirewallZeroRecords as error:
         return {"exists": False, "api_response": str(error)}
     except SophosFirewallAuthFailure as error:
@@ -113,7 +122,7 @@ def get_malware_protection(fw_obj, module, result):
     return {"exists": True, "api_response": resp}
 
 
-def update_malware_protection(fw_obj, module, result):
+def update_atp(fw_obj, module, result):
     """Update admin settings on Sophos Firewall
 
     Args:
@@ -124,10 +133,22 @@ def update_malware_protection(fw_obj, module, result):
     Returns:
         dict: API response
     """
+    update_params = {}
+    if module.params.get("enabled"):
+        update_params["ThreatProtectionStatus"] = "Enable"
+    else:
+        update_params["ThreatProtectionStatus"] = "Disable"
+
+    if module.params.get("inspect_content"):
+        update_params["InspectContent"] = module.params.get("inspect_content")
+
+    if module.params.get("log_policy"):
+        update_params["Policy"] = module.params.get("log_policy")
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.update(xml_tag="MalwareProtection",
-                                 update_params={"PrimaryAntiVirusEngine": module.params.get("antivirus_engine")},
+            resp = fw_obj.update(xml_tag="ATP",
+                                 update_params=update_params,
                                  debug=True)
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -147,9 +168,22 @@ def eval_changed(module, exist_settings):
     Returns:
         bool: Return true if any settings are different, otherwise return false
     """
-    exist_settings = exist_settings["api_response"]["Response"]["MalwareProtection"]
+    exist_settings = exist_settings["api_response"]["Response"]["ATP"]
 
-    if not module.params.get("antivirus_engine") == exist_settings["PrimaryAntiVirusEngine"]:
+    if module.params.get("enabled"):
+        status = "Enable"
+    else:
+        status = "Disable"
+
+    if not (status == exist_settings["ThreatProtectionStatus"]) or (
+        not module.params.get("inspect_content") == exist_settings["InspectContent"]):
+        return True
+    
+    if module.params.get("enabled") and exist_settings.get("Policy"):
+        if not module.params.get("log_policy") == exist_settings["Policy"]:
+            return True
+    
+    if module.params.get("enabled") and not exist_settings.get("Policy"):
         return True
 
     return False
@@ -162,11 +196,16 @@ def main():
         "hostname": {"required": True},
         "port": {"type": "int", "default": 4444},
         "verify": {"type": "bool", "default": True},
-        "antivirus_engine": {"type": "str", "required": False, "choices": ["Sophos", "Avira"]},
+        "enabled": {"type": "bool", "required": False},
+        "inspect_content": {"type": "str", "choices": ["all", "untrusted"]},
+        "log_policy": {"type": "str", "choices": ["Log Only", "Log and Drop"]},
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
     }
 
-    required_if = [('state', 'updated', ['antivirus_engine',], False),]
+    required_if = [
+        ('state', 'updated', ['enabled',], False),
+        ('enabled', True, ['log_policy', ], False)
+        ]
 
     module = AnsibleModule(argument_spec=argument_spec,
                            required_if=required_if,
@@ -192,7 +231,7 @@ def main():
 
     state = module.params.get("state")
 
-    exist_settings = get_malware_protection(fw, module, result)
+    exist_settings = get_atp(fw, module, result)
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -204,11 +243,11 @@ def main():
 
     elif state == "updated":
         if eval_changed(module, exist_settings):
-            api_response = update_malware_protection(fw, module, result)
+            api_response = update_atp(fw, module, result)
             
             if api_response:
                 result["api_response"] = api_response
-                if api_response["Response"]["MalwareProtection"]["Status"]["#text"] == "Configuration applied successfully.":
+                if api_response["Response"]["ATP"]["Status"]["#text"] == "Configuration applied successfully.":
                     result["changed"] = True
 
     module.exit_json(**result)

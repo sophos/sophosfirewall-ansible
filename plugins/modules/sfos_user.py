@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_user
 
-short_description: Manage Users on Sophos Firewall
+short_description: Manage Users (Configure > Authentication > Users)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes Users on Sophos Firewall
+description: Creates, updates or removes Users (Configure > Authentication > Users) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
