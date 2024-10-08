@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_firewall_rule
 
@@ -100,9 +100,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create Firewall Rule
   sophos.sophos_firewall.sfos_firewall_rule:
     username: "{{ username }}"
@@ -131,15 +131,15 @@ EXAMPLES = r'''
       - HTTPS
       - SSH
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -149,6 +149,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -182,6 +183,7 @@ def get_firewallrule(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
+
 def create_firewallrule(fw_obj, module, result):
     """Create a firewall rule on Sophos Firewall.
 
@@ -195,18 +197,26 @@ def create_firewallrule(fw_obj, module, result):
     """
     rule_params = {
         "rulename": module.params.get("name"),
-        "status": module.params.get("status").capitalize() if module.params.get("status") else None,
-        "position": module.params.get("position").capitalize() if module.params.get("position") else None,
+        "status": module.params.get("status").capitalize()
+        if module.params.get("status")
+        else None,
+        "position": module.params.get("position").capitalize()
+        if module.params.get("position")
+        else None,
         "after_rulename": module.params.get("after_rulename"),
         "before_rulename": module.params.get("before_rulename"),
-        "action": module.params.get("action").capitalize() if module.params.get("action") else None,
-        "log": module.params.get("log").capitalize() if module.params.get("log") else None,
+        "action": module.params.get("action").capitalize()
+        if module.params.get("action")
+        else None,
+        "log": module.params.get("log").capitalize()
+        if module.params.get("log")
+        else None,
         "description": module.params.get("description"),
         "src_zones": module.params.get("src_zones"),
         "dst_zones": module.params.get("dst_zones"),
         "src_networks": module.params.get("src_networks"),
         "dst_networks": module.params.get("dst_networks"),
-        "service_list": module.params.get("service_list")
+        "service_list": module.params.get("service_list"),
     }
 
     try:
@@ -220,6 +230,7 @@ def create_firewallrule(fw_obj, module, result):
     else:
         return resp
 
+
 def remove_firewallrule(fw_obj, module, result):
     """Remove a firewall rule from Sophos Firewall.
 
@@ -232,9 +243,7 @@ def remove_firewallrule(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="FirewallRule", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="FirewallRule", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -258,23 +267,28 @@ def update_firewallrule(fw_obj, module, result):
     """
     rule_params = {
         "rulename": module.params.get("name"),
-        "status": module.params.get("status").capitalize() if module.params.get("status") else None,
+        "status": module.params.get("status").capitalize()
+        if module.params.get("status")
+        else None,
         "position": module.params.get("position"),
         "after_rulename": module.params.get("after_rulename"),
         "before_rulename": module.params.get("before_rulename"),
-        "action": module.params.get("action").capitalize() if module.params.get("action") else None,
-        "log": module.params.get("log").capitalize() if module.params.get("log") else None,
+        "action": module.params.get("action").capitalize()
+        if module.params.get("action")
+        else None,
+        "log": module.params.get("log").capitalize()
+        if module.params.get("log")
+        else None,
         "description": module.params.get("description"),
         "src_zones": module.params.get("src_zones"),
         "dst_zones": module.params.get("dst_zones"),
         "src_networks": module.params.get("src_networks"),
         "dst_networks": module.params.get("dst_networks"),
-        "service_list": module.params.get("service_list")
+        "service_list": module.params.get("service_list"),
     }
     try:
         resp = fw_obj.update_rule(
-            name=module.params.get("name"),
-            rule_params=rule_params
+            name=module.params.get("name"), rule_params=rule_params
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -284,6 +298,7 @@ def update_firewallrule(fw_obj, module, result):
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def main():
     """Code executed at run time."""
@@ -295,23 +310,29 @@ def main():
         "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "status": {"choices": ["enable", "disable"]},
-        "position": {"choices": ["top", "bottom", "after", "before"], "default": "bottom"},
+        "position": {
+            "choices": ["top", "bottom", "after", "before"],
+            "default": "bottom",
+        },
         "after_rulename": {"type": "str"},
         "before_rulename": {"type": "str"},
         "action": {"choices": ["accept", "drop", "reject"]},
         "description": {"type": "str"},
-        "log": {"choices": ["enable","disable"]},
+        "log": {"choices": ["enable", "disable"]},
         "src_zones": {"type": "list", "elements": "str"},
         "dst_zones": {"type": "list", "elements": "str"},
         "src_networks": {"type": "list", "elements": "str"},
         "dst_networks": {"type": "list", "elements": "str"},
         "service_list": {"type": "list", "elements": "str"},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
 
     required_if = [
-        ('position', 'after', ('after_rulename',), True),
-        ('position', 'before', ('before_rulename',), True)
+        ("position", "after", ("after_rulename",), True),
+        ("position", "before", ("before_rulename",), True),
     ]
 
     # required_together = [
@@ -319,14 +340,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                            required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -335,10 +358,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -366,8 +386,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_firewallrule(fw, module, result)
-        if (api_response["Response"]["FirewallRule"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["FirewallRule"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -378,8 +400,10 @@ def main():
         api_response = update_firewallrule(fw, module, result)
 
         if api_response:
-            if (api_response["Response"]["FirewallRule"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"]["FirewallRule"]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
             result["api_response"] = api_response
         else:

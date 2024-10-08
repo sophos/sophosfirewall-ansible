@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_service
 
@@ -56,9 +56,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: CREATE MAC HOST
   sophos.sophos_firewall.sfos_xmlapi:
     username: "{{ username }}"
@@ -118,15 +118,15 @@ EXAMPLES = r'''
     xml_tag: MACHost
     state: absent
   delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -137,12 +137,14 @@ try:
     )
     from requests.exceptions import RequestException
     from xmltodict import parse
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+
 
 def query(fw_obj, module, result):
     """Retrieve data from Sophos Firewall using XML tag.
@@ -200,9 +202,7 @@ def create(fw_obj, module, result):
     """
 
     try:
-        resp = fw_obj.submit_xml(
-            template_data=module.params.get("data")
-        )
+        resp = fw_obj.submit_xml(template_data=module.params.get("data"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -252,8 +252,7 @@ def update(fw_obj, module, result):
 
     try:
         resp = fw_obj.submit_xml(
-            template_data=module.params.get("data"),
-            set_operation="update"
+            template_data=module.params.get("data"), set_operation="update"
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -263,6 +262,7 @@ def update(fw_obj, module, result):
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def main():
     """Code executed at run time."""
@@ -278,18 +278,21 @@ def main():
         "value": {"type": "str"},
         "operator": {"type": "str", "choices": ["=", "!=", "like"], "default": "="},
         "data": {"type": "str"},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
     required_if = [
-        ('state', 'present', ('data', 'xml_tag'), True),
-        ('state', 'updated', ('data', 'xml_tag'), True),
-        ('state', 'query', ('xml_tag',), True),
+        ("state", "present", ("data", "xml_tag"), True),
+        ("state", "updated", ("data", "xml_tag"), True),
+        ("state", "query", ("xml_tag",), True),
     ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True)
-        
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
+
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
@@ -301,10 +304,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     exist_check = query(fw, module, result)
@@ -331,8 +331,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove(fw, module, result)
-        if (api_response["Response"][module.params.get("xml_tag")]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"][module.params.get("xml_tag")]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -341,15 +343,17 @@ def main():
 
     elif state == "updated" and exist_check["exists"]:
         xml_tag = module.params.get("xml_tag")
-        xml_data = parse(module.params.get("data"))      
-        exist_check['api_response']['Response'][xml_tag].pop('@transactionid')
+        xml_data = parse(module.params.get("data"))
+        exist_check["api_response"]["Response"][xml_tag].pop("@transactionid")
 
         # module.exit_json(msg=f"xml_data: {xml_data}, exist_check: {exist_check['api_response']['Response']}")
 
-        if exist_check['api_response']['Response'][xml_tag] != xml_data[xml_tag]:
+        if exist_check["api_response"]["Response"][xml_tag] != xml_data[xml_tag]:
             api_response = update(fw, module, result)
-            if (api_response["Response"][xml_tag]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"][xml_tag]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
                 result["api_response"] = api_response
             else:

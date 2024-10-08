@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_ip_host
 
@@ -63,9 +63,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create IP Host
   sophos.sophos_firewall.sfos_ip_host:
     username: "{{ username }}"
@@ -105,15 +105,15 @@ EXAMPLES = r'''
     host_type: range
     state: present
   delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -123,6 +123,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -158,6 +159,7 @@ def get_host(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
+
 def make_request(request_method, module, result, **kwargs):
     try:
         resp = request_method(**kwargs)
@@ -170,6 +172,7 @@ def make_request(request_method, module, result, **kwargs):
     else:
         return resp
 
+
 def create_host(fw_obj, module, result):
     """Create an IP Host on Sophos Firewall
 
@@ -181,30 +184,30 @@ def create_host(fw_obj, module, result):
     Returns:
         dict: API response
     """
-        # try:
-        #     resp = fw_obj.create_ip_host(
-        #         name=module.params.get("name"), ip_address=module.params.get("ip_address")
-        #     )
-        # except SophosFirewallAuthFailure as error:
-        #     module.fail_json(msg="Authentication error: {0}".format(error), **result)
-        # except SophosFirewallAPIError as error:
-        #     module.fail_json(msg="API Error: {0}".format(error), **result)
-        # except RequestException as error:
-        #     module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        # else:
-        #     return resp
+    # try:
+    #     resp = fw_obj.create_ip_host(
+    #         name=module.params.get("name"), ip_address=module.params.get("ip_address")
+    #     )
+    # except SophosFirewallAuthFailure as error:
+    #     module.fail_json(msg="Authentication error: {0}".format(error), **result)
+    # except SophosFirewallAPIError as error:
+    #     module.fail_json(msg="API Error: {0}".format(error), **result)
+    # except RequestException as error:
+    #     module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+    # else:
+    #     return resp
     kwargs = dict(name=module.params.get("name"))
-    
-    if module.params.get("host_type") == "ip": 
+
+    if module.params.get("host_type") == "ip":
         kwargs["ip_address"] = module.params.get("ip_address")
         return make_request(fw_obj.create_ip_host, module, result, **kwargs)
-    
+
     if module.params.get("host_type") == "network":
         kwargs["ip_address"] = module.params.get("network")
         kwargs["mask"] = module.params.get("mask")
         kwargs["host_type"] = "Network"
         return make_request(fw_obj.create_ip_host, module, result, **kwargs)
-    
+
     if module.params.get("host_type") == "range":
         kwargs["start_ip"] = module.params.get("start_ip")
         kwargs["end_ip"] = module.params.get("end_ip")
@@ -224,9 +227,7 @@ def remove_host(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="IPHost", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="IPHost", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -263,24 +264,23 @@ def update_host(fw_obj, module, result):
     # else:
     #     return resp
 
-    kwargs = dict(name=module.params.get("name"),
-                  xml_tag="IPHost")
-    
-    if module.params.get("host_type") == "ip": 
+    kwargs = dict(name=module.params.get("name"), xml_tag="IPHost")
+
+    if module.params.get("host_type") == "ip":
         kwargs["update_params"] = {"IPAddress": module.params.get("ip_address")}
         return make_request(fw_obj.update, module, result, **kwargs)
-    
+
     if module.params.get("host_type") == "network":
         kwargs["update_params"] = {
             "IPAddress": module.params.get("network"),
-            "Subnet": module.params.get("mask")
-            }
+            "Subnet": module.params.get("mask"),
+        }
         return make_request(fw_obj.update, module, result, **kwargs)
-    
+
     if module.params.get("host_type") == "range":
         kwargs["update_params"] = {
             "StartIPAddress": module.params.get("start_ip"),
-            "EndIPAddress": module.params.get("end_ip")
+            "EndIPAddress": module.params.get("end_ip"),
         }
         return make_request(fw_obj.update, module, result, **kwargs)
 
@@ -313,29 +313,68 @@ def main():
         "end_ip": {"type": "str"},
         "network": {"type": "str"},
         "mask": {"type": "str"},
-        "host_type": {"choices": ["ip","range", "network"], "default": "ip"},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "host_type": {"choices": ["ip", "range", "network"], "default": "ip"},
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
     required_if = [
-        ('state', 'present', ('ip_address', 'network', 'mask', 'start_ip', 'end_ip',), True),
-        ('state', 'updated', ('ip_address','network', 'mask', 'start_ip', 'end_ip',), True),
-        ('host_type', 'range', ('start_ip', 'end_ip',), True),
-        ('host_type', 'network', ('network', 'mask',), True)
+        (
+            "state",
+            "present",
+            (
+                "ip_address",
+                "network",
+                "mask",
+                "start_ip",
+                "end_ip",
+            ),
+            True,
+        ),
+        (
+            "state",
+            "updated",
+            (
+                "ip_address",
+                "network",
+                "mask",
+                "start_ip",
+                "end_ip",
+            ),
+            True,
+        ),
+        (
+            "host_type",
+            "range",
+            (
+                "start_ip",
+                "end_ip",
+            ),
+            True,
+        ),
+        (
+            "host_type",
+            "network",
+            (
+                "network",
+                "mask",
+            ),
+            True,
+        ),
     ]
 
-    required_together = [
-        ["start_ip", "end_ip"],
-        ["network", "mask"]
-    ]
+    required_together = [["start_ip", "end_ip"], ["network", "mask"]]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           required_together=required_together,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if=required_if,
+        required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
 
     fw = SophosFirewall(
         username=module.params.get("username"),
@@ -345,10 +384,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     if state == "present" or state == "updated":
@@ -385,8 +421,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_host(fw, module, result)
-        if (api_response["Response"]["IPHost"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["IPHost"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -396,22 +434,44 @@ def main():
     elif state == "updated" and exist_check["exists"]:
         api_response = None
         if module.params.get("host_type") == "ip":
-            if exist_check["api_response"]["Response"]["IPHost"]["IPAddress"] != module.params.get("ip_address"):
+            if exist_check["api_response"]["Response"]["IPHost"][
+                "IPAddress"
+            ] != module.params.get("ip_address"):
                 api_response = update_host(fw, module, result)
-        
+
         if module.params.get("host_type") == "network":
-            if exist_check["api_response"]["Response"]["IPHost"]["IPAddress"] != module.params.get("network") \
-            or exist_check["api_response"]["Response"]["IPHost"]["Subnet"] != module.params.get("mask"):
+            if exist_check["api_response"]["Response"]["IPHost"][
+                "IPAddress"
+            ] != module.params.get("network") or exist_check["api_response"][
+                "Response"
+            ][
+                "IPHost"
+            ][
+                "Subnet"
+            ] != module.params.get(
+                "mask"
+            ):
                 api_response = update_host(fw, module, result)
-        
+
         if module.params.get("host_type") == "range":
-            if exist_check["api_response"]["Response"]["IPHost"]["StartIPAddress"] != module.params.get("start_ip") \
-            or exist_check["api_response"]["Response"]["IPHost"]["EndIPAddress"] != module.params.get("end_ip"):
+            if exist_check["api_response"]["Response"]["IPHost"][
+                "StartIPAddress"
+            ] != module.params.get("start_ip") or exist_check["api_response"][
+                "Response"
+            ][
+                "IPHost"
+            ][
+                "EndIPAddress"
+            ] != module.params.get(
+                "end_ip"
+            ):
                 api_response = update_host(fw, module, result)
 
         if api_response:
-            if (api_response["Response"]["IPHost"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"]["IPHost"]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
             result["api_response"] = api_response
         else:

@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_device_access_profile
 
@@ -299,9 +299,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: CREATE A READ-ONLY PROFILE
   sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
@@ -369,17 +369,18 @@ EXAMPLES = r'''
     name: ExampleProfile
     state: absent
     delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -390,6 +391,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -423,6 +425,7 @@ def get_profile(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
+
 def flatten_args(module):
     """Convert all provided module arguments to a flattened dictionary.
 
@@ -433,7 +436,7 @@ def flatten_args(module):
         dict: Flattened dict will all provided module arguments
     """
     params = {}
-    for k,v in module.params.items():
+    for k, v in module.params.items():
         if isinstance(module.params[k], str):
             params[k] = v
         if isinstance(module.params[k], dict):
@@ -441,6 +444,7 @@ def flatten_args(module):
                 if subval:
                     params[subkey] = subval
     return params
+
 
 def create_profile(fw_obj, module, result):
     """Create a Device Access Profile on Sophos Firewall.
@@ -463,8 +467,9 @@ def create_profile(fw_obj, module, result):
         module.fail_json(msg="API Error: {0}".format(error), **result)
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
+
     return resp
+
 
 def update_profile(fw_obj, module, result):
     """Update admin settings on Sophos Firewall
@@ -478,7 +483,7 @@ def update_profile(fw_obj, module, result):
         dict: API response
     """
     update_params = flatten_args(module)
-    
+
     try:
         resp = fw_obj.update_admin_profile(**update_params)
     except SophosFirewallAuthFailure as error:
@@ -487,7 +492,7 @@ def update_profile(fw_obj, module, result):
         module.fail_json(msg="API Error: {0}".format(error), **result)
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
+
     return resp
 
 
@@ -506,9 +511,9 @@ def arg_to_xml(arg):
     if arg == "qos":
         return "QoS"
     if "vpn" in arg:
-        return arg.title().replace("_","").replace("Vpn", "VPN")
+        return arg.title().replace("_", "").replace("Vpn", "VPN")
     if "waf" in arg:
-        return arg.title().replace("_","").replace("Waf", "WAF")
+        return arg.title().replace("_", "").replace("Waf", "WAF")
     if arg == "system_password":
         return "Password"
     if arg == "four_eye_authentication_settings":
@@ -519,8 +524,9 @@ def arg_to_xml(arg):
         return "WirelessProtectionNetworkNetwork"
     return arg.title().replace("_", "")
 
+
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -539,7 +545,11 @@ def eval_changed(module, exist_settings):
     # function handles situations where .title() doesn't convert to the correct XML key
 
     ignored_arguments = ["hostname", "username", "password", "port", "verify", "state"]
-    arguments = {k:v for k,v in module.params.items() if module.params.get(k) and not k in ignored_arguments}
+    arguments = {
+        k: v
+        for k, v in module.params.items()
+        if module.params.get(k) and not k in ignored_arguments
+    }
 
     for param, value in arguments.items():
         if isinstance(arguments.get(param), str):
@@ -547,10 +557,15 @@ def eval_changed(module, exist_settings):
                 return True
         elif isinstance(arguments.get(param), dict):
             for subparam, subval in arguments.get(param).items():
-                if subval and not subval == exist_settings[arg_to_xml(param)][arg_to_xml(subparam)]:
+                if (
+                    subval
+                    and not subval
+                    == exist_settings[arg_to_xml(param)][arg_to_xml(subparam)]
+                ):
                     return True
 
     return False
+
 
 def remove_profile(fw_obj, module, result):
     """Remove a Device Access Profile from Sophos Firewall.
@@ -576,6 +591,7 @@ def remove_profile(fw_obj, module, result):
     else:
         return resp
 
+
 def main():
     """Code executed at run time."""
     argument_spec = {
@@ -585,7 +601,11 @@ def main():
         "port": {"type": "int", "default": 4444},
         "verify": {"type": "bool", "default": True},
         "name": {"type": "str", "required": True},
-        "default_permission": {"type": "str", "required": False, "choices": ["Read-Only", "Read-Write", "None"]},
+        "default_permission": {
+            "type": "str",
+            "required": False,
+            "choices": ["Read-Only", "Read-Write", "None"],
+        },
         "dashboard": {"type": "str", "required": False},
         "wizard": {"type": "str", "required": False},
         "objects": {"type": "str", "required": False},
@@ -599,61 +619,83 @@ def main():
         "qos": {"type": "str", "required": False},
         "email_protection": {"type": "str", "required": False},
         "traffic_discovery": {"type": "str", "required": False},
-        "system": {"type": "dict", "required": False, "options": {
-            "profile": {"type": "str", "required": False},
-            "system_password": {"type": "str", "required": False},
-            "central_management": {"type": "str", "required": False},
-            "backup": {"type": "str", "required": False},
-            "restore": {"type": "str", "required": False},
-            "firmware": {"type": "str", "required": False},
-            "licensing": {"type": "str", "required": False},
-            "services": {"type": "str", "required": False},
-            "updates": {"type": "str", "required": False},
-            "reboot_shutdown": {"type": "str", "required": False},
-            "ha": {"type": "str", "required": False},
-            "download_certificates": {"type": "str", "required": False},
-            "other_certificate_configuration": {"type": "str", "required": False},
-            "diagnostics": {"type": "str", "required": False},
-            "other_system_configuration": {"type": "str", "required": False},
-            }
+        "system": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "profile": {"type": "str", "required": False},
+                "system_password": {"type": "str", "required": False},
+                "central_management": {"type": "str", "required": False},
+                "backup": {"type": "str", "required": False},
+                "restore": {"type": "str", "required": False},
+                "firmware": {"type": "str", "required": False},
+                "licensing": {"type": "str", "required": False},
+                "services": {"type": "str", "required": False},
+                "updates": {"type": "str", "required": False},
+                "reboot_shutdown": {"type": "str", "required": False},
+                "ha": {"type": "str", "required": False},
+                "download_certificates": {"type": "str", "required": False},
+                "other_certificate_configuration": {"type": "str", "required": False},
+                "diagnostics": {"type": "str", "required": False},
+                "other_system_configuration": {"type": "str", "required": False},
+            },
         },
-        "wireless_protection": {"type": "dict", "required": False, "options": {
-            "wireless_protection_overview": {"type": "str", "required": False},
-            "wireless_protection_settings": {"type": "str", "required": False},
-            "wireless_protection_network": {"type": "str", "required": False},
-            "wireless_protection_access_point": {"type": "str", "required": False},
-            "wireless_protection_mesh": {"type": "str", "required": False},
-            }
+        "wireless_protection": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "wireless_protection_overview": {"type": "str", "required": False},
+                "wireless_protection_settings": {"type": "str", "required": False},
+                "wireless_protection_network": {"type": "str", "required": False},
+                "wireless_protection_access_point": {"type": "str", "required": False},
+                "wireless_protection_mesh": {"type": "str", "required": False},
+            },
         },
-        "identity": {"type": "dict", "required": False, "options": {
-            "authentication":{"type": "str", "required": False},
-            "groups": {"type": "str", "required": False},
-            "guest_users_management": {"type": "str", "required": False},
-            "other_guest_user_settings": {"type": "str", "required": False},
-            "policy": {"type": "str", "required": False},
-            "test_external_server_connectivity": {"type": "str", "required": False},
-            "disconnect_live_user": {"type": "str", "required": False},
-            }
+        "identity": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "authentication": {"type": "str", "required": False},
+                "groups": {"type": "str", "required": False},
+                "guest_users_management": {"type": "str", "required": False},
+                "other_guest_user_settings": {"type": "str", "required": False},
+                "policy": {"type": "str", "required": False},
+                "test_external_server_connectivity": {"type": "str", "required": False},
+                "disconnect_live_user": {"type": "str", "required": False},
+            },
         },
-        "vpn": {"type": "dict", "required": False, "options": {
-            "connect_tunnel": {"type": "str", "required": False},
-            "other_vpn_configurations": {"type": "str", "required": False}
-            }
+        "vpn": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "connect_tunnel": {"type": "str", "required": False},
+                "other_vpn_configurations": {"type": "str", "required": False},
+            },
         },
-        "waf": {"type": "dict", "required": False, "options": {
-            "alerts": {"type": "str", "required": False},
-            "other_waf_configuration": {"type": "str", "required": False},
-            }
+        "waf": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "alerts": {"type": "str", "required": False},
+                "other_waf_configuration": {"type": "str", "required": False},
+            },
         },
-        "logs_reports": {"type": "dict", "required": False, "options": {
-            "configuration": {"type": "str", "required": False},
-            "log_viewer": {"type": "str", "required": False},
-            "reports_access": {"type": "str", "required": False},
-            "four_eye_authentication_settings": {"type": "str", "required": False},
-            "de_anonymization": {"type": "str", "required": False}
-            }
+        "logs_reports": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "configuration": {"type": "str", "required": False},
+                "log_viewer": {"type": "str", "required": False},
+                "reports_access": {"type": "str", "required": False},
+                "four_eye_authentication_settings": {"type": "str", "required": False},
+                "de_anonymization": {"type": "str", "required": False},
+            },
         },
-        "state": {"type": "str", "required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "type": "str",
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
 
     # required_if = [
@@ -666,16 +708,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                        #    required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True
-                           )
-    
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        #    required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -684,10 +726,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -715,8 +754,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_profile(fw, module, result)
-        if (api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -728,8 +769,10 @@ def main():
             api_response = update_profile(fw, module, result)
 
             if api_response:
-                if (api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
+                if (
+                    api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
                 result["api_response"] = api_response
             else:

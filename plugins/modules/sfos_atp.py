@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_atp
 
@@ -42,9 +42,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Update advanced threat protection settings
   sophos.sophos_firewall.sfos_atp:
     username: "{{ username }}"
@@ -67,17 +67,18 @@ EXAMPLES = r'''
     verify: false
     state: query
     delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -88,6 +89,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -144,22 +146,23 @@ def update_atp(fw_obj, module, result):
 
     if module.params.get("log_policy"):
         update_params["Policy"] = module.params.get("log_policy")
-    
+
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.update(xml_tag="ATP",
-                                 update_params=update_params,
-                                 debug=True)
+            resp = fw_obj.update(xml_tag="ATP", update_params=update_params, debug=True)
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result)
+        module.fail_json(
+            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+        )
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     return resp
 
+
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -176,17 +179,19 @@ def eval_changed(module, exist_settings):
         status = "Disable"
 
     if not (status == exist_settings["ThreatProtectionStatus"]) or (
-        not module.params.get("inspect_content") == exist_settings["InspectContent"]):
+        not module.params.get("inspect_content") == exist_settings["InspectContent"]
+    ):
         return True
-    
+
     if module.params.get("enabled") and exist_settings.get("Policy"):
         if not module.params.get("log_policy") == exist_settings["Policy"]:
             return True
-    
+
     if module.params.get("enabled") and not exist_settings.get("Policy"):
         return True
 
     return False
+
 
 def main():
     """Code executed at run time."""
@@ -203,19 +208,31 @@ def main():
     }
 
     required_if = [
-        ('state', 'updated', ['enabled',], False),
-        ('enabled', True, ['log_policy', ], False)
-        ]
+        (
+            "state",
+            "updated",
+            [
+                "enabled",
+            ],
+            False,
+        ),
+        (
+            "enabled",
+            True,
+            [
+                "log_policy",
+            ],
+            False,
+        ),
+    ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True
-                           )
-    
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -224,10 +241,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -244,10 +258,13 @@ def main():
     elif state == "updated":
         if eval_changed(module, exist_settings):
             api_response = update_atp(fw, module, result)
-            
+
             if api_response:
                 result["api_response"] = api_response
-                if api_response["Response"]["ATP"]["Status"]["#text"] == "Configuration applied successfully.":
+                if (
+                    api_response["Response"]["ATP"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
 
     module.exit_json(**result)

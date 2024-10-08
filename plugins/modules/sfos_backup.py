@@ -8,7 +8,7 @@ from ipaddress import ip_address
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_backup
 
@@ -99,9 +99,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Update Backup Settings
   sophos.sophos_firewall.sfos_backup:
     username: "{{ username }}"
@@ -123,17 +123,18 @@ EXAMPLES = r'''
     state: updated
     delegate_to: localhost
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -144,6 +145,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -205,16 +207,16 @@ def update_backup(fw_obj, module, result):
 
     if mode == "Mail":
         backup_params["EmailAddress"] = module.params.get("email_address")
-    
+
     frequency = module.params.get("frequency")
-    
+
     if frequency:
         backup_params["BackupFrequency"] = frequency
 
     if frequency and not frequency == "Never":
         backup_params["Hour"] = module.params.get("hour")
         backup_params["Minute"] = module.params.get("minute")
-    
+
     if frequency == "Weekly":
         backup_params["Day"] = module.params.get("day")
 
@@ -226,18 +228,22 @@ def update_backup(fw_obj, module, result):
 
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.update_backup(backup_params=backup_params, debug=module.params.get("debug", False))
+            resp = fw_obj.update_backup(
+                backup_params=backup_params, debug=module.params.get("debug", False)
+            )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result)
+        module.fail_json(
+            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+        )
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     return resp
 
 
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -246,11 +252,13 @@ def eval_changed(module, exist_settings):
     Returns:
         bool: Return true if any settings are different, otherwise return false
     """
-    exist_settings = exist_settings["api_response"]["Response"]["BackupRestore"].get("ScheduleBackup")
+    exist_settings = exist_settings["api_response"]["Response"]["BackupRestore"].get(
+        "ScheduleBackup"
+    )
     # FTP Password and Encryption password must be ignored because they are encrypted in the API response
     exist_settings.pop("Password")
     exist_settings.pop("EncryptionPassword")
-    # FTP path is ignored for comparison because it retains the previously set value in the API response. 
+    # FTP path is ignored for comparison because it retains the previously set value in the API response.
     exist_settings.pop("FtpPath")
 
     ansible_args = {
@@ -262,18 +270,23 @@ def eval_changed(module, exist_settings):
         "BackupFrequency": module.params.get("frequency"),
         "Day": module.params.get("day"),
         "Hour": str(module.params["hour"]) if module.params.get("hour") else None,
-        "Minute": str(module.params.get("minute")) if module.params.get("minute") else None,
+        "Minute": str(module.params.get("minute"))
+        if module.params.get("minute")
+        else None,
         "Date": str(module.params.get("date")) if module.params.get("date") else None,
     }
-    if (module.params.get("ftp_password") or 
-        module.params.get("encryption_password") or
-        module.params.get("ftp_path")):
+    if (
+        module.params.get("ftp_password")
+        or module.params.get("encryption_password")
+        or module.params.get("ftp_path")
+    ):
         return True
 
     if not exist_settings == ansible_args:
         return True
 
     return False
+
 
 def main():
     """Code executed at run time."""
@@ -290,22 +303,30 @@ def main():
         "ftp_password": {"type": "str", "required": False, "no_log": True},
         "ftp_path": {"type": "str", "required": False},
         "email_address": {"type": "str", "required": False},
-        "frequency": {"type": "str", "choices": ["Never", "Daily", "Weekly", "Monthly"]},
+        "frequency": {
+            "type": "str",
+            "choices": ["Never", "Daily", "Weekly", "Monthly"],
+        },
         "date": {"type": "int", "required": False},
         "day": {"type": "str", "required": False},
         "hour": {"type": "int", "required": False},
         "minute": {"type": "int", "required": False},
-        "encryption_password": {"type": "str", "required": False, "no_log": True},       
+        "encryption_password": {"type": "str", "required": False, "no_log": True},
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
-        "debug": {"type": "bool", "required": False}
+        "debug": {"type": "bool", "required": False},
     }
 
     required_if = [
-        ('mode', 'FTP', ['ftp_server', 'ftp_username', 'ftp_password', 'ftp_path'], False),
-        ('mode', 'Mail', ['email_address'], False),
-        ('frequency', "Daily", ["hour", "minute"], False),
-        ('frequency', "Weekly", ["day", "hour", "minute"], False),
-        ('frequency', "Monthly", ["date", "hour", "minute"], False)
+        (
+            "mode",
+            "FTP",
+            ["ftp_server", "ftp_username", "ftp_password", "ftp_path"],
+            False,
+        ),
+        ("mode", "Mail", ["email_address"], False),
+        ("frequency", "Daily", ["hour", "minute"], False),
+        ("frequency", "Weekly", ["day", "hour", "minute"], False),
+        ("frequency", "Monthly", ["date", "hour", "minute"], False),
     ]
 
     # required_together = [
@@ -313,14 +334,18 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True
-                           )
-    if module.params.get("encryption_password") and len(module.params.get("encryption_password")) < 12:
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
+    if (
+        module.params.get("encryption_password")
+        and len(module.params.get("encryption_password")) < 12
+    ):
         module.fail_json(msg="Encryption password must be minimum of 12 characters")
-    
+
     if module.params.get("ftp_server"):
         try:
             ip_address(module.params.get("ftp_server"))
@@ -329,7 +354,7 @@ def main():
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -338,10 +363,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -359,8 +381,10 @@ def main():
         if eval_changed(module, exist_settings):
             api_response = update_backup(fw, module, result)
             if api_response:
-                if (api_response["Response"]["BackupRestore"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
+                if (
+                    api_response["Response"]["BackupRestore"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
                 result["api_response"] = api_response
             else:

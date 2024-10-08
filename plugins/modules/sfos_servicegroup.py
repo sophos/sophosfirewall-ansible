@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_servicegroup
 
@@ -45,9 +45,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Retrieve Service Group
   sophos.sophos_firewall.sfos_servicegroup:
     username: "{{ username }}"
@@ -89,15 +89,15 @@ EXAMPLES = r'''
     action: add
     state: updated
   delegate_to: localservice
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -107,6 +107,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -156,7 +157,7 @@ def create_servicegroup(fw_obj, module, result):
         resp = fw_obj.create_service_group(
             name=module.params.get("name"),
             description=module.params.get("description"),
-            service_list=module.params.get("service_list")
+            service_list=module.params.get("service_list"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -180,9 +181,7 @@ def remove_servicegroup(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="ServiceGroup", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="ServiceGroup", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -209,7 +208,7 @@ def update_servicegroup(fw_obj, module, result):
             name=module.params.get("name"),
             service_list=module.params.get("service_list"),
             description=module.params.get("description"),
-            action=module.params.get("action")
+            action=module.params.get("action"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -232,17 +231,24 @@ def main():
         "name": {"required": True},
         "description": {"type": "str", "default": None},
         "service_list": {"type": "list", "default": [], "elements": "str"},
-        "action": {"type": "str", "choices": ["add", "remove", "replace"], "default": None},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "action": {
+            "type": "str",
+            "choices": ["add", "remove", "replace"],
+            "default": None,
+        },
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
     required_if = [
-        ('state', 'present', ('service_list',), True),
-        ('state', 'updated', ('action',), True)
+        ("state", "present", ("service_list",), True),
+        ("state", "updated", ("action",), True),
     ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
@@ -255,10 +261,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     exist_check = get_servicegroup(fw, module, result)
@@ -285,8 +288,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_servicegroup(fw, module, result)
-        if (api_response["Response"]["ServiceGroup"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["ServiceGroup"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -294,11 +299,16 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-        if (sorted(exist_check["api_response"]["Response"]["ServiceGroup"]["ServiceList"]["Service"])
-                != sorted(module.params.get("service_list"))):
+        if sorted(
+            exist_check["api_response"]["Response"]["ServiceGroup"]["ServiceList"][
+                "Service"
+            ]
+        ) != sorted(module.params.get("service_list")):
             api_response = update_servicegroup(fw, module, result)
-            if (api_response["Response"]["ServiceGroup"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"]["ServiceGroup"]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
             result["api_response"] = api_response
         else:

@@ -2,3 +2,4 @@ integration_config.yml
 inventory.yml
 tests/output/
 tests/integration/inventory
+changelogs/.plugin-cache.yaml

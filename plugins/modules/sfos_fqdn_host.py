@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_fqdn_host
 
@@ -47,9 +47,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Retrieve FQDN Host
   sophos.sophos_firewall.sfos_fqdn_host:
     username: "{{ username }}"
@@ -86,15 +86,15 @@ EXAMPLES = r'''
       - TESTFQDNGROUP
     state: updated
   delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -104,6 +104,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -157,7 +158,7 @@ def create_fqdn_host(fw_obj, module, result):
             name=module.params.get("name"),
             fqdn=module.params.get("fqdn"),
             fqdn_group_list=module.params.get("fqdn_group_list"),
-            description=module.params.get("description")
+            description=module.params.get("description"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -181,9 +182,7 @@ def remove_fqdn_host(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="FQDNHost", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="FQDNHost", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -204,7 +203,7 @@ def update_fqdn_host(fw_obj, module, result):
 
     Returns:
         dict: API response
-    """ 
+    """
 
     update_params = {
         "Description": module.params.get("description"),
@@ -213,13 +212,15 @@ def update_fqdn_host(fw_obj, module, result):
 
     # This is for adding the FQDN host to a FQDN Hostgroup during creation. FQDN HostGroup membership can be managed with the sfos_fqdn_hostgroup module.
     if module.params.get("fqdn_group_list"):
-        update_params["FQDNHostGroupList"] =  {"FQDNHostGroup": module.params.get("fqdn_group_list")}
+        update_params["FQDNHostGroupList"] = {
+            "FQDNHostGroup": module.params.get("fqdn_group_list")
+        }
 
     try:
         resp = fw_obj.update(
             name=module.params.get("name"),
             xml_tag="FQDNHost",
-            update_params=update_params
+            update_params=update_params,
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -230,6 +231,7 @@ def update_fqdn_host(fw_obj, module, result):
     else:
         return resp
 
+
 def ensure_list(source):
     """Convert a provided dict to a list containing the dict if not already a list.
 
@@ -237,12 +239,13 @@ def ensure_list(source):
         source (dict or list): Source dictionary or list.
 
     Returns:
-        list: Returns the dictionary inside a list, or just returns the original list. 
+        list: Returns the dictionary inside a list, or just returns the original list.
     """
     if isinstance(source, dict):
         return [source]
     elif isinstance(source, list):
         return source
+
 
 def main():
     """Code executed at run time."""
@@ -256,20 +259,22 @@ def main():
         "description": {"type": "str"},
         "fqdn": {"type": "str"},
         "fqdn_group_list": {"type": "list", "elements": "str"},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
     required_if = [
-        ('state', 'present', ('fqdn',), True),
+        ("state", "present", ("fqdn",), True),
         # ('state', 'updated', ('action',), True),
     ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
 
     fw = SophosFirewall(
         username=module.params.get("username"),
@@ -279,10 +284,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     exist_check = get_fqdn_host(fw, module, result)
@@ -309,8 +311,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_fqdn_host(fw, module, result)
-        if (api_response["Response"]["FQDNHost"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["FQDNHost"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -318,14 +322,15 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-
-            api_response = update_fqdn_host(fw, module, result)
-            if (api_response["Response"]["FQDNHost"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
-                result["changed"] = True
-            else:
-                result["changed"] = False
-            result["api_response"] = api_response
+        api_response = update_fqdn_host(fw, module, result)
+        if (
+            api_response["Response"]["FQDNHost"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
+            result["changed"] = True
+        else:
+            result["changed"] = False
+        result["api_response"] = api_response
 
     elif state == "updated" and not exist_check["exists"]:
         result["changed"] = False

@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_service_acl_exception
 
@@ -80,9 +80,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Retrieve Local service ACL exception rule
   sophos.sophos_firewall.sfos_service_acl_exception:
     username: "{{ username }}"
@@ -114,15 +114,15 @@ EXAMPLES = r'''
       - HTTPS
     action: drop
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -132,6 +132,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -186,7 +187,7 @@ def create_acl_rule(fw_obj, module, result):
             source_list=module.params.get("source_list"),
             dest_list=module.params.get("dest_list"),
             service_list=module.params.get("service_list"),
-            action=module.params.get("action")
+            action=module.params.get("action"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -243,7 +244,7 @@ def update_acl_rule(fw_obj, module, result):
             dest_list=module.params.get("dest_list"),
             service_list=module.params.get("service_list"),
             action=module.params.get("action"),
-            update_action=module.params.get("update_action")
+            update_action=module.params.get("update_action"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -253,6 +254,7 @@ def update_acl_rule(fw_obj, module, result):
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def eval_list(list1, list2, condition):
     """Evaluate whether contents of list1 exist in list2, or contents of list1 do not exist in list2.
@@ -289,20 +291,24 @@ def main():
         "dest_list": {"type": "list", "default": [], "elements": "str"},
         "service_list": {"type": "list", "default": [], "elements": "str"},
         "action": {"type": "str", "choices": ["accept", "drop"], "default": None},
-        "update_action": {"type": "str", "choices": ["add", "remove", "replace"], "default": "add"},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "update_action": {
+            "type": "str",
+            "choices": ["add", "remove", "replace"],
+            "default": "add",
+        },
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
-    required_if = [
-        ('state', 'updated', ('update_action',), True)
-    ]
+    required_if = [("state", "updated", ("update_action",), True)]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
 
     fw = SophosFirewall(
         username=module.params.get("username"),
@@ -312,10 +318,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     exist_check = get_acl_rule(fw, module, result)
@@ -342,8 +345,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_acl_rule(fw, module, result)
-        if (api_response["Response"]["LocalServiceACL"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["LocalServiceACL"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -354,7 +359,9 @@ def main():
         new_source_list = sorted(module.params.get("source_list"))
         if new_source_list:
             new_source_list = sorted(new_source_list)
-        exist_source_list = exist_check["api_response"]["Response"]["LocalServiceACL"]["Hosts"]["Host"]
+        exist_source_list = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "Hosts"
+        ]["Host"]
         if isinstance(exist_source_list, str):
             exist_source_list = [exist_source_list]
         else:
@@ -363,7 +370,9 @@ def main():
         new_dest_list = sorted(module.params.get("dest_list"))
         if new_dest_list:
             new_dest_list = sorted(new_dest_list)
-        exist_dest_list = exist_check["api_response"]["Response"]["LocalServiceACL"]["Hosts"]["DstHost"]
+        exist_dest_list = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "Hosts"
+        ]["DstHost"]
         if isinstance(exist_dest_list, str):
             exist_dest_list = [exist_dest_list]
         else:
@@ -372,35 +381,90 @@ def main():
         new_service_list = module.params.get("service_list")
         if new_service_list:
             new_service_list = sorted(new_service_list)
-        exist_service_list = exist_check["api_response"]["Response"]["LocalServiceACL"]["Services"]["Service"]
+        exist_service_list = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "Services"
+        ]["Service"]
         if isinstance(exist_service_list, str):
             exist_service_list = [exist_service_list]
         else:
             exist_service_list = sorted(exist_service_list)
 
-        exist_description = exist_check["api_response"]["Response"]["LocalServiceACL"]["Description"]
-        exist_source_zone = exist_check["api_response"]["Response"]["LocalServiceACL"]["SourceZone"]
-        exist_action = exist_check["api_response"]["Response"]["LocalServiceACL"]["Action"]     
+        exist_description = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "Description"
+        ]
+        exist_source_zone = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "SourceZone"
+        ]
+        exist_action = exist_check["api_response"]["Response"]["LocalServiceACL"][
+            "Action"
+        ]
 
         if (
-            (module.params.get("description") and exist_description != module.params.get("description"))
-            or (module.params.get("source_zone") and exist_source_zone != module.params.get("source_zone"))
-            or (module.params.get("action") and exist_action != module.params.get("action"))
-            or (new_source_list and module.params.get("update_action") == "add" and eval_list(new_source_list, exist_source_list, "negative"))
-            or (new_dest_list and module.params.get("update_action") == "add" and eval_list(new_dest_list, exist_dest_list, "negative"))
-            or (new_service_list and module.params.get("update_action") == "add" and eval_list(new_service_list, exist_service_list, "negative"))
-            or (new_source_list and module.params.get("update_action") == "remove" and eval_list(new_source_list, exist_source_list, "positive"))
-            or (new_dest_list and module.params.get("update_action") == "remove" and eval_list(new_dest_list, exist_dest_list, "positive"))
-            or (new_service_list and module.params.get("update_action") == "remove" and eval_list(new_service_list, exist_service_list, "positive"))
-            or (new_source_list and module.params.get("update_action") == "replace" and new_source_list != exist_source_list)
-            or (new_dest_list and module.params.get("update_action") == "replace" and new_dest_list != exist_dest_list)
-            or (new_service_list and module.params.get("update_action") == "replace" and new_service_list != exist_service_list)
+            (
+                module.params.get("description")
+                and exist_description != module.params.get("description")
+            )
+            or (
+                module.params.get("source_zone")
+                and exist_source_zone != module.params.get("source_zone")
+            )
+            or (
+                module.params.get("action")
+                and exist_action != module.params.get("action")
+            )
+            or (
+                new_source_list
+                and module.params.get("update_action") == "add"
+                and eval_list(new_source_list, exist_source_list, "negative")
+            )
+            or (
+                new_dest_list
+                and module.params.get("update_action") == "add"
+                and eval_list(new_dest_list, exist_dest_list, "negative")
+            )
+            or (
+                new_service_list
+                and module.params.get("update_action") == "add"
+                and eval_list(new_service_list, exist_service_list, "negative")
+            )
+            or (
+                new_source_list
+                and module.params.get("update_action") == "remove"
+                and eval_list(new_source_list, exist_source_list, "positive")
+            )
+            or (
+                new_dest_list
+                and module.params.get("update_action") == "remove"
+                and eval_list(new_dest_list, exist_dest_list, "positive")
+            )
+            or (
+                new_service_list
+                and module.params.get("update_action") == "remove"
+                and eval_list(new_service_list, exist_service_list, "positive")
+            )
+            or (
+                new_source_list
+                and module.params.get("update_action") == "replace"
+                and new_source_list != exist_source_list
+            )
+            or (
+                new_dest_list
+                and module.params.get("update_action") == "replace"
+                and new_dest_list != exist_dest_list
+            )
+            or (
+                new_service_list
+                and module.params.get("update_action") == "replace"
+                and new_service_list != exist_service_list
+            )
+        ):
+            api_response = update_acl_rule(fw, module, result)
+            if (
+                api_response["Response"]["LocalServiceACL"]["Status"]["#text"]
+                == "Configuration applied successfully."
             ):
-                api_response = update_acl_rule(fw, module, result)
-                if (api_response["Response"]["LocalServiceACL"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
-                    result["changed"] = True
-                result["api_response"] = api_response
+                result["changed"] = True
+            result["api_response"] = api_response
 
     elif state == "updated" and not exist_check["exists"]:
         result["changed"] = False
