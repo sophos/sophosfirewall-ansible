@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_fqdn_hostgroup
 
-short_description: Manage FQDN Host Group objects on Sophos Firewall
+short_description: Manage FQDN Host Groups (System > Hosts & services > FQDN host group)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes an FQDN Host Group object on Sophos Firewall
+description: Creates, updates or removes an FQDN Host Group (System > Hosts & services > FQDN host group) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

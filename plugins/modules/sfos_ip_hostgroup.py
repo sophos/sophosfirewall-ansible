@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_ip_hostgroup
 
-short_description: Manage IP Hostgroup objects on Sophos Firewall
+short_description: Manage IP Hostgroup (System > Hosts & services > IP host group)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes an IP Host Group object on Sophos Firewall
+description: Creates, updates or removes an IP Host Group  (System > Hosts & services > IP host group) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

@@ -10,14 +10,14 @@
 
 .. Anchors
 
-.. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module:
+.. _ansible_collections.sophos.sophos_firewall.sfos_atp_module:
 
 .. Anchors: short name for ansible.builtin
 
 .. Title
 
-sophos.sophos_firewall.sfos_malware_protection module -- Manage Malware Protection (Configure \> System services \> Malware protection)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sophos.sophos_firewall.sfos_atp module -- Manage Active Threat Protection (Protect \> Active threat response \> Sophos X-Ops threat feeds)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. Collection note
 
@@ -29,9 +29,9 @@ sophos.sophos_firewall.sfos_malware_protection module -- Manage Malware Protecti
 
     To install it, use: :code:`ansible-galaxy collection install sophos.sophos\_firewall`.
     You need further requirements to be able to use this module,
-    see :ref:`Requirements <ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module_requirements>` for details.
+    see :ref:`Requirements <ansible_collections.sophos.sophos_firewall.sfos_atp_module_requirements>` for details.
 
-    To use it in a playbook, specify: :code:`sophos.sophos_firewall.sfos_malware_protection`.
+    To use it in a playbook, specify: :code:`sophos.sophos_firewall.sfos_atp`.
 
 .. version_added
 
@@ -51,7 +51,7 @@ Synopsis
 
 .. Description
 
-- Manage Malware Protection (Configure \> System services \> Malware protection) on Sophos Firewall
+- Manage Active Threat Protection (Protect \> Active threat response \> Sophos X-Ops threat feeds) on Sophos Firewall
 
 
 .. Aliases
@@ -59,7 +59,7 @@ Synopsis
 
 .. Requirements
 
-.. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module_requirements:
+.. _ansible_collections.sophos.sophos_firewall.sfos_atp_module_requirements:
 
 Requirements
 ------------
@@ -91,21 +91,21 @@ Parameters
   * - .. raw:: html
 
         <div class="ansible-option-cell">
-        <div class="ansibleOptionAnchor" id="parameter-antivirus_engine"></div>
+        <div class="ansibleOptionAnchor" id="parameter-enabled"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-antivirus_engine:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-enabled:
 
       .. rst-class:: ansible-option-title
 
-      **antivirus_engine**
+      **enabled**
 
       .. raw:: html
 
-        <a class="ansibleOptionLink" href="#parameter-antivirus_engine" title="Permalink to this option"></a>
+        <a class="ansibleOptionLink" href="#parameter-enabled" title="Permalink to this option"></a>
 
       .. ansible-option-type-line::
 
-        :ansible-option-type:`string`
+        :ansible-option-type:`boolean`
 
       .. raw:: html
 
@@ -115,15 +115,15 @@ Parameters
 
         <div class="ansible-option-cell">
 
-      Set the primary Antivirus engine
+      Enable (true) or disable (false) threat feeds
 
 
       .. rst-class:: ansible-option-line
 
       :ansible-option-choices:`Choices:`
 
-      - :ansible-option-choices-entry:`"Sophos"`
-      - :ansible-option-choices-entry:`"Avira"`
+      - :ansible-option-choices-entry:`false`
+      - :ansible-option-choices-entry:`true`
 
 
       .. raw:: html
@@ -135,7 +135,7 @@ Parameters
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-hostname"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-hostname:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-hostname:
 
       .. rst-class:: ansible-option-title
 
@@ -167,9 +167,93 @@ Parameters
   * - .. raw:: html
 
         <div class="ansible-option-cell">
+        <div class="ansibleOptionAnchor" id="parameter-inspect_content"></div>
+
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-inspect_content:
+
+      .. rst-class:: ansible-option-title
+
+      **inspect_content**
+
+      .. raw:: html
+
+        <a class="ansibleOptionLink" href="#parameter-inspect_content" title="Permalink to this option"></a>
+
+      .. ansible-option-type-line::
+
+        :ansible-option-type:`string`
+
+      .. raw:: html
+
+        </div>
+
+    - .. raw:: html
+
+        <div class="ansible-option-cell">
+
+      Configure inspection of only untrusted or both trusted and untrusted content
+
+
+      .. rst-class:: ansible-option-line
+
+      :ansible-option-choices:`Choices:`
+
+      - :ansible-option-choices-entry:`"all"`
+      - :ansible-option-choices-entry:`"untrusted"`
+
+
+      .. raw:: html
+
+        </div>
+
+  * - .. raw:: html
+
+        <div class="ansible-option-cell">
+        <div class="ansibleOptionAnchor" id="parameter-logging_policy"></div>
+
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-logging_policy:
+
+      .. rst-class:: ansible-option-title
+
+      **logging_policy**
+
+      .. raw:: html
+
+        <a class="ansibleOptionLink" href="#parameter-logging_policy" title="Permalink to this option"></a>
+
+      .. ansible-option-type-line::
+
+        :ansible-option-type:`string`
+
+      .. raw:: html
+
+        </div>
+
+    - .. raw:: html
+
+        <div class="ansible-option-cell">
+
+      Configure logging policy
+
+
+      .. rst-class:: ansible-option-line
+
+      :ansible-option-choices:`Choices:`
+
+      - :ansible-option-choices-entry:`"Log only"`
+      - :ansible-option-choices-entry:`"Log and Drop"`
+
+
+      .. raw:: html
+
+        </div>
+
+  * - .. raw:: html
+
+        <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-password"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-password:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-password:
 
       .. rst-class:: ansible-option-title
 
@@ -203,7 +287,7 @@ Parameters
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-port"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-port:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-port:
 
       .. rst-class:: ansible-option-title
 
@@ -241,7 +325,7 @@ Parameters
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-state"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-state:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-state:
 
       .. rst-class:: ansible-option-title
 
@@ -283,7 +367,7 @@ Parameters
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-username"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-username:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-username:
 
       .. rst-class:: ansible-option-title
 
@@ -317,7 +401,7 @@ Parameters
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="parameter-verify"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__parameter-verify:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__parameter-verify:
 
       .. rst-class:: ansible-option-title
 
@@ -371,19 +455,21 @@ Examples
 
 .. code-block:: yaml+jinja
 
-    - name: Update malware protection settings
-      sophos.sophos_firewall.sfos_malware_protection:
+    - name: Update advanced threat protection settings
+      sophos.sophos_firewall.sfos_atp:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        antivirus_engine: Sophos
+        enabled: true
+        inspect_content: untrusted
+        logging_policy: Log and Drop
         state: updated
         delegate_to: localhost
 
-    - name: Query malware protection settings
-      sophos.sophos_firewall.sfos_malware_protection:
+    - name: Query advanced threat protection settings
+      sophos.sophos_firewall.sfos_atp:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
@@ -419,7 +505,7 @@ Common return values are documented :ref:`here <common_return_values>`, the foll
         <div class="ansible-option-cell">
         <div class="ansibleOptionAnchor" id="return-api_response"></div>
 
-      .. _ansible_collections.sophos.sophos_firewall.sfos_malware_protection_module__return-api_response:
+      .. _ansible_collections.sophos.sophos_firewall.sfos_atp_module__return-api_response:
 
       .. rst-class:: ansible-option-title
 

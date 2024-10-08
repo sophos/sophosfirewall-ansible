@@ -1,0 +1,106 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: DISABLE ATP
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    enabled: false
+    state: updated
+  delegate_to: localhost
+
+- name: ENABLE ATP
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    enabled: true
+    inspect_content: all
+    log_policy: Log and Drop
+    state: updated
+  register: set_atp
+
+- name: ASSERTION CHECK FOR SET MALWARE PROTECTION
+  assert:
+    that: 
+      - set_atp is changed
+      - set_atp['api_response']['Response']['ATP']['Status']['@code'] == '200'
+      - set_atp['api_response']['Response']['ATP']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY ATP
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    state: query
+  register: query_atp
+
+- name: ASSERTION CHECK FOR QUERY ATP
+  assert:
+    that: 
+      - query_atp is not changed
+      - query_atp['api_response']['Response']['ATP']['ThreatProtectionStatus'] == 'Enable'
+      - query_atp['api_response']['Response']['ATP']['InspectContent'] == 'all'
+      - query_atp['api_response']['Response']['ATP']['Policy'] == 'Log and Drop'
+
+
+- name: SET ATP NO CHANGE
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    enabled: true
+    inspect_content: all
+    log_policy: Log and Drop
+    state: updated
+  register: set_atp_nochg
+
+- name: ASSERTION CHECK FOR ATP NO CHANGE
+  assert:
+    that: 
+      - set_atp_nochg is not changed
+  
+- name: UPDATE ATP SETTINGS
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    enabled: true
+    inspect_content: untrusted
+    log_policy: Log Only
+    state: updated
+  register: set_atp
+
+- name: ASSERTION CHECK FOR UPDATE ATP SETTINGS
+  assert:
+    that: 
+      - set_atp is changed
+      - set_atp['api_response']['Response']['ATP']['Status']['@code'] == '200'
+      - set_atp['api_response']['Response']['ATP']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY ATP
+  sophos.sophos_firewall.sfos_atp:
+    <<: *sfos_connection_params
+    state: query
+  register: query_atp
+
+- name: ASSERTION CHECK FOR QUERY MALWARE PROTECTION SETTINGS
+  assert:
+    that: 
+      - query_atp is not changed
+      - query_atp['api_response']['Response']['ATP']['ThreatProtectionStatus'] == 'Enable'
+      - query_atp['api_response']['Response']['ATP']['InspectContent'] == 'untrusted'
+      - query_atp['api_response']['Response']['ATP']['Policy'] == 'Log Only'

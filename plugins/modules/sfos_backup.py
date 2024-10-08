@@ -12,11 +12,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_backup
 
-short_description: Manage Backup settings
+short_description: Manage Backup settings (System > Backup & firmware)
 
 version_added: "1.0.0"
 
-description: Manage Backup settings on Sophos Firewall
+description: Manage Backup settings (System > Backup & firmware) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

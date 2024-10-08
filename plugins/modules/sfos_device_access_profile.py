@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_device_access_profile
 
-short_description: Manage Device Access Profiles
+short_description: Manage Device Access Profiles (System > Profiles > Device Access)
 
 version_added: "1.0.0"
 
-description: Manage Device Access Profiles on Sophos Firewall (System > Profiles > Device Access)
+description: Manage Device Access Profiles (System > Profiles > Device Access) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

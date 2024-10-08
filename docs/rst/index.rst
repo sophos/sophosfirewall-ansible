@@ -54,6 +54,7 @@ Modules
 ~~~~~~~
 
 * :ansplugin:`sfos_admin_settings module <sophos.sophos_firewall.sfos_admin_settings#module>` -- Manage Admin and user settings (System \> Administration)
+* :ansplugin:`sfos_atp module <sophos.sophos_firewall.sfos_atp#module>` -- Manage Active Threat Protection (Protect \> Active threat response \> Sophos X-Ops threat feeds)
 * :ansplugin:`sfos_backup module <sophos.sophos_firewall.sfos_backup#module>` -- Manage Backup settings (System \> Backup & firmware)
 * :ansplugin:`sfos_device_access_profile module <sophos.sophos_firewall.sfos_device_access_profile#module>` -- Manage Device Access Profiles (System \> Profiles \> Device Access)
 * :ansplugin:`sfos_dns module <sophos.sophos_firewall.sfos_dns#module>` -- Manage DNS settings (Configure \> Network \> DNS)
@@ -76,6 +77,7 @@ Modules
     :hidden:
 
     sfos_admin_settings_module
+    sfos_atp_module
     sfos_backup_module
     sfos_device_access_profile_module
     sfos_dns_module

@@ -11,7 +11,7 @@ DOCUMENTATION = r'''
 ---
 module: sfos_service_acl_exception
 
-short_description: Manage Local Service Exception ACL Rules on Sophos Firewall
+short_description: Manage Local Service Exception ACL Rules (System > Administration > Device Access)
 
 version_added: "1.0.0"
 

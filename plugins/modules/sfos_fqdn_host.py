@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_fqdn_host
 
-short_description: Manage FQDN hosts on Sophos Firewall
+short_description: Manage FQDN hosts (System > Hosts & services > FQDN host)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes a FQDN host on Sophos Firewall
+description: Creates, updates or removes a FQDN host (System > Hosts & services > FQDN host) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base

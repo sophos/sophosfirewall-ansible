@@ -11,7 +11,7 @@ DOCUMENTATION = r'''
 ---
 module: sfos_time
 
-short_description: Manage Date and Time settings
+short_description: Manage Date and Time settings (System > Administration > Time)
 
 version_added: "1.0.0"
 

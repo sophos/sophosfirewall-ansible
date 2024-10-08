@@ -11,11 +11,11 @@ DOCUMENTATION = r'''
 ---
 module: sfos_firewall_rule
 
-short_description: Manage Firewall Rules on Sophos Firewall
+short_description: Manage Firewall Rules (Protect > Rules & policies)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes firewall rules on Sophos Firewall
+description: Creates, updates or removes firewall rules (Protect > Rules & policies) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
