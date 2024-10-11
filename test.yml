@@ -456,15 +456,31 @@
   #     state: updated
   #   delegate_to: localhost
 
-  - name: UPDATE ADVANCED THREAT PROTECTION
-    sophos.sophos_firewall.sfos_atp:
+  # - name: UPDATE ADVANCED THREAT PROTECTION
+  #   sophos.sophos_firewall.sfos_atp:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     enabled: True
+  #     log_policy: Log Only
+  #     inspect_content: untrusted
+  #     state: updated
+  #   delegate_to: localhost
+
+  - name: UPDATE SNMP AGENT CONFIGURATION
+    sophos.sophos_firewall.sfos_snmp_agent:
       username: "{{ username }}"
       password: "{{ password }}"
       hostname: "{{ inventory_hostname }}"
       port: 4444
       verify: false
-      enabled: True
-      log_policy: Log Only
-      inspect_content: untrusted
+      # enabled: false
+      # name: automationtest
+      # description: Testing automation
+      # location: AWS Ireland 
+      # contact_person: Sophos IT
+      agent_port: 171
       state: updated
     delegate_to: localhost
