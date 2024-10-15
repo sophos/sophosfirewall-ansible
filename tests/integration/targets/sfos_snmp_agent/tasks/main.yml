@@ -1,0 +1,116 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: SET INITIAL SNMP SETTINGS
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    enabled: false
+    name: igt-initial
+    description: Initial settings for integration testing
+    location: igt-initial
+    contact_person: igt-initial
+    state: updated
+  delegate_to: localhost
+
+- name: ENABLE SNMP AGENT
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    enabled: true
+    name: IGT-TEST-NAME
+    description: IGT-TEST-DESC
+    location: IGT-TEST-LOCATION
+    contact_person: IGT-TEST-CONTACT
+    state: updated
+  register: set_snmp
+
+- name: ASSERTION CHECK FOR ENABLE SNMP AGENT
+  assert:
+    that: 
+      - set_snmp is changed
+      - set_snmp['api_response']['Response']['SNMPAgentConfiguration']['Status']['@code'] == '200'
+      - set_snmp['api_response']['Response']['SNMPAgentConfiguration']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY SNMP AGENT
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    state: query
+  register: query_snmp
+
+- name: ASSERTION CHECK FOR QUERY SNMP AGENT
+  assert:
+    that: 
+      - query_snmp is not changed
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Enable'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Name'] == 'IGT-TEST-NAME'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Location'] == 'IGT-TEST-LOCATION'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['ContactPerson'] == 'IGT-TEST-CONTACT'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Description'] == 'IGT-TEST-DESC'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Name'] == 'IGT-TEST-NAME'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['AgentPort'] == '161'
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['ManagerPort'] == '162'
+
+
+- name: SET SNMP AGENT NO CHANGE
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    enabled: true
+    name: IGT-TEST-NAME
+    description: IGT-TEST-DESC
+    location: IGT-TEST-LOCATION
+    contact_person: IGT-TEST-CONTACT
+    state: updated
+  register: set_snmp_nochg
+
+- name: ASSERTION CHECK FOR SNMP AGENT NO CHANGE
+  assert:
+    that: 
+      - set_snmp_nochg is not changed
+  
+- name: DISABLE SNMP AGENT
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    enabled: false
+    state: updated
+  register: set_snmp
+
+- name: ASSERTION CHECK FOR DISABLE SNMP AGENT
+  assert:
+    that: 
+      - set_snmp is changed
+      - set_snmp['api_response']['Response']['SNMPAgentConfiguration']['Status']['@code'] == '200'
+      - set_snmp['api_response']['Response']['SNMPAgentConfiguration']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY SNMP AGENT DISABLED
+  sophos.sophos_firewall.sfos_snmp_agent:
+    <<: *sfos_connection_params
+    state: query
+  register: query_snmp
+
+- name: ASSERTION CHECK FOR QUERY SNMP AGENT DISABLED
+  assert:
+    that: 
+      - query_snmp is not changed
+      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Disable'
+

@@ -70,3 +70,17 @@ releases:
       name: sfos_zone
       namespace: ''
     release_date: '2024-10-08'
+  1.1.0:
+    changes:
+      release_summary: This release contains new modules for working with the SNMP
+        agent and SNMPv3 users on Sophos Firewall
+    fragments:
+    - 1.1.0.yml
+    modules:
+    - description: Manage SNMP Agent (System > Administration > SNMP).
+      name: sfos_snmp_agent
+      namespace: ''
+    - description: Manage SNMPv3 User (System > Administration > SNMP).
+      name: sfos_snmp_user
+      namespace: ''
+    release_date: '2024-10-15'
