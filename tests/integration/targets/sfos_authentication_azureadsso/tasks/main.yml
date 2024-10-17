@@ -1,0 +1,163 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY Authentication Azzure SETTINGS
+  sfos_authentication_azureadsso:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+- name: SET VARS FOR EXISTING SETTINGS
+  ansible.builtin.set_fact:
+    servername: "{{ query_settings['api_response']['Response']['AzureADSSO']['ServerName']}}"
+    applicationid: "{{ query_settings['api_response']['Response']['AzureADSSO']['ApplicationID']}}"
+    tenantid: "{{ query_settings['api_response']['Response']['AzureADSSO']['TenantID']}}"
+    clientsecret: "{{ query_settings['api_response']['Response']['AzureADSSO']['ClientSecret']}}"
+    redirecturi: "{{ query_settings['api_response']['Response']['AzureADSSO']['RedirectURI']}}"
+    displayname: "{{ query_settings['api_response']['Response']['AzureADSSO']['DisplayName']}}"
+    emailaddress: "{{ query_settings['api_response']['Response']['AzureADSSO']['EmailAddress']}}"
+    fallbackusergroup: "{{ query_settings['api_response']['Response']['AzureADSSO']['FallbackUserGroup']}}"
+    usertype: "{{ query_settings['api_response']['Response']['AzureADSSO']['UserType']}}"
+    identifiertype: "{{ query_settings['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['identifiertype']}}"
+
+- name: Debug usertype existing value
+  ansible.builtin.debug:
+        msg: "usertype: {{ usertype }}"
+
+- name: SET ADDITIONAL FACTS FOR WHEN USERTYPE IS ADMINISTRATOR
+  ansible.builtin.set_fact:
+        identifiertype: "{{ query_settings['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['identifiertype']}}"
+        identifiervalue: "{{ query_settings['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['identifiervalue']}}"
+        profileid: "{{ query_settings['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['profileid']}}"
+  when: 
+    - usertype == "Administrator"
+
+
+
+- name: SET AUTHENTICATION AZURE SETTINGS
+  sfos_authentication_azureadsso:
+    <<: *sfos_connection_params
+    servername: SophosFirewallSSO
+    applicationid: 'xxxxxx-71fb-xxxxxx-9b06-xxxxxx'
+    tenantid: 'xxxxxx-46d9-49d3-a297-xxxxxx'
+    redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos.sophos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: Administrator
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+          profileid:
+            - Administrator
+            - ReadOnly
+    state: updated
+  register: set_azzure
+
+- name: ASSERTION CHECK FOR SET Authentication Azure 
+  assert:
+    that: 
+      - set_azzure is changed
+      - set_azzure['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azzure['api_response']['Response']['AzureADSSO']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY AZURE AUTHENTICATION SETTINGS
+  sfos_authentication_azureadsso:
+    <<: *sfos_connection_params
+    state: query
+  register: query_azure
+
+- name: ASSERTION CHECK FOR QUERY AZURE SETTINGS
+  assert:
+    that: 
+      - query_azure is not changed
+      - query_azure['api_response']['Response']['AzureADSSO']['ApplicationID'] == 'xxxxxx-71fb-xxxxxx-9b06-xxxxxx'
+      - query_azure['api_response']['Response']['AzureADSSO']['TenantID'] == 'xxxxxx-46d9-49d3-a297-xxxxxx'
+      - query_azure['api_response']['Response']['AzureADSSO']['RedirectURI'] == 'uk-abn-utm-stage-1.uk.network.green.sophos.sophos'
+      - query_azure['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['identifiertype'] == ['groups','groups']
+      - query_azure['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['identifiervalue'] == ['AAD-SFNetAdministrators','AAD-SFEEReadOnly']
+      - query_azure['api_response']['Response']['AzureADSSO']['RoleMapping']['IdentifierTypeAndProfile']['profileid'] == ['Administrator','ReadOnly']
+
+
+
+
+- name: SET AUTHENTICATION AZURE SETTINGS NO CHANGE
+  sfos_authentication_azureadsso:
+    <<: *sfos_connection_params
+    servername: SophosFirewallSSO
+    applicationid: 'xxxxxx-71fb-xxxxxx-9b06-xxxxxx'
+    tenantid: 'xxxxxx-46d9-49d3-a297-xxxxxx'
+    redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos.sophos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: Administrator
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+          profileid:
+            - Administrator
+            - ReadOnly
+    state: updated
+  register: set_azzure_nochg
+
+
+- name: ASSERTION CHECK FOR SET AZURE NO CHANGE
+  assert:
+    that: 
+      - set_azzure_nochg is not changed
+
+
+- name: REVERT SETTINGS TO INITIAL
+  sfos_authentication_azureadsso:
+    <<: *sfos_connection_params
+    servername: "{{ servername }}"
+    applicationid: "{{ applicationid }}"
+    tenantid: "{{ tenantid }}"
+    redirecturi: "{{ redirecturi }}"
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: Administrator
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            "{{ identifiertype }}"
+          identifiervalue:
+            "{{ identifiervalue }}"
+          profileid:
+            "{{ profileid }}"
+    state: updated
+

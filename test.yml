@@ -11,7 +11,7 @@
     #     hostname: "{{ inventory_hostname }}"
     #     port: 4444
     #     verify: false
-    #     name: TESTHOST
+    #     name: TESTHOST55
     #     ip_address: 3.3.3.3
     #     state: query
     #   delegate_to: localhost
@@ -23,11 +23,11 @@
     #     hostname: "{{ inventory_hostname }}"
     #     port: 4444
     #     verify: false
-    #     name: TESTNETWORK
+    #     name: TESTNETWORK126
     #     network: 2.2.2.0
     #     mask: 255.255.255.0
     #     host_type: network
-    #     state: query
+    #     state: present
     #   delegate_to: localhost
 
     # - name: ADD IP HOST TYPE IPRANGE
@@ -375,21 +375,54 @@
   #     state: updated
   #   delegate_to: localhost
 
-    - name: UPDATE TIME SETTINGS
-      sophos.sophos_firewall.sfos_time:
+    # - name: UPDATE TIME SETTINGS
+    #   sophos.sophos_firewall.sfos_time:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     # timezone: Europe/London
+    #     # date:
+    #     #   year: 2024
+    #     #   month: 12
+    #     #   day: 25
+    #     time:
+    #       hour: 01
+    #       minute: 01
+    #       second: 01
+    #     state: updated
+    #   delegate_to: localhost
+
+    - name: Update Azure AD SSO
+      sophos.sophos_firewall.sfos_authentication_azureadsso:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        # timezone: Europe/London
-        # date:
-        #   year: 2024
-        #   month: 12
-        #   day: 25
-        time:
-          hour: 01
-          minute: 01
-          second: 01
+  
+        servername: SophosFirewallSSO
+        applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9edd8b'
+        tenantid: '358a41ff-46d9-49d3-a297-370d894eae6a'
+        redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos
+        displayname: upn
+        emailaddress: email
+        fallbackusergroup: Open Group
+        usertype: Administrator
+        rolemapping:
+          identifiertypeandprofile:
+              identifiertype:
+                - groups
+                - groups
+                - groups
+              identifiervalue:
+                - AAD-SFNetAdministrators
+                - AAD-SFEEReadOnly
+                - AAD-SFAudit
+              profileid:
+                - Administrator
+                - ReadOnly
+                - Audit Admin
         state: updated
       delegate_to: localhost
