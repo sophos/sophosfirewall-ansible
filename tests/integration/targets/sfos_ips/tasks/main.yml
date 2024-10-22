@@ -1,0 +1,95 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: DISABLE IPS
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    enabled: false
+    state: updated
+  delegate_to: localhost
+
+- name: ENABLE IPS
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    enabled: true
+    state: updated
+  register: set_ips
+
+- name: ASSERTION CHECK FOR ENABLE IPS PROTECTION
+  assert:
+    that: 
+      - set_ips is changed
+      - set_ips['api_response']['Response']['IPSSwitch']['Status']['@code'] == '200'
+      - set_ips['api_response']['Response']['IPSSwitch']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY IPS
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    state: query
+  register: query_ips
+
+- name: ASSERTION CHECK FOR QUERY IPS
+  assert:
+    that: 
+      - query_ips is not changed
+      - query_ips['api_response']['Response']['IPSSwitch']['Status'] == 'Enable'
+
+- name: SET IPS NO CHANGE
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    enabled: true
+    state: updated
+  register: set_ips_nochg
+
+- name: ASSERTION CHECK FOR SET IPS NO CHANGE
+  assert:
+    that: 
+      - set_ips_nochg is not changed
+  
+- name: UPDATE IPS SETTINGS
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    enabled: false
+    state: updated
+  register: set_ips
+
+- name: ASSERTION CHECK FOR UPDATE IPS SETTINGS
+  assert:
+    that: 
+      - set_ips is changed
+      - set_ips['api_response']['Response']['IPSSwitch']['Status']['@code'] == '200'
+      - set_ips['api_response']['Response']['IPSSwitch']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY IPS
+  sophos.sophos_firewall.sfos_ips:
+    <<: *sfos_connection_params
+    state: query
+  register: query_ips
+
+- name: ASSERTION CHECK FOR QUERY IPS PROTECTION SETTINGS
+  assert:
+    that: 
+      - query_ips is not changed
+      - query_ips['api_response']['Response']['IPSSwitch']['Status'] == 'Disable'
