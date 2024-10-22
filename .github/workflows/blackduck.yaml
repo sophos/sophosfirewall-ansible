@@ -26,6 +26,7 @@ jobs:
          
           ### SCANNING: Optional fields
           # blackduck_scan_failure_severities: 'BLOCKER,CRITICAL'
+          blackduck_search_depth: 5
           
           ### FIX PULL REQUEST CREATION: Uncomment below to enable
           # blackduck_fixpr_enabled: true
