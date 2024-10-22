@@ -485,22 +485,33 @@
   #     state: updated
   #   delegate_to: localhost
 
-  - name: Manage SNMPv3 User
-    sophos.sophos_firewall.sfos_snmp_user:
+  # - name: Manage SNMPv3 User
+  #   sophos.sophos_firewall.sfos_snmp_user:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: snmpv3user1
+  #     accept_queries: Disable
+  #     send_traps: Enable
+  #     authorized_hosts:
+  #         - 10.100.1.104
+  #         - 10.100.1.105
+  #     encryption_algorithm: AES
+  #     encryption_password: sup3rs3cr3tp@ssw0rd
+  #     authentication_algorithm: MD5
+  #     authentication_password: sup3rs3cr3tp@ssw0rd
+  #     state: present
+  #   delegate_to: localhost
+
+  - name: Manage IPS protection
+    sophos.sophos_firewall.sfos_ips:
       username: "{{ username }}"
       password: "{{ password }}"
       hostname: "{{ inventory_hostname }}"
       port: 4444
       verify: false
-      name: snmpv3user1
-      accept_queries: Disable
-      send_traps: Enable
-      authorized_hosts:
-          - 10.100.1.104
-          - 10.100.1.105
-      encryption_algorithm: AES
-      encryption_password: sup3rs3cr3tp@ssw0rd
-      authentication_algorithm: MD5
-      authentication_password: sup3rs3cr3tp@ssw0rd
-      state: present
+      enabled: true
+      state: updated
     delegate_to: localhost
