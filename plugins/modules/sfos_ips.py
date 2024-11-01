@@ -13,7 +13,7 @@ module: sfos_ips
 
 short_description: Manage IPS protection (Protect > Intrusion Protection > IPS policies)
 
-version_added: "1.0.0"
+version_added: "1.2.0"
 
 description: Manage IPS protection (Protect > Intrusion Protection > IPS policies) on Sophos Firewall
 

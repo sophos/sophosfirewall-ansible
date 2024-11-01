@@ -63,10 +63,14 @@ Modules
 * :ansplugin:`sfos_fqdn_hostgroup module <sophos.sophos_firewall.sfos_fqdn_hostgroup#module>` -- Manage FQDN Host Groups (System \> Hosts & services \> FQDN host group)
 * :ansplugin:`sfos_ip_host module <sophos.sophos_firewall.sfos_ip_host#module>` -- Manage IP Host (System \> Hosts & services \> IP host)
 * :ansplugin:`sfos_ip_hostgroup module <sophos.sophos_firewall.sfos_ip_hostgroup#module>` -- Manage IP Hostgroup (System \> Hosts & services \> IP host group)
+* :ansplugin:`sfos_ips module <sophos.sophos_firewall.sfos_ips#module>` -- Manage IPS protection (Protect \> Intrusion Protection \> IPS policies)
 * :ansplugin:`sfos_malware_protection module <sophos.sophos_firewall.sfos_malware_protection#module>` -- Manage Malware Protection (Configure \> System services \> Malware protection)
 * :ansplugin:`sfos_service module <sophos.sophos_firewall.sfos_service#module>` -- Manage Service (System \> Hosts and services \> Services)
 * :ansplugin:`sfos_service_acl_exception module <sophos.sophos_firewall.sfos_service_acl_exception#module>` -- Manage Local Service Exception ACL Rules (System \> Administration \> Device Access)
 * :ansplugin:`sfos_servicegroup module <sophos.sophos_firewall.sfos_servicegroup#module>` -- Manage Service Group (System \> Hosts and services \> Service Group)
+* :ansplugin:`sfos_snmp_agent module <sophos.sophos_firewall.sfos_snmp_agent#module>` -- Manage SNMP Agent (System \> Administration \> SNMP)
+* :ansplugin:`sfos_snmp_user module <sophos.sophos_firewall.sfos_snmp_user#module>` -- Manage SNMPv3 User (System \> Administration \> SNMP)
+* :ansplugin:`sfos_syslog module <sophos.sophos_firewall.sfos_syslog#module>` -- Manage Syslog servers (Configure \> System services \> Log settings)
 * :ansplugin:`sfos_time module <sophos.sophos_firewall.sfos_time#module>` -- Manage Date and Time settings (System \> Administration \> Time)
 * :ansplugin:`sfos_user module <sophos.sophos_firewall.sfos_user#module>` -- Manage Users (Configure \> Authentication \> Users)
 * :ansplugin:`sfos_xmlapi module <sophos.sophos_firewall.sfos_xmlapi#module>` -- Use the XML API to get, create, update, or delete settings on Sophos Firewall.
@@ -86,10 +90,14 @@ Modules
     sfos_fqdn_hostgroup_module
     sfos_ip_host_module
     sfos_ip_hostgroup_module
+    sfos_ips_module
     sfos_malware_protection_module
     sfos_service_module
     sfos_service_acl_exception_module
     sfos_servicegroup_module
+    sfos_snmp_agent_module
+    sfos_snmp_user_module
+    sfos_syslog_module
     sfos_time_module
     sfos_user_module
     sfos_xmlapi_module

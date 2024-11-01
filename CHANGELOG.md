@@ -2,22 +2,39 @@
 
 **Topics**
 
-- <a href="#v1-1-0">v1\.1\.0</a>
+- <a href="#v1-2-0">v1\.2\.0</a>
     - <a href="#release-summary">Release Summary</a>
     - <a href="#new-modules">New Modules</a>
-- <a href="#v1-0-0">v1\.0\.0</a>
+- <a href="#v1-1-0">v1\.1\.0</a>
     - <a href="#release-summary-1">Release Summary</a>
     - <a href="#new-modules-1">New Modules</a>
+- <a href="#v1-0-0">v1\.0\.0</a>
+    - <a href="#release-summary-2">Release Summary</a>
+    - <a href="#new-modules-2">New Modules</a>
 
-<a id="v1-1-0"></a>
-## v1\.1\.0
+<a id="v1-2-0"></a>
+## v1\.2\.0
 
 <a id="release-summary"></a>
 ### Release Summary
 
-This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall
+This release adds modules for working with IPS and Syslog settings
 
 <a id="new-modules"></a>
+### New Modules
+
+* sophos\.sophos\_firewall\.sfos\_ips \- Manage IPS protection \(Protect \> Intrusion Protection \> IPS policies\)\.
+* sophos\.sophos\_firewall\.sfos\_syslog \- Manage Syslog servers \(Configure \> System services \> Log settings\)\.
+
+<a id="v1-1-0"></a>
+## v1\.1\.0
+
+<a id="release-summary-1"></a>
+### Release Summary
+
+This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall
+
+<a id="new-modules-1"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_snmp\_agent \- Manage SNMP Agent \(System \> Administration \> SNMP\)\.
@@ -26,13 +43,12 @@ This release contains new modules for working with the SNMP agent and SNMPv3 use
 <a id="v1-0-0"></a>
 ## v1\.0\.0
 
-<a id="release-summary-1"></a>
+<a id="release-summary-2"></a>
 ### Release Summary
 
 This is the first proper release of the <code>sophos\.sophos\_firewall</code> collection\.
-The changelog describes all changes made to the modules and plugins included in this collection\.
 
-<a id="new-modules-1"></a>
+<a id="new-modules-2"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_admin\_settings \- Manage Admin and user settings \(System \> Administration\)\.

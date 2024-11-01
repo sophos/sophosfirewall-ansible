@@ -13,7 +13,7 @@ module: sfos_syslog
 
 short_description: Manage Syslog servers (Configure > System services > Log settings)
 
-version_added: "1.0.0"
+version_added: "1.2.0"
 
 description: Manage Syslog Servers (Configure > System services > Log settings) on Sophos Firewall
 
