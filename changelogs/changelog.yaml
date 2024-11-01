@@ -2,13 +2,10 @@ ancestor: null
 releases:
   1.0.0:
     changes:
-      release_summary: 'This is the first proper release of the ``sophos.sophos_firewall``
+      release_summary: This is the first proper release of the ``sophos.sophos_firewall``
         collection.
-
-        The changelog describes all changes made to the modules and plugins included
-        in this collection.'
     fragments:
-    - 1.0.0.yml
+    - 1.0.0.yaml
     modules:
     - description: Manage Admin and user settings (System > Administration).
       name: sfos_admin_settings
@@ -69,13 +66,13 @@ releases:
     - description: Manage Zones (Configure > Network > Zones).
       name: sfos_zone
       namespace: ''
-    release_date: '2024-10-08'
+    release_date: '2024-11-01'
   1.1.0:
     changes:
       release_summary: This release contains new modules for working with the SNMP
         agent and SNMPv3 users on Sophos Firewall
     fragments:
-    - 1.1.0.yml
+    - 1.1.0.yaml
     modules:
     - description: Manage SNMP Agent (System > Administration > SNMP).
       name: sfos_snmp_agent
@@ -83,4 +80,17 @@ releases:
     - description: Manage SNMPv3 User (System > Administration > SNMP).
       name: sfos_snmp_user
       namespace: ''
-    release_date: '2024-10-15'
+    release_date: '2024-11-01'
+  1.2.0:
+    changes:
+      release_summary: This release adds modules for working with IPS and Syslog settings
+    fragments:
+    - 1.2.0.yaml
+    modules:
+    - description: Manage IPS protection (Protect > Intrusion Protection > IPS policies).
+      name: sfos_ips
+      namespace: ''
+    - description: Manage Syslog servers (Configure > System services > Log settings).
+      name: sfos_syslog
+      namespace: ''
+    release_date: '2024-11-01'
