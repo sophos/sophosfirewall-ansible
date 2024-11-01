@@ -505,13 +505,55 @@
   #     state: present
   #   delegate_to: localhost
 
-  - name: Manage IPS protection
-    sophos.sophos_firewall.sfos_ips:
+  # - name: Manage IPS protection
+  #   sophos.sophos_firewall.sfos_ips:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     enabled: true
+  #     state: updated
+  #   delegate_to: localhost
+
+  # - name: Create syslog server, all logging enabled
+  #   sophos.sophos_firewall.sfos_syslog:
+  #     username: "{{ username }}"
+  #     password: "{{ password }}"
+  #     hostname: "{{ inventory_hostname }}"
+  #     port: 4444
+  #     verify: false
+  #     name: TestSyslog
+  #     address: 10.10.1.100
+  #     udp_port: 514
+  #     secure_connection: Disable
+  #     facility: DAEMON
+  #     severity: Emergency
+  #     format: Device standard
+  #     default_logging: Enable
+  #     state: updated
+  #   delegate_to: localhost
+
+  - name: Create syslog server, disable selected logs
+    sophos.sophos_firewall.sfos_syslog:
       username: "{{ username }}"
       password: "{{ password }}"
       hostname: "{{ inventory_hostname }}"
       port: 4444
       verify: false
-      enabled: true
+      name: TestSyslog
+      address: 10.10.1.100
+      udp_port: 514
+      secure_connection: Disable
+      facility: DAEMON
+      severity: Emergency
+      format: Device standard
+      default_logging: Enable
+      log_settings:
+        security_policy:
+          invalid_traffic: Disable
+          icmp_errormessage: Disable
+        content_filtering:
+          ssl_tls: Disable
       state: updated
     delegate_to: localhost
