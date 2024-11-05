@@ -40,24 +40,14 @@ jobs:
           COLLECTION_FILE=$(ls *.tar.gz)
           echo "COLLECTION_FILE=${COLLECTION_FILE}" >> $GITHUB_ENV
 
-      # Create a release
-      - name: Create Release
+      # Create a release and upload
+      - name: Create Release and upload
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag: ${{ github.ref }}  # Use the pushed tag
+          files: ${{ env.COLLECTION_FILE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
-
-      # Upload the collection file to the release
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
-        with:
-          tag: ${{ github.ref }}  # Use the same tag
-          files: ${{ env.COLLECTION_FILE }}  # The file to upload
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
-
 
       # Publish the collection to Ansible Galaxy
       - name: Publish to Ansible Galaxy
