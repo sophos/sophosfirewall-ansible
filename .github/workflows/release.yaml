@@ -1,0 +1,57 @@
+name: Publish Ansible Collection
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like x.x.x
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      # Install ansible-core
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core
+
+      # Build the collection
+      - name: Build Ansible Collection
+        run: |
+          ansible-galaxy collection build
+        # Capture the built file name
+        id: build
+
+      # Capture the tar.gz filename from the build output
+      - name: Get tar.gz filename
+        shell: bash
+        run: |
+          COLLECTION_FILE=$(ls *.tar.gz)
+          echo "COLLECTION_FILE=${COLLECTION_FILE}" >> $GITHUB_ENV
+
+      # Upload the collection file to the release
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: "${{ github.event.release.upload_url }}"
+          asset_path: "${{ env.COLLECTION_FILE }}"
+          asset_name: "${{ env.COLLECTION_FILE }}"
+          asset_content_type: application/gzip
+
+      # Publish the collection to Ansible Galaxy
+      - name: Publish to Ansible Galaxy
+        env:
+          GALAXY_TOKEN: ${{ secrets.GALAXY_TOKEN }}
+        run: |
+          ansible-galaxy collection publish "${{ env.COLLECTION_FILE }}" --api-key $GALAXY_TOKEN

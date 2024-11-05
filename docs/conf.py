@@ -30,6 +30,8 @@ html_use_modindex = False
 html_use_index = False
 html_copy_source = False
 
+html_static_path = ['static']
+
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping for the syntax
 intersphinx_mapping = {
     'python': ('https://docs.python.org/2/', (None, '../python2.inv')),

@@ -3,3 +3,4 @@ inventory.yml
 tests/output/
 tests/integration/inventory
 changelogs/.plugin-cache.yaml
+*.tar.gz

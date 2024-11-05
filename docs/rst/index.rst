@@ -7,7 +7,7 @@
 Sophos.Sophos_Firewall
 ======================
 
-Collection version 1.0.0
+Collection version 1.2.0
 
 .. contents::
    :local:
@@ -16,7 +16,7 @@ Collection version 1.0.0
 Description
 -----------
 
-This Ansible collection contains modules for working with Sophos Firewall \<https://www.sophos.com/en-us/products/next-gen-firewall\>
+This Ansible collection contains modules for working with Sophos Firewall (https://www.sophos.com/en-us/products/next-gen-firewall)
 
 **Author:**
 
@@ -31,9 +31,6 @@ This Ansible collection contains modules for working with Sophos Firewall \<http
   - title: "Issue Tracker"
     url: "https://github.com/sophos/sophosfirewall-ansible/issues"
     external: true
-  - title: "Homepage"
-    url: "http://example.com"
-    external: true
   - title: "Repository (Sources)"
     url: "https://github.com/sophos/sophosfirewall-ansible"
     external: true
@@ -43,6 +40,23 @@ This Ansible collection contains modules for working with Sophos Firewall \<http
 
 .. toctree::
     :maxdepth: 1
+
+Changelog
+---------
+
+.. toctree::
+    :maxdepth: 1
+
+    changelog
+
+Installation and Setup
+----------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    docsite/installation
+    docsite/setup
 
 Plugin Index
 ------------

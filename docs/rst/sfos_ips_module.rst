@@ -22,7 +22,7 @@ sophos.sophos_firewall.sfos_ips module -- Manage IPS protection (Protect \> Intr
 .. Collection note
 
 .. note::
-    This module is part of the `sophos.sophos_firewall collection <https://galaxy.ansible.com/ui/repo/published/sophos/sophos_firewall/>`_ (version 1.0.0).
+    This module is part of the `sophos.sophos_firewall collection <https://galaxy.ansible.com/ui/repo/published/sophos/sophos_firewall/>`_ (version 1.2.0).
 
     It is not included in ``ansible-core``.
     To check whether it is installed, run :code:`ansible-galaxy collection list`.
@@ -37,7 +37,7 @@ sophos.sophos_firewall.sfos_ips module -- Manage IPS protection (Protect \> Intr
 
 .. rst-class:: ansible-version-added
 
-New in sophos.sophos\_firewall 1.0.0
+New in sophos.sophos\_firewall 1.2.0
 
 .. contents::
    :local:
@@ -476,9 +476,6 @@ Collection links
 
   - title: "Issue Tracker"
     url: "https://github.com/sophos/sophosfirewall-ansible/issues"
-    external: true
-  - title: "Homepage"
-    url: "http://example.com"
     external: true
   - title: "Repository (Sources)"
     url: "https://github.com/sophos/sophosfirewall-ansible"
