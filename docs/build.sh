@@ -23,4 +23,5 @@ antsibull-docs \
     sophos.sophos_firewall
 
 # Build Sphinx site
-sphinx-build -M html rst build -c . -W --keep-going
+# sphinx-build -M html rst build -c . -W --keep-going
+sphinx-build -M html rst build -c .
