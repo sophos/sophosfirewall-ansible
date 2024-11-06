@@ -555,5 +555,5 @@
           icmp_errormessage: Disable
         content_filtering:
           ssl_tls: Disable
-      state: updated
+      state: present
     delegate_to: localhost

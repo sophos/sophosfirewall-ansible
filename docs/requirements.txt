@@ -8,3 +8,4 @@ antsibull-docs >= 2.0.0, < 3.0.0
 ansible-pygments
 sphinx
 sphinx-ansible-theme >= 0.9.0
+sphinx-rtd-theme >= 2.0.0
