@@ -1,5 +1,6 @@
 sections:
-  - title: Installation and Setup
+  - title: Getting Started
     toctree:
       - installation
       - setup
+      - tutorial

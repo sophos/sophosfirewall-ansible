@@ -1,7 +1,7 @@
 .. _ansible_collections.sophos.sophos_firewall.docsite.setup:
 
-Setup
-=====
+Required Firewall Setup
+=======================
 Prior to using the Ansible modules, the firewall must be set up to allow access to the API
 from the IP address of the system running Ansible.
   

@@ -8,7 +8,7 @@
 # documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-project = 'Sophos Firewall'
+project = 'Sophos.Sophos_Firewall'
 copyright = 'Sophos, Ltd.'
 
 title = 'Sophos Firewall Ansible Collection'
@@ -21,6 +21,7 @@ pygments_style = 'ansible'
 highlight_language = 'YAML+Jinja'
 
 html_theme = 'sphinx_ansible_theme'
+
 html_show_sphinx = False
 
 display_version = False
@@ -31,6 +32,7 @@ html_use_index = False
 html_copy_source = False
 
 html_static_path = ['static']
+
 
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping for the syntax
 intersphinx_mapping = {

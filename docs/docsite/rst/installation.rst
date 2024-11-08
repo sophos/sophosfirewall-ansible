@@ -11,15 +11,16 @@ The following must be installed prior to installing the module:
 * Ansible 2.16+
 * sophosfirewall-python 0.1.56+
   
-The sophosfirewall-python module can be installed with ``pip``:
+With Python installed on the system, Ansible and the sophosfirewall-python module can be installed with ``pip``:
   
 .. code-block:: bash
 
+    $ pip install ansible
     $ pip install sophosfirewall-python
 
 Install
 -------
-The Sophos Firewall Ansible Collection can be installed using the ``ansible-galaxy`` command-line utility:
+The Sophos Firewall Ansible Collection can be installed using the ``ansible-galaxy`` utility which is included with Ansible:
   
 .. code-block:: bash
 
