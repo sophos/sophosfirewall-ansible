@@ -5,6 +5,9 @@ permissions:
 jobs:
   docs:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/collections/ansible_collections/sophos/sophos_firewall
     steps:
       - uses: actions/checkout@v3
         with:
