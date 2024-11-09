@@ -1,0 +1,11 @@
+# Files/Directories to be excluded from the ansible-galaxy build
+docs/
+changelogs/
+CHANGELOG.md
+.github/
+group_vars/
+poetry.lock
+pyproject.toml
+README.md
+.readthedocs.yml
+LICENSE
