@@ -33,6 +33,12 @@ html_copy_source = False
 
 html_static_path = ['static']
 
+rst_epilog = """
+.. warning:: If the firewall is a member of a group in Central, the changes made by Ansible
+    will override the settings of the group. The actual configuration on the firewall may then differ from what is displayed
+    for the same setting in the Central group.
+"""
+
 
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping for the syntax
 intersphinx_mapping = {

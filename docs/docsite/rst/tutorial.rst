@@ -4,11 +4,7 @@ Tutorial
 ========
 This section is intended to help users who may be new to Ansible get up and running with their first playbook using the Sophos Firewall Ansible Collection.
 Experienced Ansible users may want to skip this section and review the documentation for the individual `modules <../index.html#modules>`_.
-
-.. warning:: If the firewall is a member of a group in Central, the changes made by Ansible
-    will override the settings of the group. The actual configuration on the firewall may then differ from what is displayed
-    for the same setting in the Central group.  
-
+  
 Ansible requires two main components to operate; an `inventory <https://docs.ansible.com/ansible/latest/inventory_guide/index.html>`_ 
 and a `playbook <https://docs.ansible.com/ansible/latest/playbook_guide/index.html>`_. An inventory file specifies what firewall(s) the Ansible playbook should operate on. It can also include variable
 definitions that can be referenced in the playbook. 
