@@ -1,2 +1,2 @@
 [testgroup]
-testhost ansible_connection="local" ansible_pipelining="yes" ansible_python_interpreter="/Users/Matt.Mullen/.pyenv/versions/3.11.1/envs/sophosfirewall-ansible/bin/python"
+testhost ansible_connection="local" ansible_pipelining="yes" ansible_python_interpreter="/Users/philip.finucane/.pyenv/versions/3.11.1/envs/sophosfirewall-ansible/bin/python"
