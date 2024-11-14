@@ -394,35 +394,57 @@
     #     state: updated
     #   delegate_to: localhost
 
-    - name: Update Azure AD SSO
-      sophos.sophos_firewall.sfos_authentication_azureadsso:
+    # - name: Update Azure AD SSO
+    #   sophos.sophos_firewall.sfos_authentication_azureadsso:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+  
+    #     servername: SophosFirewallSSO
+    #     applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9edd8b'
+    #     tenantid: '358a41ff-46d9-49d3-a297-370d894eae6a'
+    #     redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos
+    #     displayname: upn
+    #     emailaddress: email
+    #     fallbackusergroup: Open Group
+    #     usertype: Administrator
+    #     rolemapping:
+    #       identifiertypeandprofile:
+    #           identifiertype:
+    #             - groups
+    #             - groups
+    #             - groups
+    #           identifiervalue:
+    #             - AAD-SFNetAdministrators
+    #             - AAD-SFEEReadOnly
+    #             - AAD-SFAudit
+    #           profileid:
+    #             - Administrator
+    #             - ReadOnly
+    #             - Audit Admin
+    #     state: updated
+    #   delegate_to: localhost
+
+    - name: Update Radius Auth
+      sophos.sophos_firewall.sfos_authentication_radius:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-  
-        servername: SophosFirewallSSO
-        applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9edd8b'
-        tenantid: '358a41ff-46d9-49d3-a297-370d894eae6a'
-        redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos
-        displayname: upn
-        emailaddress: email
-        fallbackusergroup: Open Group
-        usertype: Administrator
-        rolemapping:
-          identifiertypeandprofile:
-              identifiertype:
-                - groups
-                - groups
-                - groups
-              identifiervalue:
-                - AAD-SFNetAdministrators
-                - AAD-SFEEReadOnly
-                - AAD-SFAudit
-              profileid:
-                - Administrator
-                - ReadOnly
-                - Audit Admin
+
+        servername: test19997
+        serveraddress: '192.168.0.119'
+        port_radius: '1818'
+        groupnameattribute: upngggluuuyyyopo
+        timeout: 3
+        domainname: sophos.comme
+        enableaccounting: Enable
+        attributes:
+          nas_identifier: testing3
+          nas_port_type: 0
+        accountingport: 44447
         state: updated
       delegate_to: localhost
