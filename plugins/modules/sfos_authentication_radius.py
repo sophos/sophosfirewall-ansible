@@ -80,6 +80,7 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
+    - Philip Finucane (@philfinucane)
 '''
 
 EXAMPLES = r'''
