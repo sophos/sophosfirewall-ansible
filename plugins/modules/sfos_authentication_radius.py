@@ -71,6 +71,12 @@ options:
         description: port number"
         type: str
         required: false
+    state:
+        description:
+            - Use C(query) to retrieve, C(updated) to create, C(absent) to remove, or C(updated) to modify
+        choices: [absent, updated, query]
+        type: str
+        required: true
 
 author:
     - Matt Mullen (@mamullen13316)
