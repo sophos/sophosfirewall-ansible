@@ -1,0 +1,160 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH RADIUS SETTINGS
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+
+
+
+- name: ADD RADIUS SERVER
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    servername: test19997
+    serveraddress: '192.168.0.119'
+    port_radius: '1818'
+    groupnameattribute: upn
+    timeout: 3
+    domainname: sophos.co.uk
+    enableaccounting: Enable
+    attributes:
+      nas_identifier: test
+      nas_port_type: 0
+    accountingport: 4444
+    state: updated
+  register: set_radius
+
+- name: ASSERTION CHECK FOR ADD RADIUS SERVER
+  assert:
+    that: 
+      - set_radius is changed
+      - set_radius['api_response']['Response']['RADIUSServer']['Status']['@code'] == '200'
+      - set_radius['api_response']['Response']["RADIUSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD RADIUS SERVER2
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    servername: test19998
+    serveraddress: '192.168.0.120'
+    port_radius: '1818'
+    groupnameattribute: upnn
+    timeout: 3
+    domainname: sophos.com
+    enableaccounting: Enable
+    attributes:
+      nas_identifier: test
+      nas_port_type: 0
+    accountingport: 4444
+    state: updated
+  register: set_radius2
+
+- name: ASSERTION CHECK FOR ADD RADIUS SERVER2
+  assert:
+    that: 
+      - set_radius2 is changed
+      - set_radius2['api_response']['Response']['RADIUSServer']['Status']['@code'] == '200'
+      - set_radius2['api_response']['Response']["RADIUSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE RADIUS SERVER CONFIG
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    servername: test19997
+    serveraddress: '192.168.0.119'
+    port_radius: '1818'
+    groupnameattribute: upn
+    timeout: 3
+    domainname: sophos.co.uk8
+    enableaccounting: Enable
+    attributes:
+      nas_identifier: test
+      nas_port_type: 0
+    accountingport: 4444
+    state: updated
+  register: set_radius_update
+
+- name: ASSERTION CHECK FOR Update RADIUS SERVER
+  assert:
+    that: 
+      - set_radius_update is changed
+      - set_radius_update['api_response']['Response']['RADIUSServer']['Status']['@code'] == '200'
+      - set_radius_update['api_response']['Response']["RADIUSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE RADIUS SERVER
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    servername: test19997
+    serveraddress: '192.168.0.119'
+    port_radius: '1818'
+    groupnameattribute: upn
+    timeout: 3
+    domainname: sophos.co.uk
+    enableaccounting: Enable
+    attributes:
+      nas_identifier: test
+      nas_port_type: 0
+    accountingport: 4444
+    state: absent
+  register: set_radius_remove
+
+- name: ASSERTION CHECK FOR REMOVE RADIUS SERVER
+  assert:
+    that: 
+      - set_radius_remove is changed
+      - set_radius_remove['api_response']['Response']["AuthenticationServer"]['RADIUSServer']['Status']['@code'] == '200'
+      - set_radius_remove['api_response']['Response']["AuthenticationServer"]["RADIUSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE RADIUS SERVER2
+  sfos_authentication_radius:
+    <<: *sfos_connection_params
+    servername: test19998
+    serveraddress: '192.168.0.120'
+    port_radius: '1818'
+    groupnameattribute: upnn
+    timeout: 3
+    domainname: sophos.com
+    enableaccounting: Enable
+    attributes:
+      nas_identifier: test
+      nas_port_type: 0
+    accountingport: 4444
+    state: absent
+  register: set_radius_remove2
+
+- name: ASSERTION CHECK FOR REMOVE RADIUS SERVER2
+  assert:
+    that: 
+      - set_radius_remove2 is changed
+      - set_radius_remove2['api_response']['Response']["AuthenticationServer"]['RADIUSServer']['Status']['@code'] == '200'
+      - set_radius_remove2['api_response']['Response']["AuthenticationServer"]["RADIUSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
