@@ -10,7 +10,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sfos_authentication_radius.py
+module: sfos_authentication_ad.py
 
 short_description: Manage Authentication settings Radius
 
@@ -22,11 +22,11 @@ extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
 
 options:
-    servername:
+    Servername:
         description: Name of Server
         type: str
         required: false
-    serverAddress:
+    ServerAddress:
         description: Server IP Address
         type: str
         required: false
@@ -34,42 +34,44 @@ options:
         description: Directory tenant ID
         type: str
         required: false
-    SharedSecret:
-        description: Client secret
+    NetBIOSDomain:
+        description: NetBIOS Domain
         type: str
         required: false
-    GroupNameAttribute:
-        description: Redirect URI
+    ADSUsername:
+        description: ADS user name
         type: str
         required: false
-    Timeout:
-        description: Display name use "upn"
+    AD_Password:
+        description: Password
+        type: str
+        required: false
+    ConnectionSecurity:
+        description: Connection security
+        type: str
+        choices: [Simple, StartTLS, SSL]
+        required: false
+    ValidCertReq:
+        description: enable accounting
+        type: str
+        choices: [Enable, Disable]
+        required: false
+    DisplayNameAttribute:
+        description: Display name attribute
+        type: str
+        required: false
+    EmailAddressAttribute:
+        description: Email address attribute
         type: str
         required: false
     DomainName:
-        description: e-mail address use "email"
+        description: Domain name
         type: str
         required: false
-    EnableAccounting:
-        description: enable accounting
-        type: str
-        choices: [Enable, None]
-        required: false
-    Attributes:
-        description: User type selection
-        type: str
-        choices: [user, administrator]
-        required: false
-        suboptions:
-            NAS-Identifier:
-                type: str
-                required: false
-            NAS-Port-Type:
-                type: str
-                required: false
-    AccountingPort:
-        description: port number"
-        type: str
+    SearchQueries:
+        description: Search queries
+        type: list
+        elements: str
         required: false
     state:
         description:
@@ -84,8 +86,8 @@ author:
 '''
 
 EXAMPLES = r'''
-- name: Update Azure AD SSO
-  sophos.sophos_firewall.sfos_authentication_radius:
+- name: Update Active Directory Auth
+  sophos.sophos_firewall.sfos_authentication_ad:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -93,16 +95,18 @@ EXAMPLES = r'''
     verify: false
     servername: Test
     serveraddress: '192.168.0.1'
-    port_radius: '1812'
-    sharedsecret: sophosfirewall
-    groupnameattribute: upn
-    timeout: 3
+    ad_port: '636'
+    netbiosdomain: test.sophos.com
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dn
+    emailaddressattribute: mail
     domainname: sophos.com
-    enableaccounting: Enable
-    attributes:
-        nas_identifier: test
-        nas_port_type: 0
-    accountingport: 4444
+    searchqueries:
+        - dc=sophos,dc=com
+        - dc=sophos,dc=ie
     state: updated
     delegate_to: localhost
 
@@ -136,7 +140,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 
 
-def get_radius_settings(fw_obj, module, result):
+def get_ad_settings(fw_obj, module, result):
     """Get current settings from Sophos Firewall
 
     Args:
@@ -148,7 +152,7 @@ def get_radius_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("AuthenticationServer")['Response']['AuthenticationServer']["RADIUSServer"]
+        resp = fw_obj.get_tag("AuthenticationServer")['Response']['AuthenticationServer']["ActiveDirectory"]
             
     except SophosFirewallZeroRecords as error:
         return {"exists": False, "api_response": str(error)}
@@ -161,8 +165,8 @@ def get_radius_settings(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
-def create_radius(fw_obj, module, result):
-    """Create an Radius Server on Sophos Firewall when none exists
+def create_ad(fw_obj, module, result):
+    """Create an Active Directory Server on Sophos Firewall when none exists
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -174,41 +178,42 @@ def create_radius(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <ActiveDirectory>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
-          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
+		  <Port>{{ ad_port }}</Port>
+		  <NetBIOSDomain>{{ netbiosdomain }}</NetBIOSDomain>
+          <ADSUsername>{{ ad_username }}</ADSUsername>
+          <Password>{{ ad_password }}</Password>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+          <ValidCertReq>{{ validcertreq }}</ValidCertReq>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
 		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <SearchQueries>
+          {% for item in searchqueries %}
+           <Query>{{ item }}</Query>
+        {% endfor %}
+          </SearchQueries>
+	      </ActiveDirectory>
         </AuthenticationServer>
     
     """
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
-        "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "ad_port": module.params.get("ad_port"),
+        "netbiosdomain": module.params.get("netbiosdomain"),
+        "ad_username": module.params.get("adsusername"),
+        "ad_password": module.params.get("ad_password"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "validcertreq": module.params.get("validcertreq"),
+        "displaynameattribute": module.params.get("displaynameattribute"),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
+        "domainname": module.params.get("domainname"),
+        "searchqueries": module.params.get("searchqueries")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -225,11 +230,11 @@ def create_radius(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
-def update_radius_add(fw_obj, module, result):
-    """Add additional radius server on Sophos Firewall
+def update_ad_add(fw_obj, module, result):
+    """Add additional Active Directory server on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -241,42 +246,42 @@ def update_radius_add(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <ActiveDirectory>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
-          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
+		  <Port>{{ ad_port }}</Port>
+		  <NetBIOSDomain>{{ netbiosdomain }}</NetBIOSDomain>
+          <ADSUsername>{{ ad_username }}</ADSUsername>
+          <Password>{{ ad_password }}</Password>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+          <ValidCertReq>{{ validcertreq }}</ValidCertReq>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
 		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <SearchQueries>
+          {% for item in searchqueries %}
+           <Query>{{ item }}</Query>
+        {% endfor %}
+          </SearchQueries>
+	      </ActiveDirectory>
         </AuthenticationServer>
     
     """
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
+        "ad_port": module.params.get("ad_port"),
+        "netbiosdomain": module.params.get("netbiosdomain"),
+        "ad_username": module.params.get("adsusername"),
+        "ad_password": module.params.get("ad_password"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "validcertreq": module.params.get("validcertreq"),
+        "displaynameattribute": module.params.get("displaynameattribute"),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
         "domainname": module.params.get("domainname"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
-        "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "searchqueries": module.params.get("searchqueries")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -294,11 +299,11 @@ def update_radius_add(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
-def update_radius_update(fw_obj, module, result):
-    """Update existing radius settings on Sophos Firewall
+def update_ad_update(fw_obj, module, result):
+    """Update existing Active Directory settings on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -310,42 +315,42 @@ def update_radius_update(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <ActiveDirectory>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
-          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
+		  <Port>{{ ad_port }}</Port>
+		  <NetBIOSDomain>{{ netbiosdomain }}</NetBIOSDomain>
+          <ADSUsername>{{ ad_username }}</ADSUsername>
+          <Password>{{ ad_password }}</Password>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+          <ValidCertReq>{{ validcertreq }}</ValidCertReq>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
 		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <SearchQueries>
+          {% for item in searchqueries %}
+           <Query>{{ item }}</Query>
+        {% endfor %}
+          </SearchQueries>
+	      </ActiveDirectory>
         </AuthenticationServer>
     
     """
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
+        "ad_port": module.params.get("ad_port"),
+        "netbiosdomain": module.params.get("netbiosdomain"),
+        "ad_username": module.params.get("adsusername"),
+        "ad_password": module.params.get("ad_password"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "validcertreq": module.params.get("validcertreq"),
+        "displaynameattribute": module.params.get("displaynameattribute"),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
         "domainname": module.params.get("domainname"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
-        "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "searchqueries": module.params.get("searchqueries")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+  
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -363,7 +368,7 @@ def update_radius_update(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+
     return resp
 
 
@@ -381,40 +386,44 @@ def eval_changed(module, exist_settings):
     exist_settings = exist_settings["api_response"]
     servername = module.params.get("servername", {})
     serveraddress = module.params.get("serveraddress", {})
-    port_radius = module.params.get("port_radius", {})
-    sharedsecret = module.params.get("sharedsecret", {})
-    groupnameattribute = module.params.get("groupnameattribute", {})
-    timeout = module.params.get("timeout", {})
-    domainname = module.params.get("domainname", {})
-    enableaccounting = module.params.get("enableaccounting", {})
-    nas_identifier = module.params.get("attributes", {}).get("nas_identifier")
-    nas_port_type = module.params.get("attributes", {}).get("nas_port_type")
-    accountingport = module.params.get("accountingport")
+    ad_port = module.params.get("ad_port", {})
+    netbiosdomain = module.params.get("netbiosdomain", {})
+    ad_username = module.params.get("ad_username", {})
+    ad_password = module.params.get("ad_password", {})
+    connectionsecurity = module.params.get("connectionsecurity", {})
+    validcertreq = module.params.get("validcertreq", {})
+    displaynameattribute = module.params.get("displaynameattribute", {})
+    emailaddressattribute = module.params.get("emailaddressattribute", {})
+    domainname = module.params.get("domainname")
+    searchqueries = module.params.get("searchqueries")
     
     
     if servername and not servername == exist_settings["ServerName"]:
         return True
     if serveraddress and not serveraddress == exist_settings["ServerAddress"]:
         return True
-    if port_radius and not port_radius == exist_settings["Port"]:
+    if ad_port and not ad_port == exist_settings["Port"]:
         return True
-    if groupnameattribute and not groupnameattribute == exist_settings["GroupNameAttribute"]:
+    if netbiosdomain and not netbiosdomain == exist_settings["NetBIOSDomain"]:
         return True
-    if timeout and not timeout == exist_settings["Timeout"]:
+    if ad_username and not ad_username == exist_settings["ADSUsername"]:
         return True
     if domainname and not domainname == exist_settings["DomainName"]:
         return True
-    if enableaccounting and not enableaccounting == exist_settings["EnableAccounting"]:
-        return True
-    if nas_identifier and not nas_identifier == exist_settings["Attributes"]["NAS-Identifier"]:
+    if connectionsecurity and not connectionsecurity == exist_settings["ConnectionSecurity"]:
             return True
-    if nas_port_type and not nas_port_type == exist_settings["Attributes"]["NAS-Port-Type"]:
+    if validcertreq and not validcertreq == exist_settings["ValidCertReq"]:
             return True
-    if accountingport and not accountingport == exist_settings["AccountingPort"]:
+    if displaynameattribute and not displaynameattribute == exist_settings["DisplayNameAttribute"]:
             return True
-    if module.params.get("sharedsecret"): 
+    if emailaddressattribute and not emailaddressattribute == exist_settings["EmailAddressAttribute"]:
+            return True
+    if searchqueries and not searchqueries == exist_settings["SearchQueries"]["Query"]:
         return True
             
+    if module.params.get("ad_password"): 
+        return True
+    
     return False
     
     
@@ -473,15 +482,16 @@ def eval_list_update_server(module, exist_settings):
     exist_settings = exist_settings["api_response"]
     servername = module.params.get("servername", {})
     serveraddress = module.params.get("serveraddress", {})
-    port_radius = module.params.get("port_radius", {})
-    sharedsecret = module.params.get("sharedsecret", {})
-    groupnameattribute = module.params.get("groupnameattribute", {})
-    timeout = module.params.get("timeout", {})
-    domainname = module.params.get("domainname", {})
-    enableaccounting = module.params.get("enableaccounting", {})
-    nas_identifier = module.params.get("attributes", {}).get("nas_identifier")
-    nas_port_type = module.params.get("attributes", {}).get("nas_port_type")
-    accountingport = module.params.get("accountingport")
+    ad_port = module.params.get("ad_port", {})
+    netbiosdomain = module.params.get("netbiosdomain", {})
+    ad_username = module.params.get("ad_username", {})
+    ad_password = module.params.get("ad_password", {})
+    connectionsecurity = module.params.get("connectionsecurity", {})
+    validcertreq = module.params.get("validcertreq", {})
+    displaynameattribute = module.params.get("displaynameattribute", {})
+    emailaddressattribute = module.params.get("emailaddressattribute", {})
+    domainname = module.params.get("domainname")
+    searchqueries = module.params.get("searchqueries")
     
     list_len = len(exist_settings)
     for i in range(list_len):
@@ -490,29 +500,31 @@ def eval_list_update_server(module, exist_settings):
             
             if serveraddress and not serveraddress == exist_settings[i]["ServerAddress"]:
                 return True, i
-            if port_radius and not port_radius == exist_settings[i]["Port"]:
-                return True, i
-            if groupnameattribute and not groupnameattribute == exist_settings[i]["GroupNameAttribute"]:
-                return True, i
-            if timeout and not timeout == exist_settings[i]["Timeout"]:
-                return True, i
+            if ad_port and not ad_port == exist_settings[i]["Port"]:
+                return True,i
+            if netbiosdomain and not netbiosdomain == exist_settings[i]["NetBIOSDomain"]:
+                return True,i
+            if ad_username and not ad_username == exist_settings[i]["ADSUsername"]:
+                return True,i
             if domainname and not domainname == exist_settings[i]["DomainName"]:
-                return True, i
-            if enableaccounting and not enableaccounting == exist_settings[i]["EnableAccounting"]:
-                return True, i
-            if nas_identifier and not nas_identifier == exist_settings[i]["Attributes"]["NAS-Identifier"]:
-                    return True, i
-            if nas_port_type and not nas_port_type == exist_settings[i]["Attributes"]["NAS-Port-Type"]:
-                    return True, i
-            if accountingport and not accountingport == exist_settings[i]["AccountingPort"]:
-                    return True, i
-            if module.params.get("sharedsecret"): 
-                return True, i
+                return True,i
+            if connectionsecurity and not connectionsecurity == exist_settings[i]["ConnectionSecurity"]:
+                return True,i
+            if validcertreq and not validcertreq == exist_settings[i]["ValidCertReq"]:
+                return True,i
+            if displaynameattribute and not displaynameattribute == exist_settings[i]["DisplayNameAttribute"]:
+                return True,i
+            if emailaddressattribute and not emailaddressattribute == exist_settings[i]["EmailAddressAttribute"]:
+                return True,i
+            if searchqueries and not searchqueries == exist_settings[i]["SearchQueries"]["Query"]:
+                return True,i
+            if module.params.get("ad_password"): 
+                return True,i
             
     return False
 
 
-def remove_radius(fw_obj, module, result):
+def remove_ad(fw_obj, module, result):
     """Remove a Radius Server on a Sophos Firewall
 
     Args:
@@ -526,19 +538,16 @@ def remove_radius(fw_obj, module, result):
     payload = """
             <Remove>
             <AuthenticationServer>
-            <RADIUSServer>
+            <ActiveDirectory>
 		    <ServerName>{{ name }}</ServerName>
-            </RADIUSServer>
+            </ActiveDirectory>
             </AuthenticationServer>
             </Remove>
     """
     template_vars = {
         "name": module.params.get("servername")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -556,7 +565,6 @@ def remove_radius(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
     return resp
 
 
@@ -570,32 +578,23 @@ def main():
         "verify": {"type": "bool", "default": True},
         "servername": {"type": "str", "required": False},
         "serveraddress": {"type": "str", "required": False},
-        "port_radius": {"type": "str", "required": False},
-        "sharedsecret": {"type": "str", "required": False},
-        "groupnameattribute": {"type": "str", "required": False},
-        "timeout": {"type": "str", "required": False},
+        "ad_port": {"type": "str", "required": False},
+        "netbiosdomain": {"type": "str", "required": False},
+        "adsusername": {"type": "str", "required": False},
+        "ad_password": {"type": "str", "required": False},
+        "connectionsecurity": {"type": "str", "choices": ["Simple", "StartTLS", "SSL"]},
+        "validcertreq": {"type": "str", "choices": ["Enable", "Disable"]},
+        "displaynameattribute": {"type": "str", "required": False},
+        "emailaddressattribute": {"type": "str", "required": False},
         "domainname": {"type": "str", "required": False},
-        "enableaccounting": {"type": "str", "choices": ["Enable", "None"]},
-        # "nas_identifier": {"type": "str", "required": False},
-        # "nas_port_type": {"type": "str", "required": False},
-        "accountingport": {"type": "str", "required": False},
-        "attributes": {"type": "dict", "required": False},
+        "searchqueries": {"type": "list", "required": False},
         "state": {"type": "str", "required": True, "choices": ["updated", "query", "absent"]}
     }
 
-    # required_if = [
-    #     ('state', 'present', ['user_password', 'user_type', 'group', 'email'], False),
-    #     ('user_type', 'Administrator', ['profile'], True)
-    # ]
-
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
+   
 
     module = AnsibleModule(argument_spec=argument_spec,
-                        #    required_if=required_if,
-                        #    required_together=required_together,
+                       
                            supports_check_mode=True
                            )
     
@@ -618,16 +617,15 @@ def main():
 
     state = module.params.get("state")
 
-    exist_settings = get_radius_settings(fw, module, result)
+    exist_settings = get_ad_settings(fw, module, result)
     result["api_response"] = exist_settings["api_response"]
     
     
     if state == "absent":
                 # module.exit_json(msg=f"eval=true")
-                api_response = remove_radius(fw, module, result)
-                
+                api_response = remove_ad(fw, module, result)
                 if api_response:
-                    if api_response['Response']["AuthenticationServer"]["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully.":
+                    if api_response['Response']["AuthenticationServer"]["ActiveDirectory"]["Status"]["#text"] == "Configuration applied successfully.":
                         result["changed"] = True
                     result["api_response"] = api_response
                     module.exit_json(**result)
@@ -646,10 +644,10 @@ def main():
         elif state == "updated" and result["api_response"].get('Status') == 'No. of records Zero.':
             
                 
-                api_response = create_radius(fw, module, result)
+                api_response = create_ad(fw, module, result)
                 
                 if api_response:
-                    if api_response['Response']["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully.":
+                    if api_response['Response']["ActiveDirectory"]["Status"]["#text"] == "Configuration applied successfully.":
                         result["changed"] = True
                     result["api_response"] = api_response
                 else:
@@ -659,13 +657,14 @@ def main():
         elif state == "updated" and "ServerName" in result["api_response"]:
             
             if eval_servername(module, exist_settings):
+                # module.exit_json(msg=f"eval=true1")
                 if eval_changed(module, exist_settings):
                     # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_add(fw, module, result)
+                    api_response = update_ad_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -675,12 +674,12 @@ def main():
                         
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_update(fw, module, result)
+                    # module.exit_json(msg=f"eval=true4")
+                    api_response = update_ad_update(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -691,12 +690,12 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_add(fw, module, result)
+                    # module.exit_json(msg=f"eval=true6")
+                    api_response = update_ad_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -706,11 +705,11 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true")
-                api_response = update_radius_update(fw, module, result)
+                # module.exit_json(msg=f"eval=true7")
+                api_response = update_ad_update(fw, module, result)
                     
                 if api_response:
-                    if (api_response["Response"]["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully."):
+                    if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"] == "Configuration applied successfully."):
                         result["changed"] = True
                     result["api_response"] = api_response
                 else:
