@@ -372,7 +372,7 @@
   #         dns2: 2.2.2.2
   #         dns3: 3.3.3.3
   #     dnsquery_config: ChooseIPv4DNSServerOverIPv6
-  #     state: updated
+  #     state: query
   #   delegate_to: localhost
 
     # - name: UPDATE TIME SETTINGS
@@ -449,27 +449,61 @@
     #     state: updated
     #   delegate_to: localhost
     
-    - name: Update AD Auth
-      sophos.sophos_firewall.sfos_authentication_ad:
+    # - name: Update AD Auth
+    #   sophos.sophos_firewall.sfos_authentication_ad:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+
+    #     servername: Test
+    #     serveraddress: '192.168.0.171'
+    #     ad_port: '636'
+    #     netbiosdomain: test.sophos.comwe
+    #     adsusername: admin
+    #     ad_password: testtest
+    #     connectionsecurity: SSL
+    #     validcertreq: Disable
+    #     displaynameattribute: dnn
+    #     emailaddressattribute: mail
+    #     domainname: sophos.com
+    #     searchqueries: 
+    #     - dc=sophos,dc=cof
+    #     - dc=sophos,dc=ir
+    #     state: updated
+    #   delegate_to: localhost
+
+    # - name: Update TACACS Auth
+    #   sophos.sophos_firewall.sfos_authentication_tacacs:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+
+    #     servername: Test
+    #     serveraddress: '192.168.0.75'
+    #     tac_port: '49'
+    #     sharedsecret: testtest
+    #     state: absent
+    #   delegate_to: localhost
+    
+    - name: Update eDirectory Auth
+      sophos.sophos_firewall.sfos_authentication_edirectory:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-
-        servername: Test
-        serveraddress: '192.168.0.171'
-        ad_port: '636'
-        netbiosdomain: test.sophos.comwe
-        adsusername: admin
-        # ad_password: testtest
+        servername: Test54
+        serveripdomain: '192.168.0.89'
+        port_edir: '1812'
+        binddn: CN=user1,CN=Users,DC=example,DC=com
+        dn_password: testtest
         connectionsecurity: SSL
-        validcertreq: Disable
-        displaynameattribute: dnn
-        emailaddressattribute: mail
-        domainname: sophos.com
-        searchqueries: 
-        - dc=sophos,dc=cof
-        - dc=sophos,dc=ir
+        validateservercertificate: Enable
+        clientcertificate: Webadmin
+        basedn: o=sophos.com
         state: updated
       delegate_to: localhost
