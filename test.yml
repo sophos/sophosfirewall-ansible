@@ -4,18 +4,18 @@
   gather_facts: false
 
   tasks:
-    - name: QUERY IP HOST
-      sophos.sophos_firewall.sfos_ip_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        name: testhost
-        ip_address: 2.2.2.2
-        state: query
-      delegate_to: localhost
-      register: query_host
+    # - name: QUERY IP HOST
+    #   sophos.sophos_firewall.sfos_ip_host:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     name: testhost
+    #     ip_address: 2.2.2.2
+    #     state: query
+    #   delegate_to: localhost
+    #   register: query_host
 
     # - name: DISPLAY IP ADDRESS
     #   ansible.builtin.debug:
@@ -352,17 +352,18 @@
     #     state: updated
     #   delegate_to: localhost
 
-    # - name: UPDATE ZONE ADMIN SERVICES
-    #   sophos.sophos_firewall.sfos_zone:
-    #     username: "{{ username }}"
-    #     password: "{{ password }}"
-    #     hostname: "{{ inventory_hostname }}"
-    #     port: 4444
-    #     verify: false
-    #     name: TESTZONE
-    #     sslvpn: Enable
-    #     state: query
-    #   delegate_to: localhost
+    - name: UPDATE ZONE ADMIN SERVICES
+      sophos.sophos_firewall.sfos_zone:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TESTZONE
+        zone_type: LAN
+        # sslvpn: Enable
+        state: present
+      delegate_to: localhost
 
   # - name: UPDATE DNS SETTINGS
   #   sophos.sophos_firewall.sfos_dns:
