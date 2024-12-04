@@ -94,3 +94,13 @@ releases:
       name: sfos_syslog
       namespace: ''
     release_date: '2024-11-01'
+  1.2.1:
+    changes:
+      bugfixes:
+      - Allow use of 'any' keyword for src/dst networks and services for sfos_firewall_rule
+        module
+      - Fixed documentation error in examples for sfos_zone
+      release_summary: Minor bug fixes
+    fragments:
+    - 1.2.1.yaml
+    release_date: '2024-12-04'

@@ -161,7 +161,7 @@ author:
 
 EXAMPLES = r"""
 - name: Create Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -173,7 +173,7 @@ EXAMPLES = r"""
     state: present
 
 - name: Display Existing Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -183,7 +183,7 @@ EXAMPLES = r"""
     state: query
 
 - name: Update Zone Admin Services
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -195,7 +195,7 @@ EXAMPLES = r"""
     state: updated
 
 - name: Remove Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
