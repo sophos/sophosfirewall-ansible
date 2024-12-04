@@ -2,20 +2,37 @@
 
 **Topics**
 
-- <a href="#v1-2-0">v1\.2\.0</a>
+- <a href="#v1-2-1">v1\.2\.1</a>
     - <a href="#release-summary">Release Summary</a>
+    - <a href="#bugfixes">Bugfixes</a>
+- <a href="#v1-2-0">v1\.2\.0</a>
+    - <a href="#release-summary-1">Release Summary</a>
     - <a href="#new-modules">New Modules</a>
 - <a href="#v1-1-0">v1\.1\.0</a>
-    - <a href="#release-summary-1">Release Summary</a>
+    - <a href="#release-summary-2">Release Summary</a>
     - <a href="#new-modules-1">New Modules</a>
 - <a href="#v1-0-0">v1\.0\.0</a>
-    - <a href="#release-summary-2">Release Summary</a>
+    - <a href="#release-summary-3">Release Summary</a>
     - <a href="#new-modules-2">New Modules</a>
+
+<a id="v1-2-1"></a>
+## v1\.2\.1
+
+<a id="release-summary"></a>
+### Release Summary
+
+Minor bug fixes
+
+<a id="bugfixes"></a>
+### Bugfixes
+
+* Allow use of \'any\' keyword for src/dst networks and services for sfos\_firewall\_rule module
+* Fixed documentation error in examples for sfos\_zone
 
 <a id="v1-2-0"></a>
 ## v1\.2\.0
 
-<a id="release-summary"></a>
+<a id="release-summary-1"></a>
 ### Release Summary
 
 This release adds modules for working with IPS and Syslog settings
@@ -29,7 +46,7 @@ This release adds modules for working with IPS and Syslog settings
 <a id="v1-1-0"></a>
 ## v1\.1\.0
 
-<a id="release-summary-1"></a>
+<a id="release-summary-2"></a>
 ### Release Summary
 
 This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall
@@ -43,7 +60,7 @@ This release contains new modules for working with the SNMP agent and SNMPv3 use
 <a id="v1-0-0"></a>
 ## v1\.0\.0
 
-<a id="release-summary-2"></a>
+<a id="release-summary-3"></a>
 ### Release Summary
 
 This is the first proper release of the <code>sophos\.sophos\_firewall</code> collection\.
