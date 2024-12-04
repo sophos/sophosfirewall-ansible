@@ -52,7 +52,7 @@ author:
 
 EXAMPLES = r'''
 - name: Update TACACS Auth
-  sophos.sophos_firewall.sfos_authentication_ad:
+  sophos.sophos_firewall.sfos_authentication_tacacs:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -95,7 +95,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 
 
-def get_ad_settings(fw_obj, module, result):
+def get_tacacs_settings(fw_obj, module, result):
     """Get current settings from Sophos Firewall
 
     Args:
@@ -120,7 +120,7 @@ def get_ad_settings(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
-def create_ad(fw_obj, module, result):
+def create_tacacs(fw_obj, module, result):
     """Create an TACACS Server on Sophos Firewall when none exists
 
     Args:
@@ -168,7 +168,7 @@ def create_ad(fw_obj, module, result):
     
     return resp
 
-def update_ad_add(fw_obj, module, result):
+def update_tacacs_add(fw_obj, module, result):
     """Add additional TACACS server on Sophos Firewall
 
     Args:
@@ -217,7 +217,7 @@ def update_ad_add(fw_obj, module, result):
     
     return resp
 
-def update_ad_update(fw_obj, module, result):
+def update_tacacs_update(fw_obj, module, result):
     """Update existing TACACS settings on Sophos Firewall
 
     Args:
@@ -370,8 +370,8 @@ def eval_list_update_server(module, exist_settings):
     return False
 
 
-def remove_ad(fw_obj, module, result):
-    """Remove a Radius Server on a Sophos Firewall
+def remove_tacacs(fw_obj, module, result):
+    """Remove a Tacacs Server on a Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -455,13 +455,13 @@ def main():
 
     state = module.params.get("state")
 
-    exist_settings = get_ad_settings(fw, module, result)
+    exist_settings = get_tacacs_settings(fw, module, result)
     result["api_response"] = exist_settings["api_response"]
     
     
     if state == "absent":
                 # module.exit_json(msg=f"eval=true")
-                api_response = remove_ad(fw, module, result)
+                api_response = remove_tacacs(fw, module, result)
                 if api_response:
                     if api_response['Response']["AuthenticationServer"]["TACACSServer"]["Status"]["#text"] == "Configuration applied successfully.":
                         result["changed"] = True
@@ -482,7 +482,7 @@ def main():
         elif state == "updated" and result["api_response"].get('Status') == 'No. of records Zero.':
             
                 
-                api_response = create_ad(fw, module, result)
+                api_response = create_tacacs(fw, module, result)
                 
                 if api_response:
                     if api_response['Response']["TACACSServer"]["Status"]["#text"] == "Configuration applied successfully.":
@@ -498,7 +498,7 @@ def main():
                 # module.exit_json(msg=f"eval=true1")
                 if eval_changed(module, exist_settings):
                     # module.exit_json(msg=f"eval=true")
-                    api_response = update_ad_add(fw, module, result)
+                    api_response = update_tacacs_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
@@ -513,7 +513,7 @@ def main():
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
                     # module.exit_json(msg=f"eval=true4")
-                    api_response = update_ad_update(fw, module, result)
+                    api_response = update_tacacs_update(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
@@ -529,7 +529,7 @@ def main():
         
         if eval_list_new_servername(module, exist_settings):
                     # module.exit_json(msg=f"eval=true6")
-                    api_response = update_ad_add(fw, module, result)
+                    api_response = update_tacacs_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
@@ -544,7 +544,7 @@ def main():
     
             if eval_list_update_server(module, exist_settings):
                 # module.exit_json(msg=f"eval=true7")
-                api_response = update_ad_update(fw, module, result)
+                api_response = update_tacacs_update(fw, module, result)
                     
                 if api_response:
                     if (api_response["Response"]["TACACSServer"]["Status"]["#text"] == "Configuration applied successfully."):

@@ -46,18 +46,18 @@
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: updated
-  register: set_radius
+  register: set_edirectory
 
 - name: ASSERTION CHECK FOR ADD EDIRECTORY SERVER
   assert:
     that: 
-      - set_radius is changed
-      - set_radius['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
-      - set_radius['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+      - set_edirectory is changed
+      - set_edirectory['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
 
 
 
-- name: ADD RADIUS SERVER2
+- name: ADD EDIRECTORY SERVER2
   sfos_authentication_edirectory:
     <<: *sfos_connection_params
     servername: Test1
@@ -70,14 +70,14 @@
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: updated
-  register: set_radius2
+  register: set_edirectory2
 
-- name: ASSERTION CHECK FOR ADD RADIUS SERVER2
+- name: ASSERTION CHECK FOR ADD EDIRECTORY SERVER2
   assert:
     that: 
-      - set_radius2 is changed
-      - set_radius2['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
-      - set_radius2['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+      - set_edirectory2 is changed
+      - set_edirectory2['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory2['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
 
 
 - name: UPDATE EDIRECTORY SERVER CONFIG
@@ -93,14 +93,14 @@
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: updated
-  register: set_radius_update
+  register: set_edirectory_update
 
 - name: ASSERTION CHECK FOR Update EDIRECTORY SERVER
   assert:
     that: 
-      - set_radius_update is changed
-      - set_radius_update['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
-      - set_radius_update['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+      - set_edirectory_update is changed
+      - set_edirectory_update['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_update['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
 
 
 - name: REMOVE EDIRECTORY SERVER
@@ -116,14 +116,14 @@
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: absent
-  register: set_radius_remove
+  register: set_edirectory_remove
 
 - name: ASSERTION CHECK FOR REMOVE EDIRECTORY SERVER
   assert:
     that: 
-      - set_radius_remove is changed
-      - set_radius_remove['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
-      - set_radius_remove['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+      - set_edirectory_remove is changed
+      - set_edirectory_remove['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_remove['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
 
 
 
@@ -140,11 +140,11 @@
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: absent
-  register: set_radius_remove2
+  register: set_edirectory_remove2
 
 - name: ASSERTION CHECK FOR REMOVE EDIRECTORY SERVER2
   assert:
     that: 
-      - set_radius_remove2 is changed
-      - set_radius_remove2['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
-      - set_radius_remove2['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+      - set_edirectory_remove2 is changed
+      - set_edirectory_remove2['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_remove2['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'

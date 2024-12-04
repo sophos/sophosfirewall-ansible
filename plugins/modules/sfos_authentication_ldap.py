@@ -10,9 +10,9 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sfos_authentication_radius.py
+module: sfos_authentication_ldap.py
 
-short_description: Manage Authentication settings Radius
+short_description: Manage Authentication settings LDAP
 
 version_added: "1.0.0"
 
@@ -31,45 +31,66 @@ options:
         type: str
         required: false
     port:
-        description: Directory tenant ID
+        description: Port number
         type: str
         required: false
-    SharedSecret:
+    version:
         description: Client secret
         type: str
+        choices: [2, 3]
         required: false
-    GroupNameAttribute:
-        description: Redirect URI
+    connectionSecurity:
+        description: Encryption
+        choices: [Simple, SSL, TLS]
         type: str
         required: false
-    Timeout:
-        description: Display name use "upn"
+    anonymousLogin:
+        description: Anonymous Login
+        type: str
+        choices: [Enable, Disable]
+        required: false
+    baseDN:
+        description: BaseDN
+        type: str
+        required: false   
+    appendbaseDN:
+        description: Append BaseDN
+        type: str
+        choices: [Enable, Disable]
+        required: false
+    authenticationattribute:
+        description: Authentication Attribute
         type: str
         required: false
-    DomainName:
-        description: e-mail address use "email"
+    displaynameattribute:
+        description: Display Name Attribute
         type: str
         required: false
-    EnableAccounting:
-        description: enable accounting
+    emailaddressattribute:
+        description: Email Address Attribute
         type: str
-        choices: [Enable, None]
         required: false
-    Attributes:
-        description: User type selection
+    expirydateattribute:
+        description: date
         type: str
-        choices: [user, administrator]
         required: false
-        suboptions:
-            NAS-Identifier:
-                type: str
-                required: false
-            NAS-Port-Type:
-                type: str
-                required: false
-    AccountingPort:
-        description: port number"
+    bindDN:
+        description: Username
         type: str
+        required: false
+    ldap_password:
+        description: Password
+        type: str
+        required: false
+    validateservercertificate:
+        description: Password
+        type: str
+        choices: [Enable, Disable]
+        required: false
+    clientcertificate:
+        description: Password
+        type: str
+        choices: [None, ApplianceCertificate, Webadmin]
         required: false
     state:
         description:
@@ -85,7 +106,7 @@ author:
 
 EXAMPLES = r'''
 - name: Update Azure AD SSO
-  sophos.sophos_firewall.sfos_authentication_radius:
+  sophos.sophos_firewall.sfos_authentication_ldap:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -93,16 +114,19 @@ EXAMPLES = r'''
     verify: false
     servername: Test
     serveraddress: '192.168.0.1'
-    port_radius: '1812'
-    sharedsecret: sophosfirewall
-    groupnameattribute: upn
-    timeout: 3
-    domainname: sophos.com
-    enableaccounting: Enable
-    attributes:
-        nas_identifier: test
-        nas_port_type: 0
-    accountingport: 4444
+    port_ldap: '636'
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndoe
+    displaynameattribute: John Doe
+    groupnameattribute: 1001
+    expirydateattribute: date
+    validateservercertificate: Enable
+    clientCertificate: ApplianceCertificate
     state: updated
     delegate_to: localhost
 
@@ -136,7 +160,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
 
 
-def get_radius_settings(fw_obj, module, result):
+def get_ldap_settings(fw_obj, module, result):
     """Get current settings from Sophos Firewall
 
     Args:
@@ -148,7 +172,7 @@ def get_radius_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("AuthenticationServer")['Response']['AuthenticationServer']["RADIUSServer"]
+        resp = fw_obj.get_tag("AuthenticationServer")['Response']['AuthenticationServer']["LDAPServer"]
             
     except SophosFirewallZeroRecords as error:
         return {"exists": False, "api_response": str(error)}
@@ -161,8 +185,8 @@ def get_radius_settings(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
-def create_radius(fw_obj, module, result):
-    """Create an Radius Server on Sophos Firewall when none exists
+def create_ldap(fw_obj, module, result):
+    """Create an LDAP Server on Sophos Firewall when none exists
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -174,62 +198,121 @@ def create_radius(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <LDAPServer>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
           <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
-		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
+        </AuthenticationServer>
+    
+    """
+    
+    payload2 = """
+        <AuthenticationServer>
+          <LDAPServer>
+		  <ServerName>{{ name }}</ServerName>
+		  <ServerAddress>{{ ipaddress }}</ServerAddress>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
+          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <Administrator>{{ bindDN }}</Administrator>
+          <Password>{{ ldap_password }}</Password>
+          <AppendBaseDN>{{ appendbaseDN }}</AppendBaseDN>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
         </AuthenticationServer>
     
     """
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
+        "port_ldap": module.params.get("port_ldap"),
+        "version": module.params.get("version"),
+        "anonymouslogin": module.params.get("anonymouslogin"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "baseDN": module.params.get("baseDN"),
+        "authenticationattribute": module.params.get("authenticationattribute"),
+        "displaynameattribute": module.params.get("displaynameattribute", {}),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
         "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "groupnameattribute": module.params.get("groupnameattribute"),
+        "expirydateattribute": module.params.get("expirydateattribute"),
+        "validateservercertificate": module.params.get("validateservercertificate"),
+        "clientcertificate": module.params.get("clientcertificate"),
+        "appendbaseDN": module.params.get("appendbaseDN", {}),
+        "ldap_password": module.params.get("ldap_password", {}),
+        "bindDN": module.params.get("bindDN", {})
     }
     # print(template_vars)
     # final_payload = payload.format(**template_vars)
     # print("Final Payload with Variables Substituted:")
     # print(final_payload)
-    try:
-        with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                debug=True
+    anonymous = module.params.get("anonymouslogin")
+    if anonymous == "Enable":
+        try:
+            with contextlib.redirect_stdout(output_buffer):
+                resp = fw_obj.submit_xml(
+                    template_data=payload,
+                    template_vars=template_vars,
+                    debug=True
+                )
+                
+                
+        except SophosFirewallAuthFailure as error:
+            module.fail_json(msg="Authentication error: {0}".format(error), **result)
+        except SophosFirewallAPIError as error:
+            module.fail_json(
+                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
+        except RequestException as error:
+            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        
     # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-    return resp
+        return resp
+    else:
+        if anonymous == "Disable":
+            try:
+                with contextlib.redirect_stdout(output_buffer):
+                    resp = fw_obj.submit_xml(
+                        template_data=payload2,
+                        template_vars=template_vars,
+                        debug=True
+                    )
+                    
+            except SophosFirewallAuthFailure as error:
+                module.fail_json(msg="Authentication error: {0}".format(error), **result)
+            except SophosFirewallAPIError as error:
+                module.fail_json(
+                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+                )
+            except RequestException as error:
+                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+            
+        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+            return resp
+            
 
-def update_radius_add(fw_obj, module, result):
-    """Add additional radius server on Sophos Firewall
+def update_ldap_add(fw_obj, module, result):
+    """Add additional LDAP server on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -241,64 +324,122 @@ def update_radius_add(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <LDAPServer>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
           <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
-		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
         </AuthenticationServer>
     
     """
+    
+    payload2 = """
+        <AuthenticationServer>
+          <LDAPServer>
+		  <ServerName>{{ name }}</ServerName>
+		  <ServerAddress>{{ ipaddress }}</ServerAddress>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
+          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <Administrator>{{ bindDN }}</Administrator>
+          <Password>{{ ldap_password }}</Password>
+          <AppendBaseDN>{{ appendbaseDN }}</AppendBaseDN>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
+        </AuthenticationServer>
+    
+    """
+    
+    
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
-        "domainname": module.params.get("domainname"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
+        "port_ldap": module.params.get("port_ldap"),
+        "version": module.params.get("version"),
+        "anonymouslogin": module.params.get("anonymouslogin"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "baseDN": module.params.get("baseDN"),
+        "authenticationattribute": module.params.get("authenticationattribute"),
+        "displaynameattribute": module.params.get("displaynameattribute", {}),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
         "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "groupnameattribute": module.params.get("groupnameattribute"),
+        "expirydateattribute": module.params.get("expirydateattribute"),
+        "validateservercertificate": module.params.get("validateservercertificate"),
+        "clientcertificate": module.params.get("clientcertificate"),
+        "appendbaseDN": module.params.get("appendbaseDN", {}),
+        "ldap_password": module.params.get("ldap_password", {}),
+        "bindDN": module.params.get("bindDN", {})
     }
+    
+    anonymous = module.params.get("anonymouslogin")
+    if anonymous == "Enable":
     # print(template_vars)
     # final_payload = payload.format(**template_vars)
     # print("Final Payload with Variables Substituted:")
     # print(final_payload)
-    try:
-        with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation="add",
-                debug=True
+        try:
+            with contextlib.redirect_stdout(output_buffer):
+                resp = fw_obj.submit_xml(
+                    template_data=payload,
+                    template_vars=template_vars,
+                    set_operation="add",
+                    debug=True
+                )
+        except SophosFirewallAuthFailure as error:
+            module.fail_json(msg="Authentication error: {0}".format(error), **result)
+        except SophosFirewallAPIError as error:
+            module.fail_json(
+                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-    return resp
+        except RequestException as error:
+            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        
+        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+        return resp
+    else:
+        if anonymous == "Disable":
+            try:
+                with contextlib.redirect_stdout(output_buffer):
+                    resp = fw_obj.submit_xml(
+                        template_data=payload2,
+                        template_vars=template_vars,
+                        set_operation="add",
+                        debug=True
+                    )
+            except SophosFirewallAuthFailure as error:
+                module.fail_json(msg="Authentication error: {0}".format(error), **result)
+            except SophosFirewallAPIError as error:
+                module.fail_json(
+                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+                )
+            except RequestException as error:
+                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+            
+        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+        return resp
 
-def update_radius_update(fw_obj, module, result):
-    """Update existing radius settings on Sophos Firewall
+def update_ldap_update(fw_obj, module, result):
+    """Update existing LDAP settings on Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -310,64 +451,118 @@ def update_radius_update(fw_obj, module, result):
     """
     payload = """
         <AuthenticationServer>
-          <RADIUSServer>
+          <LDAPServer>
 		  <ServerName>{{ name }}</ServerName>
 		  <ServerAddress>{{ ipaddress }}</ServerAddress>
-		  <Port>{{ port_radius }}</Port>
-		  <SharedSecret>{{ sharedsecret }}</SharedSecret>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
           <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
-          <Timeout>{{ timeout }}</Timeout>
-		  <DomainName>{{ domainname }}</DomainName>
-          <EnableAccounting>{{ enableaccounting }}</EnableAccounting>
-		  <Attributes>
-            <NAS-Identifier>{{ nas_identifier }}</NAS-Identifier>
-            <NAS-Port-Type>{{ nas_port_type }}</NAS-Port-Type>
-          </Attributes>
-          <AccountingPort>{{ accountingport }}</AccountingPort>
-	      </RADIUSServer>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
+        </AuthenticationServer>
+    
+    """
+    
+    payload2 = """
+        <AuthenticationServer>
+          <LDAPServer>
+		  <ServerName>{{ name }}</ServerName>
+		  <ServerAddress>{{ ipaddress }}</ServerAddress>
+		  <Port>{{ port_ldap }}</Port>
+		  <Version>{{ version }}</Version>
+          <AnonymousLogin>{{ anonymouslogin }}</AnonymousLogin>
+          <ConnectionSecurity>{{ connectionsecurity }}</ConnectionSecurity>
+		  <BaseDN>{{ baseDN }}</BaseDN>
+          <AuthenticationAttribute>{{ authenticationattribute }}</AuthenticationAttribute>
+          <DisplayNameAttribute>{{ displaynameattribute }}</DisplayNameAttribute>
+          <EmailAddressAttribute>{{ emailaddressattribute }}</EmailAddressAttribute>
+          <GroupNameAttribute>{{ groupnameattribute }}</GroupNameAttribute>
+          <ExpiryDateAttribute>{{ expirydateattribute }}</ExpiryDateAttribute>
+          <Administrator>{{ bindDN }}</Administrator>
+          <Password>{{ ldap_password }}</Password>
+          <AppendBaseDN>{{ appendbaseDN }}</AppendBaseDN>
+          <ValidateServerCertificate>{{ validateservercertificate }}</ValidateServerCertificate>
+          <ClientCertificate>{{ clientcertificate }}</ClientCertificate>
+	      </LDAPServer>
         </AuthenticationServer>
     
     """
     template_vars = {
         "name": module.params.get("servername"),
         "ipaddress": module.params.get("serveraddress"),
-        "port_radius": module.params.get("port_radius"),
-        "groupnameattribute": module.params.get("groupnameattribute"),
-        "timeout": module.params.get("timeout"),
-        "domainname": module.params.get("domainname"),
-        "enableaccounting": module.params.get("enableaccounting"),
-        "nas_identifier": module.params.get("attributes", {}).get("nas_identifier"),
-        "nas_port_type": module.params.get("attributes", {}).get("nas_port_type"),
-        "port_radius": module.params.get("port_radius"),
+        "port_ldap": module.params.get("port_ldap"),
+        "version": module.params.get("version"),
+        "anonymouslogin": module.params.get("anonymouslogin"),
+        "connectionsecurity": module.params.get("connectionsecurity"),
+        "baseDN": module.params.get("baseDN"),
+        "authenticationattribute": module.params.get("authenticationattribute"),
+        "displaynameattribute": module.params.get("displaynameattribute", {}),
+        "emailaddressattribute": module.params.get("emailaddressattribute"),
         "accountingport": module.params.get("accountingport"),
-        "sharedsecret": module.params.get("sharedsecret")
+        "groupnameattribute": module.params.get("groupnameattribute"),
+        "expirydateattribute": module.params.get("expirydateattribute"),
+        "validateservercertificate": module.params.get("validateservercertificate"),
+        "clientcertificate": module.params.get("clientcertificate"),
+        "appendbaseDN": module.params.get("appendbaseDN", {}),
+        "ldap_password": module.params.get("ldap_password", {}),
+        "bindDN": module.params.get("bindDN", {})
     }
     # print(template_vars)
     # final_payload = payload.format(**template_vars)
     # print("Final Payload with Variables Substituted:")
     # print(final_payload)
-    try:
-        with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation="update",
-                debug=True
-            )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-    return resp
+    anonymous = module.params.get("anonymouslogin")
+    if anonymous == "Enable":
+        try:
+            with contextlib.redirect_stdout(output_buffer):
+                resp = fw_obj.submit_xml(
+                    template_data=payload,
+                    template_vars=template_vars,
+                    set_operation="update",
+                    debug=True
+                )
+        except SophosFirewallAuthFailure as error:
+            module.fail_json(msg="Authentication error: {0}".format(error), **result)
+        except SophosFirewallAPIError as error:
+            module.fail_json(
+                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+            )
+        except RequestException as error:
+            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        
+        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+        return resp
+    else:
+        if anonymous == "Disable":
 
-
-
+            try:
+                with contextlib.redirect_stdout(output_buffer):
+                    resp = fw_obj.submit_xml(
+                        template_data=payload2,
+                        template_vars=template_vars,
+                        set_operation="update",
+                        debug=True
+                    )
+            except SophosFirewallAuthFailure as error:
+                module.fail_json(msg="Authentication error: {0}".format(error), **result)
+            except SophosFirewallAPIError as error:
+                module.fail_json(
+                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+                )
+            except RequestException as error:
+                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        
+        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+        return resp
 def eval_changed(module, exist_settings):
     """Evaluate the provided arguments against existing settings. 
 
@@ -381,41 +576,95 @@ def eval_changed(module, exist_settings):
     exist_settings = exist_settings["api_response"]
     servername = module.params.get("servername", {})
     serveraddress = module.params.get("serveraddress", {})
-    port_radius = module.params.get("port_radius", {})
-    sharedsecret = module.params.get("sharedsecret", {})
+    port_ldap =  module.params.get("port_ldap", {})
+    version = module.params.get("version", {})
+    anonymouslogin = module.params.get("anonymouslogin", {})
+    connectionsecurity = module.params.get("connectionsecurity", {})
+    baseDN = module.params.get("baseDN", {})
+    authenticationattribute = module.params.get("authenticationattribute", {})
+    displaynameattribute = module.params.get("displaynameattribute", {})
+    emailaddressattribute = module.params.get("emailaddressattribute", {})
     groupnameattribute = module.params.get("groupnameattribute", {})
-    timeout = module.params.get("timeout", {})
-    domainname = module.params.get("domainname", {})
-    enableaccounting = module.params.get("enableaccounting", {})
-    nas_identifier = module.params.get("attributes", {}).get("nas_identifier")
-    nas_port_type = module.params.get("attributes", {}).get("nas_port_type")
-    accountingport = module.params.get("accountingport")
+    expirydateattribute = module.params.get("expirydateattribute", {})
+    validateservercertificate = module.params.get("validateservercertificate", {})
+    clientcertificate = module.params.get("clientcertificate", {})
+    appendbaseDN = module.params.get("appendbaseDN", {})
+    ldap_password = module.params.get("ldap_password", {})
+    bindDN = module.params.get("bindDN", {})
     
+    anonymous = module.params.get("anonymouslogin")
     
-    if servername and not servername == exist_settings["ServerName"]:
-        return True
-    if serveraddress and not serveraddress == exist_settings["ServerAddress"]:
-        return True
-    if port_radius and not port_radius == exist_settings["Port"]:
-        return True
-    if groupnameattribute and not groupnameattribute == exist_settings["GroupNameAttribute"]:
-        return True
-    if timeout and not timeout == exist_settings["Timeout"]:
-        return True
-    if domainname and not domainname == exist_settings["DomainName"]:
-        return True
-    if enableaccounting and not enableaccounting == exist_settings["EnableAccounting"]:
-        return True
-    if nas_identifier and not nas_identifier == exist_settings["Attributes"]["NAS-Identifier"]:
+    if anonymous == "Enable":
+    
+        if servername and not servername == exist_settings["ServerName"]:
             return True
-    if nas_port_type and not nas_port_type == exist_settings["Attributes"]["NAS-Port-Type"]:
+        if serveraddress and not serveraddress == exist_settings["ServerAddress"]:
             return True
-    if accountingport and not accountingport == exist_settings["AccountingPort"]:
+        if port_ldap and not port_ldap == exist_settings["Port"]:
             return True
-    if module.params.get("sharedsecret"): 
-        return True
-            
-    return False
+        if version and not version == exist_settings["Version"]:
+            return True
+        if anonymouslogin and not anonymouslogin == exist_settings["AnonymousLogin"]:
+            return True
+        if connectionsecurity and not connectionsecurity == exist_settings["ConnectionSecurity"]:
+            return True
+        if baseDN and not baseDN == exist_settings["BaseDN"]:
+            return True
+        if authenticationattribute and not authenticationattribute == exist_settings["AuthenticationAttribute"]:
+                return True
+        if displaynameattribute and not displaynameattribute == exist_settings["DisplayNameAttribute"]:
+                return True
+        if emailaddressattribute and not emailaddressattribute == exist_settings["EmailAddressAttribute"]:
+                return True
+        if groupnameattribute and not groupnameattribute == exist_settings["ExpiryDateAttribute"]:
+            return True
+        if expirydateattribute and not expirydateattribute == exist_settings["ExpiryDateAttribute"]:
+            return True
+        if validateservercertificate and not validateservercertificate == exist_settings["ValidateServerCertificate"]:
+            return True
+        if module.params.get("ldap_password"): 
+            return True
+                
+        return False
+    else:
+        if anonymous == "Disable":
+            if servername and not servername == exist_settings["ServerName"]:
+                return True
+            if serveraddress and not serveraddress == exist_settings["ServerAddress"]:
+                return True
+            if port_ldap and not port_ldap == exist_settings["Port"]:
+                return True
+            if version and not version == exist_settings["Version"]:
+                return True
+            if anonymouslogin and not anonymouslogin == exist_settings["AnonymousLogin"]:
+                return True
+            if connectionsecurity and not connectionsecurity == exist_settings["ConnectionSecurity"]:
+                return True
+            if baseDN and not baseDN == exist_settings["BaseDN"]:
+                return True
+            if authenticationattribute and not authenticationattribute == exist_settings["AuthenticationAttribute"]:
+                    return True
+            if displaynameattribute and not displaynameattribute == exist_settings["DisplayNameAttribute"]:
+                    return True
+            if emailaddressattribute and not emailaddressattribute == exist_settings["EmailAddressAttribute"]:
+                    return True
+            if groupnameattribute and not groupnameattribute == exist_settings["ExpiryDateAttribute"]:
+                return True
+            if expirydateattribute and not expirydateattribute == exist_settings["ExpiryDateAttribute"]:
+                return True
+            if validateservercertificate and not validateservercertificate == exist_settings["ValidateServerCertificate"]:
+                return True
+            if clientcertificate and not clientcertificate == exist_settings["ClientCertificate"]:
+                return True
+            if appendbaseDN and not appendbaseDN == exist_settings["AppendBaseDN"]:
+                return True
+            if bindDN and not bindDN == exist_settings["Administrator"]:
+                return True
+
+            if module.params.get("ldap_password"): 
+                return True
+                
+        return False
     
     
 def eval_servername(module, exist_settings):
@@ -473,47 +722,102 @@ def eval_list_update_server(module, exist_settings):
     exist_settings = exist_settings["api_response"]
     servername = module.params.get("servername", {})
     serveraddress = module.params.get("serveraddress", {})
-    port_radius = module.params.get("port_radius", {})
-    sharedsecret = module.params.get("sharedsecret", {})
+    port_ldap =  module.params.get("port_ldap", {})
+    version = module.params.get("version", {})
+    anonymouslogin = module.params.get("anonymouslogin", {})
+    connectionsecurity = module.params.get("connectionsecurity", {})
+    baseDN = module.params.get("baseDN", {})
+    authenticationattribute = module.params.get("authenticationattribute", {})
+    displaynameattribute = module.params.get("displaynameattribute", {})
+    emailaddressattribute = module.params.get("emailaddressattribute", {})
     groupnameattribute = module.params.get("groupnameattribute", {})
-    timeout = module.params.get("timeout", {})
-    domainname = module.params.get("domainname", {})
-    enableaccounting = module.params.get("enableaccounting", {})
-    nas_identifier = module.params.get("attributes", {}).get("nas_identifier")
-    nas_port_type = module.params.get("attributes", {}).get("nas_port_type")
-    accountingport = module.params.get("accountingport")
+    expirydateattribute = module.params.get("expirydateattribute", {})
+    validateservercertificate = module.params.get("validateservercertificate", {})
+    clientcertificate = module.params.get("clientcertificate", {})
+    appendbaseDN = module.params.get("appendbaseDN", {})
+    ldap_password = module.params.get("ldap_password", {})
+    bindDN = module.params.get("bindDN", {})
     
+    anonymous = module.params.get("anonymouslogin")
     list_len = len(exist_settings)
-    for i in range(list_len):
-       
-        if (exist_settings[i]["ServerName"]) == servername:
-            
-            if serveraddress and not serveraddress == exist_settings[i]["ServerAddress"]:
-                return True, i
-            if port_radius and not port_radius == exist_settings[i]["Port"]:
-                return True, i
-            if groupnameattribute and not groupnameattribute == exist_settings[i]["GroupNameAttribute"]:
-                return True, i
-            if timeout and not timeout == exist_settings[i]["Timeout"]:
-                return True, i
-            if domainname and not domainname == exist_settings[i]["DomainName"]:
-                return True, i
-            if enableaccounting and not enableaccounting == exist_settings[i]["EnableAccounting"]:
-                return True, i
-            if nas_identifier and not nas_identifier == exist_settings[i]["Attributes"]["NAS-Identifier"]:
-                    return True, i
-            if nas_port_type and not nas_port_type == exist_settings[i]["Attributes"]["NAS-Port-Type"]:
-                    return True, i
-            if accountingport and not accountingport == exist_settings[i]["AccountingPort"]:
-                    return True, i
-            if module.params.get("sharedsecret"): 
-                return True, i
-            
+    
+    if anonymous == "Enable":
+        for i in range(list_len):
+        
+            if (exist_settings[i]["ServerName"]) == servername:
+                
+                if serveraddress and not serveraddress == exist_settings[i]["ServerAddress"]:
+                    return True
+                if port_ldap and not port_ldap == exist_settings[i]["Port"]:
+                    return True
+                if version and not version == exist_settings[i]["Version"]:
+                    return True
+                if anonymouslogin and not anonymouslogin == exist_settings[i]["AnonymousLogin"]:
+                    return True
+                if connectionsecurity and not connectionsecurity == exist_settings[i]["ConnectionSecurity"]:
+                    return True
+                if baseDN and not baseDN == exist_settings[i]["BaseDN"]:
+                    return True
+                if authenticationattribute and not authenticationattribute == exist_settings[i]["AuthenticationAttribute"]:
+                        return True
+                if displaynameattribute and not displaynameattribute == exist_settings[i]["DisplayNameAttribute"]:
+                        return True
+                if emailaddressattribute and not emailaddressattribute == exist_settings[i]["EmailAddressAttribute"]:
+                        return True
+                if groupnameattribute and not groupnameattribute == exist_settings[i]["ExpiryDateAttribute"]:
+                    return True
+                if expirydateattribute and not expirydateattribute == exist_settings[i]["ExpiryDateAttribute"]:
+                    return True
+                if validateservercertificate and not validateservercertificate == exist_settings[i]["ValidateServerCertificate"]:
+                    return True
+                if module.params.get("ldap_password"): 
+                    return True
+    if anonymous == "Disable":
+        
+        for i in range(list_len):
+        
+            if (exist_settings[i]["ServerName"]) == servername:
+                
+                
+                if serveraddress and not serveraddress == exist_settings[i]["ServerAddress"]:
+                    return True
+                if port_ldap and not port_ldap == exist_settings[i]["Port"]:
+                    return True
+                if version and not version == exist_settings[i]["Version"]:
+                    return True
+                if anonymouslogin and not anonymouslogin == exist_settings[i]["AnonymousLogin"]:
+                    return True
+                if connectionsecurity and not connectionsecurity == exist_settings[i]["ConnectionSecurity"]:
+                    return True
+                if baseDN and not baseDN == exist_settings[i]["BaseDN"]:
+                    return True
+                if authenticationattribute and not authenticationattribute == exist_settings[i]["AuthenticationAttribute"]:
+                        return True
+                if displaynameattribute and not displaynameattribute == exist_settings[i]["DisplayNameAttribute"]:
+                        return True
+                if emailaddressattribute and not emailaddressattribute == exist_settings[i]["EmailAddressAttribute"]:
+                        return True
+                if groupnameattribute and not groupnameattribute == exist_settings[i]["ExpiryDateAttribute"]:
+                    return True
+                if expirydateattribute and not expirydateattribute == exist_settings[i]["ExpiryDateAttribute"]:
+                    return True
+                if validateservercertificate and not validateservercertificate == exist_settings[i]["ValidateServerCertificate"]:
+                    return True
+                if clientcertificate and not clientcertificate == exist_settings[i]["ClientCertificate"]:
+                    return True
+                if appendbaseDN and not appendbaseDN == exist_settings[i]["AppendBaseDN"]:
+                    return True
+                if bindDN and not bindDN == exist_settings[i]["Administrator"]:
+                    return True
+
+                if module.params.get("ldap_password"): 
+                    return True
+    
     return False
 
 
-def remove_radius(fw_obj, module, result):
-    """Remove a Radius Server on a Sophos Firewall
+def remove_ldap(fw_obj, module, result):
+    """Remove a LDAP Server on a Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object
@@ -526,9 +830,9 @@ def remove_radius(fw_obj, module, result):
     payload = """
             <Remove>
             <AuthenticationServer>
-            <RADIUSServer>
+            <LDAPServer>
 		    <ServerName>{{ name }}</ServerName>
-            </RADIUSServer>
+            </LDAPServer>
             </AuthenticationServer>
             </Remove>
     """
@@ -570,16 +874,21 @@ def main():
         "verify": {"type": "bool", "default": True},
         "servername": {"type": "str", "required": False},
         "serveraddress": {"type": "str", "required": False},
-        "port_radius": {"type": "str", "required": False},
-        "sharedsecret": {"type": "str", "required": False},
+        "port_ldap": {"type": "str", "required": False},
+        "version": {"type": "str", "choices": ["2", "3"], "required": False},
+        "anonymouslogin": {"type": "str", "choices": ["Enable", "Disable"], "required": False},
+        "connectionsecurity": {"type": "str", "choices": ["Simple", "SSL", "TLS"], "required": False},
+        "bindDN": {"type": "str", "required": False},
+        "ldap_password": {"type": "str", "required": False},
         "groupnameattribute": {"type": "str", "required": False},
-        "timeout": {"type": "str", "required": False},
-        "domainname": {"type": "str", "required": False},
-        "enableaccounting": {"type": "str", "choices": ["Enable", "None"]},
-        # "nas_identifier": {"type": "str", "required": False},
-        # "nas_port_type": {"type": "str", "required": False},
-        "accountingport": {"type": "str", "required": False},
-        "attributes": {"type": "dict", "required": False},
+        "baseDN": {"type": "str", "required": False},
+        "appendbaseDN": {"type": "str", "choices": ["Enable", "Disable"], "required": False},
+        "expirydateattribute": {"type": "str", "required": False},
+        "authenticationattribute": {"type": "str", "required": False},
+        "displaynameattribute": {"type": "str", "required": False},
+        "emailaddressattribute": {"type": "str", "required": False},
+        "validateservercertificate": {"type": "str", "choices": ["Enable", "Disable"]},
+        "clientcertificate": {"type": "str", "choices": ["None", "ApplianceCertificate", "Webadmin"]},
         "state": {"type": "str", "required": True, "choices": ["updated", "query", "absent"]}
     }
 
@@ -618,16 +927,16 @@ def main():
 
     state = module.params.get("state")
 
-    exist_settings = get_radius_settings(fw, module, result)
+    exist_settings = get_ldap_settings(fw, module, result)
     result["api_response"] = exist_settings["api_response"]
     
     
     if state == "absent":
                 # module.exit_json(msg=f"eval=true")
-                api_response = remove_radius(fw, module, result)
+                api_response = remove_ldap(fw, module, result)
                 
                 if api_response:
-                    if api_response['Response']["AuthenticationServer"]["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully.":
+                    if api_response['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == "Configuration applied successfully.":
                         result["changed"] = True
                     result["api_response"] = api_response
                     module.exit_json(**result)
@@ -646,10 +955,11 @@ def main():
         elif state == "updated" and result["api_response"].get('Status') == 'No. of records Zero.':
             
                 
-                api_response = create_radius(fw, module, result)
+                api_response = create_ldap(fw, module, result)
                 
                 if api_response:
-                    if api_response['Response']["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully.":
+                    
+                    if api_response['Response']["LDAPServer"]["Status"]["#text"] == "Configuration applied successfully.":
                         result["changed"] = True
                     result["api_response"] = api_response
                 else:
@@ -660,12 +970,12 @@ def main():
             
             if eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_add(fw, module, result)
+                    # module.exit_json(msg=f"eval=true22")
+                    api_response = update_ldap_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["LDAPServer"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -675,12 +985,12 @@ def main():
                         
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_update(fw, module, result)
+                    # module.exit_json(msg=f"eval=true23")
+                    api_response = update_ldap_update(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["LDAPServer"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -691,12 +1001,12 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
-                    api_response = update_radius_add(fw, module, result)
+                    # module.exit_json(msg=f"eval=true34")
+                    api_response = update_ldap_add(fw, module, result)
                     print(f'toppp2',api_response)
             
                     if api_response:
-                        if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
+                        if (api_response["Response"]["LDAPServer"]["Status"]["#text"]
                         
                                 == "Configuration applied successfully."):
                             result["changed"] = True
@@ -706,11 +1016,11 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true")
-                api_response = update_radius_update(fw, module, result)
+                # module.exit_json(msg=f"eval=true35")
+                api_response = update_ldap_update(fw, module, result)
                     
                 if api_response:
-                    if (api_response["Response"]["RADIUSServer"]["Status"]["#text"] == "Configuration applied successfully."):
+                    if (api_response["Response"]["LDAPServer"]["Status"]["#text"] == "Configuration applied successfully."):
                         result["changed"] = True
                     result["api_response"] = api_response
                 else:

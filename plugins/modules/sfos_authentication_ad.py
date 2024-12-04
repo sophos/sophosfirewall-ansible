@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 module: sfos_authentication_ad.py
 
-short_description: Manage Authentication settings Radius
+short_description: Manage Authentication settings Active Directory
 
 version_added: "1.0.0"
 
@@ -525,7 +525,7 @@ def eval_list_update_server(module, exist_settings):
 
 
 def remove_ad(fw_obj, module, result):
-    """Remove a Radius Server on a Sophos Firewall
+    """Remove a Active Directory Server on a Sophos Firewall
 
     Args:
         fw_obj (SophosFirewall): SophosFirewall object

@@ -489,21 +489,48 @@
     #     state: absent
     #   delegate_to: localhost
     
-    - name: Update eDirectory Auth
-      sophos.sophos_firewall.sfos_authentication_edirectory:
+    # - name: Update eDirectory Auth
+    #   sophos.sophos_firewall.sfos_authentication_edirectory:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     servername: Test54
+    #     serveripdomain: '192.168.0.89'
+    #     port_edir: '1812'
+    #     binddn: CN=user1,CN=Users,DC=example,DC=com
+    #     dn_password: testtest
+    #     connectionsecurity: SSL
+    #     validateservercertificate: Enable
+    #     clientcertificate: Webadmin
+    #     basedn: o=sophos.com
+    #     state: updated
+    #   delegate_to: localhost
+
+    - name: Update LDAP Auth
+      sophos.sophos_firewall.sfos_authentication_ldap:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        servername: Test54
-        serveripdomain: '192.168.0.89'
-        port_edir: '1812'
-        binddn: CN=user1,CN=Users,DC=example,DC=com
-        dn_password: testtest
+        servername: test8
+        serveraddress: '192.168.0.8'
+        port_ldap: '636'
+        version: 3
+        anonymouslogin: Enable
         connectionsecurity: SSL
-        validateservercertificate: Enable
-        clientcertificate: Webadmin
-        basedn: o=sophos.com
+        bindDN: admin
+        ldap_password: sophosfirewall
+        appendbaseDN: Enable
+        baseDN: DC=sophos,DC=com
+        authenticationattribute: johndo9
+        displaynameattribute: JohnDoe
+        emailaddressattribute: mail
+        groupnameattribute: mx=1001
+        expirydateattribute: date
+        validateservercertificate: Disable
+        clientcertificate: ApplianceCertificate
         state: updated
       delegate_to: localhost
