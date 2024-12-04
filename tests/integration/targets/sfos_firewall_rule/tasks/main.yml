@@ -23,11 +23,14 @@
       verify: "{{ sfos_verify }}"
   no_log: true
 
-- name: ENSURE IGT_TESTRULE DOES NOT EXIST
+- name: ENSURE TEST RULES DO NOT EXIST
   sophos.sophos_firewall.sfos_firewall_rule:
     <<: *sfos_connection_params
-    name: IGT_TESTRULE
+    name: "{{ item }}"
     state: absent
+  loop:
+    - IGT_TESTRULE
+    - IGT_TESTRULE_ANY
 
 - name: CREATE NETWORKS
   sophos.sophos_firewall.sfos_ip_host:
@@ -88,6 +91,48 @@
       - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['SourceNetworks']['Network'] == "IGT_TESTNETWORK1"
       - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['DestinationNetworks']['Network'] == "IGT_TESTNETWORK2"
       - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Services']['Service'] == "HTTPS"
+
+- name: CREATE FIREWALL RULE USING ANY
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE_ANY
+    position: bottom
+    status: enable
+    src_networks:
+      - Any
+    dst_networks:
+      - Any
+    service_list:
+      - Any
+    action: accept
+    state: present
+  register: create_any
+
+- name: ASSERTION CHECK FOR CREATE FIREWALL RULE USING ANY
+  assert:
+    that: 
+      - create_any is changed
+      - create_any['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - create_any['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE USING ANY
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE_ANY
+    state: query
+  register: query_rule_any
+
+- name: ASSERTION CHECK FOR QUERY FIREWALL RULE USING ANY
+  assert:
+    that: 
+      - query_rule_any is not changed
+      - query_rule_any['api_response']['Response']['FirewallRule']['Name'] == "IGT_TESTRULE_ANY"
+      - query_rule_any['api_response']['Response']['FirewallRule']['Status'] == "Enable"
+      - query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']['Action'] == "Accept"
+      - "'SourceNetworks' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
+      - "'DestinationNetworks' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
+      - "'Services' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
+
 
 - name: CREATE EXISTING FIREWALL RULE
   sophos.sophos_firewall.sfos_firewall_rule:
@@ -187,6 +232,13 @@
     that: 
       - update_nonexist is failed
       - update_nonexist['api_response'] == "No. of records Zero."
+
+- name: REMOVE IGT_TESTRULE_ANY
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: IGT_TESTRULE_ANY
+    state: absent
+  register: remove_rule
 
 - name: REMOVE TEST NETWORKS
   sophos.sophos_firewall.sfos_ip_host:

@@ -195,6 +195,27 @@ def create_firewallrule(fw_obj, module, result):
     Returns:
         dict: API response
     """
+    src_zones = module.params.get("src_zones")
+    if src_zones:
+        if "any" in [item.lower() for item in src_zones]:
+            src_zones = []
+    dst_zones = module.params.get("dst_zones")
+    if dst_zones:
+        if "any" in [item.lower() for item in dst_zones]:
+            dst_zones = []
+    src_networks = module.params.get("src_networks")
+    if src_networks:
+        if "any" in [item.lower() for item in src_networks]:
+            src_networks = []
+    dst_networks = module.params.get("dst_networks")
+    if dst_networks:
+        if "any" in [item.lower() for item in dst_networks]:
+            dst_networks = []
+    service_list = module.params.get("service_list")
+    if service_list:
+        if "any" in [item.lower() for item in service_list]:
+            service_list = []
+
     rule_params = {
         "rulename": module.params.get("name"),
         "status": module.params.get("status").capitalize()
@@ -212,11 +233,11 @@ def create_firewallrule(fw_obj, module, result):
         if module.params.get("log")
         else None,
         "description": module.params.get("description"),
-        "src_zones": module.params.get("src_zones"),
-        "dst_zones": module.params.get("dst_zones"),
-        "src_networks": module.params.get("src_networks"),
-        "dst_networks": module.params.get("dst_networks"),
-        "service_list": module.params.get("service_list"),
+        "src_zones": src_zones,
+        "dst_zones": dst_zones,
+        "src_networks": src_networks,
+        "dst_networks": dst_networks,
+        "service_list": service_list,
     }
 
     try:
