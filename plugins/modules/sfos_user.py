@@ -7,15 +7,15 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_user
 
-short_description: Manage Users on Sophos Firewall
+short_description: Manage Users (Configure > Authentication > Users)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes Users on Sophos Firewall
+description: Creates, updates or removes Users (Configure > Authentication > Users) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
@@ -146,9 +146,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create User
   sophos.sophos_firewall.sfos_user:
     username: "{{ username }}"
@@ -164,17 +164,18 @@ EXAMPLES = r'''
     group: Open Group
     email: test.user@sophos.com
     state: present
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -185,6 +186,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -217,6 +219,7 @@ def get_user(fw_obj, module, result):
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
 
     return {"exists": True, "api_response": resp}
+
 
 def create_user(fw_obj, module, result):
     """Create a user on Sophos Firewall.
@@ -251,20 +254,25 @@ def create_user(fw_obj, module, result):
         "simultaneous_logins": module.params.get("simultaneous_logins"),
         "surfingquota_policy": module.params.get("surfingquota_policy"),
         "applianceaccess_schedule": module.params.get("applianceaccess_schedule"),
-        "login_restriction": module.params.get("appliance_login_restriction") if module.params.get("user_type") == 'Administrator' else module.params.get("login_restriction")
+        "login_restriction": module.params.get("appliance_login_restriction")
+        if module.params.get("user_type") == "Administrator"
+        else module.params.get("login_restriction"),
     }
-    
+
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.create_user(**user_params, debug=True)
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}\n {1}".format(error,output_buffer.getvalue()), **result)
+        module.fail_json(
+            msg="API Error: {0}\n {1}".format(error, output_buffer.getvalue()), **result
+        )
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def remove_user(fw_obj, module, result):
     """Remove a user from Sophos Firewall.
@@ -278,9 +286,7 @@ def remove_user(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="User", name=module.params.get("user")
-        )
+        resp = fw_obj.remove(xml_tag="User", name=module.params.get("user"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -310,7 +316,9 @@ def update_user(fw_obj, module, result):
         "UserType": module.params.get("user_type"),
         "Profile": module.params.get("profile"),
         "Group": module.params.get("group"),
-        "EmailList": {"EmailID": module.params.get("email")} if module.params.get("email") else None,
+        "EmailList": {"EmailID": module.params.get("email")}
+        if module.params.get("email")
+        else None,
         "AccessTimePolicy": module.params.get("access_time_policy"),
         "SSLVPNPolicy": module.params.get("sslvpn_policy"),
         "ClientlessPolicy": module.params.get("clientless_policy"),
@@ -324,10 +332,12 @@ def update_user(fw_obj, module, result):
         "SimultaneousLoginsGlobal": module.params.get("simultaneous_logins"),
         "SurfingQuotaPolicy": module.params.get("surfingquota_policy"),
         "ScheduleForApplianceAccess": module.params.get("applianceaccess_schedule"),
-        "LoginRestrictionForAppliance": module.params.get("appliance_login_restriction")
+        "LoginRestrictionForAppliance": module.params.get(
+            "appliance_login_restriction"
+        ),
     }
     # Remove any keys with null values
-    user_params = {key:value for key,value in user_params.items() if value}
+    user_params = {key: value for key, value in user_params.items() if value}
 
     try:
         if module.params.get("user_password"):
@@ -335,23 +345,26 @@ def update_user(fw_obj, module, result):
                 resp = fw_obj.update_user_password(
                     username=module.params.get("user"),
                     new_password=module.params.get("user_password"),
-                    debug=True
+                    debug=True,
                 )
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.update(
                 xml_tag="User",
                 update_params=user_params,
                 name=module.params.get("name"),
-                debug=True
+                debug=True,
             )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result)
+        module.fail_json(
+            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+        )
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def main():
     """Code executed at run time."""
@@ -374,21 +387,41 @@ def main():
         "clientless_policy": {"type": "str", "default": "No Policy Applied"},
         "l2tp": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
         "pptp": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
-        "cisco": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
-        "quarantine_digest": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
-        "mac_binding": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
+        "cisco": {
+            "type": "str",
+            "choices": ["Enable", "Disable"],
+            "default": "Disable",
+        },
+        "quarantine_digest": {
+            "type": "str",
+            "choices": ["Enable", "Disable"],
+            "default": "Disable",
+        },
+        "mac_binding": {
+            "type": "str",
+            "choices": ["Enable", "Disable"],
+            "default": "Disable",
+        },
         "login_restriction": {"type": "str", "default": "UserGroupNode"},
-        "isencryptcert": {"type": "str", "choices": ["Enable", "Disable"], "default": "Disable"},
+        "isencryptcert": {
+            "type": "str",
+            "choices": ["Enable", "Disable"],
+            "default": "Disable",
+        },
         "simultaneous_logins": {"type": "str", "choices": ["Enable", "Disable"]},
         "surfingquota_policy": {"type": "str", "default": "Unlimited Internet Access"},
         "applianceaccess_schedule": {"type": "str", "default": "All The Time"},
         "appliance_login_restriction": {"type": "str", "default": "AnyNode"},
-        "state": {"type": "str", "required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "type": "str",
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
 
     required_if = [
-        ('state', 'present', ['user_password', 'user_type', 'group', 'email'], False),
-        ('user_type', 'Administrator', ['profile'], True)
+        ("state", "present", ["user_password", "user_type", "group", "email"], False),
+        ("user_type", "Administrator", ["profile"], True),
     ]
 
     # required_together = [
@@ -396,16 +429,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True
-                           )
-    
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -414,10 +447,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -445,8 +475,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_user(fw, module, result)
-        if (api_response["Response"]["User"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["User"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -457,8 +489,10 @@ def main():
         api_response = update_user(fw, module, result)
 
         if api_response:
-            if (api_response["Response"]["User"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"]["User"]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
             result["api_response"] = api_response
         else:

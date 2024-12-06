@@ -1,0 +1,238 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: SET BASELINE SETTINGS FOR TESTS
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: Local
+    frequency: Never
+    state: updated
+  delegate_to: localhost
+
+- name: SET FTP BACKUP DAILY
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: FTP
+    prefix: intgtest
+    ftp_server: 10.10.10.1
+    ftp_username: ftpuser
+    ftp_password: ftppassword
+    ftp_path: home/backup
+    frequency: Daily
+    hour: 20
+    minute: 30
+    encryption_password: integrationtest
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET FTP BACKUP DAILY
+  assert:
+    that: 
+      - set_backup is changed
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['@code'] == '200'
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY BACKUP SETTINGS
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    state: query
+  register: query_backup
+
+- name: ASSERTION CHECK FOR QUERY FTP BACKUP DAILY
+  assert:
+    that: 
+      - query_backup is not changed
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupMode'] == 'FTP'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupPrefix'] == 'intgtest'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['FtpPath'] == 'home/backup'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Username'] == 'ftpuser'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Daily'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '20'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '30'
+
+- name: UPDATE FTP BACKUP WEEKLY
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: FTP
+    prefix: intgtest
+    ftp_server: 10.10.10.1
+    ftp_username: ftpuser
+    ftp_password: ftppassword
+    ftp_path: home/backup
+    frequency: Weekly
+    day: Sunday
+    hour: 23
+    minute: 00
+    encryption_password: integrationtest
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET FTP BACKUP WEEKLY
+  assert:
+    that: 
+      - set_backup is changed
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['@code'] == '200'
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY FTP BACKUP WEEKLY
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    state: query
+  register: query_backup
+
+- name: ASSERTION CHECK FOR FTP BACKUP WEEKLY
+  assert:
+    that: 
+      - query_backup is not changed
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupMode'] == 'FTP'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupPrefix'] == 'intgtest'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['FtpPath'] == 'home/backup'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Username'] == 'ftpuser'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Weekly'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Day'] == 'Sunday'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '23'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '0'
+
+- name: SET FTP BACKUP MONTHLY
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: FTP
+    prefix: intgtest
+    ftp_server: 10.10.10.1
+    ftp_username: ftpuser
+    ftp_password: ftppassword
+    ftp_path: home/backup
+    frequency: Monthly
+    date: 09
+    hour: 23
+    minute: 00
+    encryption_password: integrationtest
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET FTP BACKUP MONTHLY
+  assert:
+    that: 
+      - set_backup is changed
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['@code'] == '200'
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY FTP BACKUP MONTHLY
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    state: query
+  register: query_backup
+
+- name: ASSERTION CHECK FOR FTP BACKUP MONTHLY
+  assert:
+    that: 
+      - query_backup is not changed
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Date'] == '9'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '23'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '0'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Monthly'
+
+
+- name: SET EMAIL BACKUP
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: Mail
+    email_address: intgtest@sophos.com
+    prefix: intgtest
+    frequency: Daily
+    hour: 01
+    minute: 01
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET EMAIL BACKUP
+  assert:
+    that: 
+      - set_backup is changed
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['@code'] == '200'
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY EMAIL BACKUP
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    state: query
+  register: query_backup
+
+- name: ASSERTION CHECK FOR EMAIL BACKUP MONTHLY
+  assert:
+    that: 
+      - query_backup is not changed
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupMode'] == 'Mail'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '1'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '1'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Daily'
+
+- name: SET EMAIL BACKUP NO CHANGE
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    mode: Mail
+    email_address: intgtest@sophos.com
+    prefix: intgtest
+    frequency: Daily
+    hour: 01
+    minute: 01
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET EMAIL BACKUP
+  assert:
+    that: 
+      - set_backup is not changed
+
+- name: SET VAR FOR CURRENT ENCRYPTION PASSWORD
+  ansible.builtin.set_fact:
+    current_encrypt_password: "{{ query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['EncryptionPassword'] }}"
+
+- name: SET ENCRYPTION PASSWORD
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    encryption_password: newpassword1
+    debug: true
+    state: updated
+  register: set_backup
+
+- name: ASSERTION CHECK FOR SET ENCRYPTION PASSWORD
+  assert:
+    that: 
+      - set_backup is changed
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['@code'] == '200'
+      - set_backup['api_response']['Response']['BackupRestore']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY ENCRYPTION PASSWORD
+  sophos.sophos_firewall.sfos_backup:
+    <<: *sfos_connection_params
+    state: query
+  register: query_backup
+
+- name: ASSERTION CHECK FOR EMAIL BACKUP MONTHLY
+  assert:
+    that: 
+      - query_backup is not changed
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['EncryptionPassword'] != current_encrypt_password

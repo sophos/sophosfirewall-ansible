@@ -1,0 +1,106 @@
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      release_summary: This is the first proper release of the ``sophos.sophos_firewall``
+        collection.
+    fragments:
+    - 1.0.0.yaml
+    modules:
+    - description: Manage Admin and user settings (System > Administration).
+      name: sfos_admin_settings
+      namespace: ''
+    - description: Manage Active Threat Protection (Protect > Active threat response
+        > Sophos X-Ops threat feeds).
+      name: sfos_atp
+      namespace: ''
+    - description: Manage Backup settings (System > Backup & firmware).
+      name: sfos_backup
+      namespace: ''
+    - description: Manage Device Access Profiles (System > Profiles > Device Access).
+      name: sfos_device_access_profile
+      namespace: ''
+    - description: Manage DNS settings (Configure > Network > DNS).
+      name: sfos_dns
+      namespace: ''
+    - description: Manage Firewall Rules (Protect > Rules & policies).
+      name: sfos_firewall_rule
+      namespace: ''
+    - description: Manage FQDN hosts (System > Hosts & services > FQDN host).
+      name: sfos_fqdn_host
+      namespace: ''
+    - description: Manage FQDN Host Groups (System > Hosts & services > FQDN host
+        group).
+      name: sfos_fqdn_hostgroup
+      namespace: ''
+    - description: Manage IP Host (System > Hosts & services > IP host).
+      name: sfos_ip_host
+      namespace: ''
+    - description: Manage IP Hostgroup (System > Hosts & services > IP host group).
+      name: sfos_ip_hostgroup
+      namespace: ''
+    - description: Manage Malware Protection (Configure > System services > Malware
+        protection).
+      name: sfos_malware_protection
+      namespace: ''
+    - description: Manage Service (System > Hosts and services > Services).
+      name: sfos_service
+      namespace: ''
+    - description: Manage Local Service Exception ACL Rules (System > Administration
+        > Device Access).
+      name: sfos_service_acl_exception
+      namespace: ''
+    - description: Manage Service Group (System > Hosts and services > Service Group).
+      name: sfos_servicegroup
+      namespace: ''
+    - description: Manage Date and Time settings (System > Administration > Time).
+      name: sfos_time
+      namespace: ''
+    - description: Manage Users (Configure > Authentication > Users).
+      name: sfos_user
+      namespace: ''
+    - description: Use the XML API to get, create, update, or delete settings on Sophos
+        Firewall.
+      name: sfos_xmlapi
+      namespace: ''
+    - description: Manage Zones (Configure > Network > Zones).
+      name: sfos_zone
+      namespace: ''
+    release_date: '2024-11-01'
+  1.1.0:
+    changes:
+      release_summary: This release contains new modules for working with the SNMP
+        agent and SNMPv3 users on Sophos Firewall
+    fragments:
+    - 1.1.0.yaml
+    modules:
+    - description: Manage SNMP Agent (System > Administration > SNMP).
+      name: sfos_snmp_agent
+      namespace: ''
+    - description: Manage SNMPv3 User (System > Administration > SNMP).
+      name: sfos_snmp_user
+      namespace: ''
+    release_date: '2024-11-01'
+  1.2.0:
+    changes:
+      release_summary: This release adds modules for working with IPS and Syslog settings
+    fragments:
+    - 1.2.0.yaml
+    modules:
+    - description: Manage IPS protection (Protect > Intrusion Protection > IPS policies).
+      name: sfos_ips
+      namespace: ''
+    - description: Manage Syslog servers (Configure > System services > Log settings).
+      name: sfos_syslog
+      namespace: ''
+    release_date: '2024-11-01'
+  1.2.1:
+    changes:
+      bugfixes:
+      - Allow use of 'any' keyword for src/dst networks and services for sfos_firewall_rule
+        module
+      - Fixed documentation error in examples for sfos_zone
+      release_summary: Minor bug fixes
+    fragments:
+    - 1.2.1.yaml
+    release_date: '2024-12-04'

@@ -7,15 +7,15 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_service
 
-short_description: Manage Service objects on Sophos Firewall
+short_description: Manage Service (System > Hosts and services > Services)
 
 version_added: "1.0.0"
 
-description: Creates, updates or removes a Service object on Sophos Firewall
+description: Creates, updates or removes a Service (System > Hosts and services > Services) on Sophos Firewall
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
@@ -59,8 +59,9 @@ options:
                 type: str
     action:
         description:
-            - Use with state: updated to add or remove services from the list, or replace the list entirely.
+            - When performing an update, use to add or remove services from the list, or replace the list entirely
         choices: [add, remove, replace]
+        type: str
         default: replace
     state:
         description:
@@ -71,9 +72,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Retrieve Service
   sophos.sophos_firewall.sfos_service:
     username: "{{ username }}"
@@ -134,15 +135,15 @@ EXAMPLES = r'''
       icmp_code: "Any Code"
     state: present
   delegate_to: localhost
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -152,6 +153,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -159,6 +161,7 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+
 
 def build_service_list(module):
     """Generate the service list based on provided arguments.
@@ -171,25 +174,27 @@ def build_service_list(module):
     if service_type == "tcporudp":
         svc_type = "TCPorUDP"
         for service in module.params.get("service_list"):
-            service_list.append(dict(
-                protocol=service["protocol"].upper(),
-                src_port=service["src_port"],
-                dst_port=service["dst_port"]
-            ))
+            service_list.append(
+                dict(
+                    protocol=service["protocol"].upper(),
+                    src_port=service["src_port"],
+                    dst_port=service["dst_port"],
+                )
+            )
     if service_type == "ip":
         svc_type = "IP"
         for service in module.params.get("service_list"):
-            service_list.append(dict(
-                protocol=service["protocol"].upper()
-            ))
+            service_list.append(dict(protocol=service["protocol"].upper()))
     if service_type == "icmp" or service_type == "icmpv6":
         svc_type = service_type.upper() if service_type == "icmp" else "ICMPv6"
         for service in module.params.get("service_list"):
-            service_list.append(dict(
-                icmp_type=str(service["icmp_type"]),
-                icmp_code=str(service["icmp_code"])
-            ))
-    
+            service_list.append(
+                dict(
+                    icmp_type=str(service["icmp_type"]),
+                    icmp_code=str(service["icmp_code"]),
+                )
+            )
+
     return svc_type, service_list
 
 
@@ -238,7 +243,7 @@ def create_service(fw_obj, module, result):
         resp = fw_obj.create_service(
             name=module.params.get("name"),
             service_type=svc_type,
-            service_list=service_list
+            service_list=service_list,
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -262,9 +267,7 @@ def remove_service(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="Services", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="Services", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -293,7 +296,7 @@ def update_service(fw_obj, module, result):
             name=module.params.get("name"),
             service_type=svc_type,
             service_list=service_list,
-            action=module.params.get("action")
+            action=module.params.get("action"),
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -304,6 +307,7 @@ def update_service(fw_obj, module, result):
     else:
         return resp
 
+
 def ensure_list(source):
     """Convert a provided dict to a list containing the dict if not already a list.
 
@@ -311,12 +315,13 @@ def ensure_list(source):
         source (dict or list): Source dictionary or list.
 
     Returns:
-        list: Returns the dictionary inside a list, or just returns the original list. 
+        list: Returns the dictionary inside a list, or just returns the original list.
     """
     if isinstance(source, dict):
         return [source]
     elif isinstance(source, list):
         return source
+
 
 def main():
     """Code executed at run time."""
@@ -328,37 +333,39 @@ def main():
         "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "type": {"type": "str", "choices": ["tcporudp", "ip", "icmp", "icmpv6"]},
-        "service_list": {"type": "list", "elements": "dict", "options": {
-            "protocol": {
-                "type": "str"
+        "service_list": {
+            "type": "list",
+            "elements": "dict",
+            "options": {
+                "protocol": {"type": "str"},
+                "src_port": {"type": "str", "default": "1:65535"},
+                "dst_port": {
+                    "type": "str",
+                },
+                "icmp_type": {"type": "str"},
+                "icmp_code": {"type": "str"},
             },
-            "src_port": {
-                "type": "str",
-                "default": "1:65535"
-            },
-            "dst_port": {
-                "type": "str",
-            },
-            "icmp_type": {
-                "type": "str"
-            },
-            "icmp_code": {
-                "type": "str"
-            }
-        }},
-        "action": {"type": "str", "choices": ["add", "remove", "replace"], "default": None},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        },
+        "action": {
+            "type": "str",
+            "choices": ["add", "remove", "replace"],
+            "default": None,
+        },
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
     required_if = [
-        ('state', 'present', ('service_list',), True),
-        ('state', 'updated', ('action',), True),
-        ('state', 'created', ('type',), True),
-        ('state', 'updated', ('type',), True)
+        ("state", "present", ("service_list",), True),
+        ("state", "updated", ("action",), True),
+        ("state", "created", ("type",), True),
+        ("state", "updated", ("type",), True),
     ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec, required_if=required_if, supports_check_mode=True
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
@@ -371,10 +378,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
     exist_check = get_service(fw, module, result)
@@ -401,8 +405,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_service(fw, module, result)
-        if (api_response["Response"]["Services"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["Services"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -410,16 +416,27 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-        new_service_list = [dict(
-            DestinationPort=service['dst_port'],
-            Protocol=service['protocol'].upper(),
-            SourcePort=service['src_port']
-            ) for service in module.params.get("service_list")]
-        if (sorted(ensure_list(exist_check["api_response"]["Response"]["Services"]["ServiceDetails"]["ServiceDetail"]), key=lambda d: sorted(d.items()))
-                != sorted(new_service_list,key=lambda d: sorted(d.items()))):
+        new_service_list = [
+            dict(
+                DestinationPort=service["dst_port"],
+                Protocol=service["protocol"].upper(),
+                SourcePort=service["src_port"],
+            )
+            for service in module.params.get("service_list")
+        ]
+        if sorted(
+            ensure_list(
+                exist_check["api_response"]["Response"]["Services"]["ServiceDetails"][
+                    "ServiceDetail"
+                ]
+            ),
+            key=lambda d: sorted(d.items()),
+        ) != sorted(new_service_list, key=lambda d: sorted(d.items())):
             api_response = update_service(fw, module, result)
-            if (api_response["Response"]["Services"]["Status"]["#text"]
-                    == "Configuration applied successfully."):
+            if (
+                api_response["Response"]["Services"]["Status"]["#text"]
+                == "Configuration applied successfully."
+            ):
                 result["changed"] = True
             result["api_response"] = api_response
         else:

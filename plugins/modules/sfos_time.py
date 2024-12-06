@@ -7,56 +7,65 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_time
 
-short_description: Manage Time settings
+short_description: Manage Date and Time settings (System > Administration > Time)
 
 version_added: "1.0.0"
 
-description: Manage Time settings (System > Administration > Time) on Sophos Firewall. WARNING: Changing Timezone will cause device reboot!
+description: Manage Date and Time settings (System > Administration > Time) on Sophos Firewall. 
 
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
 
 options:
     timezone:
-        description: Timezone
+        description: 
+          - "Timezone setting. WARNING: WILL CAUSE DEVICE REBOOT!"
         required: false
         type: str
     date:
-        description: Date settings
+        description: 
+          - Date settings
         required: false
         type: dict
         suboptions:
             year:
-                description: Year
+                description:
+                  - Year
                 type: int
                 required: false
             month:
-                description: Month
+                description: 
+                  - Month
                 type: int
                 required: false
             day:
-                description: Day
+                description: 
+                  - Day
                 type: int
                 required: false
     time:
-        description: Time settings
+        description: 
+          - Time settings
         required: false
         type: dict
         suboptions:
             hour:
-                description: Hour
+                description: 
+                  - Hour
                 type: int
                 required: false
             minute:
-                description: Minute
+                description: 
+                  - Minute
                 type: int
                 required: false
             second:
-                description: Second
+                description: 
+                  - Second
                 type: int
                 required: false
     state:
@@ -68,11 +77,11 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Update Time Settings
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_time:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -90,17 +99,18 @@ EXAMPLES = r'''
     state: updated
     delegate_to: localhost
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -111,6 +121,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -156,8 +167,8 @@ def update_time_settings(fw_obj, module, result):
     Returns:
         dict: API response
     """
-    update_params = fw_obj.get_tag('Time')['Response']['Time']
- 
+    update_params = fw_obj.get_tag("Time")["Response"]["Time"]
+
     date_settings = module.params.get("date", {})
     if date_settings:
         year = date_settings.get("year")
@@ -171,7 +182,7 @@ def update_time_settings(fw_obj, module, result):
         day = date_settings.get("day")
         if day:
             update_params["SetDateTime"]["Date"]["Day"] = day
-        
+
     time_settings = module.params.get("time", {})
     if time_settings:
         hour = time_settings.get("hour")
@@ -185,7 +196,7 @@ def update_time_settings(fw_obj, module, result):
         second = time_settings.get("second")
         if second:
             update_params["SetDateTime"]["Time"]["SS"] = second
-        
+
     if module.params.get("timezone"):
         update_params["TimeZone"] = module.params.get("timezone")
 
@@ -197,7 +208,7 @@ def update_time_settings(fw_obj, module, result):
 
 
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -213,11 +224,15 @@ def eval_changed(module, exist_settings):
         year = str(module.params["date"].get("year"))
         month = str(module.params["date"].get("month"))
         day = str(module.params["date"].get("day"))
-        
-        if (year and not year == exist_settings["SetDateTime"]["Date"]["Year"] or
-            month and not month == exist_settings["SetDateTime"]["Date"]["Month"] or
-            day and not day == exist_settings["SetDateTime"]["Date"]["Day"]
-            ):
+
+        if (
+            year
+            and not year == exist_settings["SetDateTime"]["Date"]["Year"]
+            or month
+            and not month == exist_settings["SetDateTime"]["Date"]["Month"]
+            or day
+            and not day == exist_settings["SetDateTime"]["Date"]["Day"]
+        ):
             return True
 
     time_settings = module.params.get("time", {})
@@ -225,11 +240,15 @@ def eval_changed(module, exist_settings):
         hour = str(module.params["time"].get("hour"))
         minute = str(module.params["time"].get("minute"))
         second = str(module.params["time"].get("second"))
-        
-        if (hour and not hour == exist_settings["SetDateTime"]["Time"]["HH"] or
-            minute and not minute == exist_settings["SetDateTime"]["Time"]["MM"] or
-            second and not second == exist_settings["SetDateTime"]["Time"]["SS"]
-            ):
+
+        if (
+            hour
+            and not hour == exist_settings["SetDateTime"]["Time"]["HH"]
+            or minute
+            and not minute == exist_settings["SetDateTime"]["Time"]["MM"]
+            or second
+            and not second == exist_settings["SetDateTime"]["Time"]["SS"]
+        ):
             return True
 
     timezone = module.params.get("timezone")
@@ -237,6 +256,7 @@ def eval_changed(module, exist_settings):
         return True
 
     return False
+
 
 def main():
     """Code executed at run time."""
@@ -246,19 +266,25 @@ def main():
         "hostname": {"required": True},
         "port": {"type": "int", "default": 4444},
         "verify": {"type": "bool", "default": True},
-        "date": {"type": "dict", "required": False, "options": {
-            "year": {"type": "int", "required": False},
-            "month": {"type": "int", "required": False},
-            "day": {"type": "int", "required": False}
-            }
+        "date": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "year": {"type": "int", "required": False},
+                "month": {"type": "int", "required": False},
+                "day": {"type": "int", "required": False},
+            },
         },
-        "time": {"type": "dict", "required": False, "options": {
-            "hour": {"type": "int", "required": False},
-            "minute": {"type": "int", "required": False},
-            "second": {"type": "int", "required": False}
-            }
+        "time": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "hour": {"type": "int", "required": False},
+                "minute": {"type": "int", "required": False},
+                "second": {"type": "int", "required": False},
+            },
         },
-        "timezone": {"type": "str", "required": False},        
+        "timezone": {"type": "str", "required": False},
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
     }
 
@@ -272,16 +298,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                        #    required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True
-                           )
-    
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        #    required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -290,10 +316,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -311,8 +334,10 @@ def main():
         if eval_changed(module, exist_settings):
             api_response = update_time_settings(fw, module, result)
             if api_response:
-                if (api_response["Response"]["Time"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
+                if (
+                    api_response["Response"]["Time"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
                 result["api_response"] = api_response
             else:

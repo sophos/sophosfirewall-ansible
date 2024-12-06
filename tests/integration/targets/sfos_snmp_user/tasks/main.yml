@@ -1,0 +1,184 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: CREATE SNMPV3 USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    accept_queries: Disable
+    send_traps: Enable
+    authorized_hosts:
+        - 10.1.1.1
+        - 10.1.1.2
+    encryption_algorithm: AES
+    encryption_password: sup3rs3cr3tp@ssw0rd
+    authentication_algorithm: MD5
+    authentication_password: sup3rs3cr3tp@ssw0rd
+    state: present
+  register: snmp_user_add
+
+- name: ASSERTION CHECK FOR CREATE SNMPV3 USER
+  assert:
+    that: 
+      - snmp_user_add is changed
+      - snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['@code'] == '216'
+      - "'Operation Successful' in snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['#text']"
+
+- name: QUERY SNMP USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    state: query
+    name: IGT-TESTUSER
+  register: query_snmp
+
+- name: ASSERTION CHECK FOR QUERY SNMP USER
+  assert:
+    that: 
+      - query_snmp is not changed
+      - query_snmp['api_response']['Response']['SNMPv3User']['Username'] == 'IGT-TESTUSER'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] == 'Disable'
+      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] == 'Enable'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2']
+      - query_snmp['api_response']['Response']['SNMPv3User']['EncryptionAlgorithm'] == '1'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AuthenticationAlgorithm'] == '1'
+
+- name: UPDATE SNMPv3 USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    accept_queries: Enable
+    send_traps: Enable
+    authorized_hosts:
+        - 10.1.1.1
+        - 10.1.1.2
+        - 10.1.1.3
+    encryption_algorithm: DES
+    authentication_algorithm: SHA512
+    state: updated
+  register: update_snmp_user
+
+- name: ASSERTION CHECK FOR UPDATE SNMPV3 USER
+  assert:
+    that: 
+      - update_snmp_user is changed
+      - update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['@code'] == '216'
+      - "'Operation Successful' in update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['#text']"
+
+- name: QUERY UPDATED SNMP USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    state: query
+    name: IGT-TESTUSER
+  register: query_snmp
+
+- name: ASSERTION CHECK FOR QUERY SNMP USER
+  assert:
+    that: 
+      - query_snmp is not changed
+      - query_snmp['api_response']['Response']['SNMPv3User']['Username'] == 'IGT-TESTUSER'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] == 'Enable'
+      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] == 'Enable'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2', '10.1.1.3']
+      - query_snmp['api_response']['Response']['SNMPv3User']['EncryptionAlgorithm'] == '2'
+      - query_snmp['api_response']['Response']['SNMPv3User']['AuthenticationAlgorithm'] == '3'
+
+- name: UPDATE SNMPv3 USER NOCHG
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    accept_queries: Enable
+    send_traps: Enable
+    authorized_hosts:
+        - 10.1.1.1
+        - 10.1.1.2
+        - 10.1.1.3
+    encryption_algorithm: DES
+    authentication_algorithm: SHA512
+    state: updated
+  register: update_snmp_user
+
+- name: ASSERTION CHECK FOR UPDATE SNMPV3 USER NOCHG
+  assert:
+    that: 
+      - update_snmp_user is not changed
+
+- name: UPDATE SNMPv3 ENCRYPTION PASSWORD
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    encryption_password: T3st1ngP@ssw0rd!
+    state: updated
+  register: update_snmp_user
+
+- name: ASSERTION CHECK FOR UPDATE SNMPV3 USER ENCRYPTION PASSWORD
+  assert:
+    that: 
+      - update_snmp_user is changed
+
+- name: UPDATE SNMPv3 AUTHENTICATION PASSWORD
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    authentication_password: T3st1ngP@ssw0rd!
+    state: updated
+  register: update_snmp_user
+
+- name: ASSERTION CHECK FOR UPDATE SNMPV3 USER ENCRYPTION PASSWORD
+  assert:
+    that: 
+      - update_snmp_user is changed
+
+- name: REMOVE SNMPv3 USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    state: absent
+  register: remove_snmp_user
+
+- name: ASSERTION CHECK FOR REMOVE SNMPv3 USER
+  assert:
+    that: 
+      - remove_snmp_user is changed
+      - remove_snmp_user['api_response']['Response']['SNMPv3User']['Status']['@code'] == "200"
+      - remove_snmp_user['api_response']['Response']['SNMPv3User']['Status']['#text'] == "Configuration applied successfully."
+
+
+- name: REMOVE NONEXISTING SNMPv3 USER
+  sophos.sophos_firewall.sfos_snmp_user:
+    <<: *sfos_connection_params
+    name: IGT-TESTUSER
+    state: absent
+  register: remove_snmp_user
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING IGT_TESTHOST
+  assert:
+    that: 
+      - remove_snmp_user is not changed
+      - remove_snmp_user['api_response'] == "No. of records Zero."
+
+
+
+
+

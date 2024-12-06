@@ -7,11 +7,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_dns
 
-short_description: Manage DNS settings
+short_description: Manage DNS settings (Configure > Network > DNS)
 
 version_added: "1.0.0"
 
@@ -83,9 +83,9 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Update DNS servers
   sophos.sophos_firewall.sfos_admin_settings:
     username: "{{ username }}"
@@ -101,17 +101,18 @@ EXAMPLES = r'''
     state: updated
     delegate_to: localhost
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
+
 output_buffer = io.StringIO()
 
 try:
@@ -122,6 +123,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -167,8 +169,8 @@ def update_dns_settings(fw_obj, module, result):
     Returns:
         dict: API response
     """
-    update_params = fw_obj.get_dns_forwarders()['Response']['DNS']
- 
+    update_params = fw_obj.get_dns_forwarders()["Response"]["DNS"]
+
     ipv4_settings = module.params.get("ipv4_settings", {})
     if ipv4_settings:
         dns_source = ipv4_settings.get("dns_source")
@@ -200,7 +202,7 @@ def update_dns_settings(fw_obj, module, result):
             dns3 = ipv6_settings.get("dns3")
             if dns3:
                 update_params["IPv6Settings"]["DNSIPList"]["DNS3"] = dns3
-        
+
     if module.params.get("dnsquery_config"):
         update_params["DNSQueryConfiguration"] = module.params.get("dnsquery_config")
 
@@ -209,6 +211,7 @@ def update_dns_settings(fw_obj, module, result):
     resp = fw_obj.update(xml_tag="DNS", update_params=update_params)
 
     return resp
+
 
 def update_request(module, result, method, **args):
     """Generate the update request using the SDK.
@@ -227,13 +230,16 @@ def update_request(module, result, method, **args):
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result)
+        module.fail_json(
+            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
+        )
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     return resp
 
+
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -250,12 +256,17 @@ def eval_changed(module, exist_settings):
         dns1 = module.params["ipv4_settings"].get("dns1")
         dns2 = module.params["ipv4_settings"].get("dns2")
         dns3 = module.params["ipv4_settings"].get("dns3")
-        
-        if (dns_source and not dns_source == exist_settings["IPv4Settings"]["ObtainDNSFrom"] or
-            dns1 and not dns1 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS1"] or
-            dns2 and not dns2 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS2"] or
-            dns3 and not dns3 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS3"]
-            ):
+
+        if (
+            dns_source
+            and not dns_source == exist_settings["IPv4Settings"]["ObtainDNSFrom"]
+            or dns1
+            and not dns1 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS1"]
+            or dns2
+            and not dns2 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS2"]
+            or dns3
+            and not dns3 == exist_settings["IPv4Settings"]["DNSIPList"]["DNS3"]
+        ):
             return True
 
     ipv6_settings = module.params.get("ipv6_settings", {})
@@ -264,19 +275,28 @@ def eval_changed(module, exist_settings):
         dns1 = module.params["ipv6_settings"].get("dns1")
         dns2 = module.params["ipv6_settings"].get("dns2")
         dns3 = module.params["ipv6_settings"].get("dns3")
-        
-        if (dns_source and not dns_source == exist_settings["IPv6Settings"]["ObtainDNSFrom"] or
-            dns1 and not dns1 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS1"] or
-            dns2 and not dns2 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS2"] or
-            dns3 and not dns3 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS3"]
-            ):
+
+        if (
+            dns_source
+            and not dns_source == exist_settings["IPv6Settings"]["ObtainDNSFrom"]
+            or dns1
+            and not dns1 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS1"]
+            or dns2
+            and not dns2 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS2"]
+            or dns3
+            and not dns3 == exist_settings["IPv6Settings"]["DNSIPList"]["DNS3"]
+        ):
             return True
 
     dnsquery_config = module.params.get("dnsquery_config")
-    if dnsquery_config and not dnsquery_config == exist_settings["DNSQueryConfiguration"]:
+    if (
+        dnsquery_config
+        and not dnsquery_config == exist_settings["DNSQueryConfiguration"]
+    ):
         return True
 
     return False
+
 
 def main():
     """Code executed at run time."""
@@ -286,25 +306,45 @@ def main():
         "hostname": {"required": True},
         "port": {"type": "int", "default": 4444},
         "verify": {"type": "bool", "default": True},
-        "ipv4_settings": {"type": "dict", "required": False, "options": {
-            "dns_source": {"type": "str", "required": False, "choices": ["DHCP", "PPPoE", "Static"]},
-            "dns1": {"type": "str", "required": False},
-            "dns2": {"type": "str", "required": False},
-            "dns3": {"type": "str", "required": False}
-            }
+        "ipv4_settings": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "dns_source": {
+                    "type": "str",
+                    "required": False,
+                    "choices": ["DHCP", "PPPoE", "Static"],
+                },
+                "dns1": {"type": "str", "required": False},
+                "dns2": {"type": "str", "required": False},
+                "dns3": {"type": "str", "required": False},
+            },
         },
-        "ipv6_settings": {"type": "dict", "required": False, "options": {
-            "dns_source": {"type": "str", "required": False, "choices": ["DHCP", "PPPoE", "Static"]},
-            "dns1": {"type": "str", "required": False},
-            "dns2": {"type": "str", "required": False},
-            "dns3": {"type": "str", "required": False}
-            }
+        "ipv6_settings": {
+            "type": "dict",
+            "required": False,
+            "options": {
+                "dns_source": {
+                    "type": "str",
+                    "required": False,
+                    "choices": ["DHCP", "PPPoE", "Static"],
+                },
+                "dns1": {"type": "str", "required": False},
+                "dns2": {"type": "str", "required": False},
+                "dns3": {"type": "str", "required": False},
+            },
         },
-        "dnsquery_config": {"type": "str", "required": False, "choices": ["ChooseServerBasedOnIncomingRequestsRecordType",
-                                                                           "ChooseIPv6DNSServerOverIPv4",
-                                                                           "ChooseIPv4DNSServerOverIPv6",
-                                                                           "ChooseIPv6IfRequestOriginatorAddressIsIPv6",
-                                                                           "ElseIPv4"]},        
+        "dnsquery_config": {
+            "type": "str",
+            "required": False,
+            "choices": [
+                "ChooseServerBasedOnIncomingRequestsRecordType",
+                "ChooseIPv6DNSServerOverIPv4",
+                "ChooseIPv4DNSServerOverIPv6",
+                "ChooseIPv6IfRequestOriginatorAddressIsIPv6",
+                "ElseIPv4",
+            ],
+        },
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
     }
 
@@ -318,16 +358,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                        #    required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True
-                           )
-    
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        #    required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -336,10 +376,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -357,8 +394,10 @@ def main():
         if eval_changed(module, exist_settings):
             api_response = update_dns_settings(fw, module, result)
             if api_response:
-                if (api_response["Response"]["DNS"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
+                if (
+                    api_response["Response"]["DNS"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
                 result["api_response"] = api_response
             else:

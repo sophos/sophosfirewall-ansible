@@ -7,11 +7,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_zone
 
-short_description: Manage Zones on Sophos Firewall
+short_description: Manage Zones (Configure > Network > Zones)
 
 version_added: "1.0.0"
 
@@ -157,11 +157,11 @@ options:
 
 author:
     - Matt Mullen (@mamullen13316)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -173,7 +173,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Display Existing Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -183,7 +183,7 @@ EXAMPLES = r'''
     state: query
 
 - name: Update Zone Admin Services
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -195,7 +195,7 @@ EXAMPLES = r'''
     state: updated
 
 - name: Remove Zone
-  sophos.sophos_firewall.sfos_firewall_rule:
+  sophos.sophos_firewall.sfos_zone:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: myfirewallhostname.sophos.net
@@ -203,15 +203,15 @@ EXAMPLES = r'''
     verify: false
     name: TESTZONE
     state: absent
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 
 try:
     from sophosfirewall_python.firewallapi import (
@@ -221,6 +221,7 @@ try:
         SophosFirewallAPIError,
     )
     from requests.exceptions import RequestException
+
     PREREQ_MET = {"result": True}
 except ImportError as errMsg:
     PREREQ_MET = {"result": False, "missing_module": errMsg.name}
@@ -254,6 +255,7 @@ def get_zone(fw_obj, module, result):
 
     return {"exists": True, "api_response": resp}
 
+
 def create_zone(fw_obj, module, result):
     """Create a firewall rule on Sophos Firewall.
 
@@ -285,11 +287,15 @@ def create_zone(fw_obj, module, result):
         "user_portal": module.params.get("user_portal"),
         "dynamic_routing": module.params.get("dynamic_routing"),
         "smtp_relay": module.params.get("smtp_relay"),
-        "snmp": module.params.get("snmp")
+        "snmp": module.params.get("snmp"),
     }
 
     try:
-        resp = fw_obj.create_zone(name=module.params.get("name"), zone_type=module.params.get("zone_type"), zone_params=zone_params)
+        resp = fw_obj.create_zone(
+            name=module.params.get("name"),
+            zone_type=module.params.get("zone_type"),
+            zone_params=zone_params,
+        )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -298,6 +304,7 @@ def create_zone(fw_obj, module, result):
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     else:
         return resp
+
 
 def remove_zone(fw_obj, module, result):
     """Remove a zone from Sophos Firewall.
@@ -311,9 +318,7 @@ def remove_zone(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="Zone", name=module.params.get("name")
-        )
+        resp = fw_obj.remove(xml_tag="Zone", name=module.params.get("name"))
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
@@ -355,13 +360,12 @@ def update_zone(fw_obj, module, result):
         "user_portal": module.params.get("user_portal"),
         "dynamic_routing": module.params.get("dynamic_routing"),
         "smtp_relay": module.params.get("smtp_relay"),
-        "snmp": module.params.get("snmp")
+        "snmp": module.params.get("snmp"),
     }
 
     try:
         resp = fw_obj.update_zone(
-            name=module.params.get("name"),
-            zone_params=zone_params
+            name=module.params.get("name"), zone_params=zone_params
         )
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
@@ -372,8 +376,9 @@ def update_zone(fw_obj, module, result):
     else:
         return resp
 
+
 def eval_changed(module, exist_settings):
-    """Evaluate the provided arguments against existing settings. 
+    """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
@@ -387,37 +392,83 @@ def eval_changed(module, exist_settings):
     description = module.params.get("description")
     if description and not exist_settings["Description"] == description:
         return True
-    
-    settings = [{"key": "HTTPS", "value": module.params.get("https"), "group": "AdminServices"},
+
+    settings = [
+        {"key": "HTTPS", "value": module.params.get("https"), "group": "AdminServices"},
         {"key": "SSH", "value": module.params.get("ssh"), "group": "AdminServices"},
-        {"key": "ClientAuthentication", "value": module.params.get("client_authen"), "group": "AuthenticationServices"},
-        {"key": "CaptivePortal", "value": module.params.get("captive_portal"),"group": "AuthenticationServices"},
-        {"key": "ADSSO", "value": module.params.get("ad_sso"),"group": "AuthenticationServices"},
-        {"key": "RadiusSSO", "value": module.params.get("radius_sso"), "group": "AuthenticationServices"},
-        {"key": "ChromebookSSO", "value": module.params.get("chromebook_sso"), "group": "AuthenticationServices"},
+        {
+            "key": "ClientAuthentication",
+            "value": module.params.get("client_authen"),
+            "group": "AuthenticationServices",
+        },
+        {
+            "key": "CaptivePortal",
+            "value": module.params.get("captive_portal"),
+            "group": "AuthenticationServices",
+        },
+        {
+            "key": "ADSSO",
+            "value": module.params.get("ad_sso"),
+            "group": "AuthenticationServices",
+        },
+        {
+            "key": "RadiusSSO",
+            "value": module.params.get("radius_sso"),
+            "group": "AuthenticationServices",
+        },
+        {
+            "key": "ChromebookSSO",
+            "value": module.params.get("chromebook_sso"),
+            "group": "AuthenticationServices",
+        },
         {"key": "DNS", "value": module.params.get("dns"), "group": "NetworkServices"},
         {"key": "Ping", "value": module.params.get("ping"), "group": "NetworkServices"},
         {"key": "IPsec", "value": module.params.get("ipsec"), "group": "VPNServices"},
-        {"key": "RED", "value": module.params.get("red"),"group": "VPNServices"},
+        {"key": "RED", "value": module.params.get("red"), "group": "VPNServices"},
         {"key": "SSLVPN", "value": module.params.get("sslvpn"), "group": "VPNServices"},
-        {"key": "VPNPortal", "value": module.params.get("vpn_portal"), "group": "VPNServices"},
-        {"key": "WebProxy", "value": module.params.get("web_proxy"), "group": "OtherServices"},
-        {"key": "WirelessProtection", "value": module.params.get("wireless_protection"), "group": "OtherServices"},
-        {"key": "UserPortal", "value": module.params.get("user_portal"),"group": "OtherServices"},
-        {"key": "DynamicRouting", "value": module.params.get("dynamic_routing"), "group": "OtherServices"},
-        {"key": "SMTPRelay", "value": module.params.get("smtp_relay"), "group": "OtherServices"},
-        {"key": "SNMP", "value": module.params.get("snmp"), "group": "OtherServices"}
+        {
+            "key": "VPNPortal",
+            "value": module.params.get("vpn_portal"),
+            "group": "VPNServices",
+        },
+        {
+            "key": "WebProxy",
+            "value": module.params.get("web_proxy"),
+            "group": "OtherServices",
+        },
+        {
+            "key": "WirelessProtection",
+            "value": module.params.get("wireless_protection"),
+            "group": "OtherServices",
+        },
+        {
+            "key": "UserPortal",
+            "value": module.params.get("user_portal"),
+            "group": "OtherServices",
+        },
+        {
+            "key": "DynamicRouting",
+            "value": module.params.get("dynamic_routing"),
+            "group": "OtherServices",
+        },
+        {
+            "key": "SMTPRelay",
+            "value": module.params.get("smtp_relay"),
+            "group": "OtherServices",
+        },
+        {"key": "SNMP", "value": module.params.get("snmp"), "group": "OtherServices"},
     ]
     result_list = []
     for params in settings:
         result = eval_settings(exist_settings, **params)
         if result:
-             result_list.append(True)
+            result_list.append(True)
 
     if True in result_list:
         return True
 
     return False
+
 
 def eval_settings(exist_settings, key, value, group):
     """Evaluates current settings vs. the configured argument
@@ -432,7 +483,7 @@ def eval_settings(exist_settings, key, value, group):
         bool: Returns True if the current setting differs from the value in the Ansible task
     """
     if value == "Enable":
-        if exist_settings.get("ApplianceAccess",{}):
+        if exist_settings.get("ApplianceAccess", {}):
             if exist_settings["ApplianceAccess"].get(group, {}):
                 if exist_settings["ApplianceAccess"][group].get(key, {}):
                     if not exist_settings["ApplianceAccess"][group][key] == value:
@@ -445,7 +496,7 @@ def eval_settings(exist_settings, key, value, group):
             return True
 
     if value == "Disable":
-        if exist_settings.get("ApplianceAccess",{}):
+        if exist_settings.get("ApplianceAccess", {}):
             if exist_settings["ApplianceAccess"].get(group, {}):
                 if exist_settings["ApplianceAccess"][group].get(key, {}):
                     if not exist_settings["ApplianceAccess"][group][key] == value:
@@ -457,6 +508,7 @@ def eval_settings(exist_settings, key, value, group):
         else:
             return False
     return False
+
 
 def main():
     """Code executed at run time."""
@@ -488,11 +540,14 @@ def main():
         "dynamic_routing": {"type": "str", "choices": ["Enable", "Disable"]},
         "smtp_relay": {"type": "str", "choices": ["Enable", "Disable"]},
         "snmp": {"type": "str", "choices": ["Enable", "Disable"]},
-        "state": {"required": True, "choices": ["present", "absent", "updated", "query"]},
+        "state": {
+            "required": True,
+            "choices": ["present", "absent", "updated", "query"],
+        },
     }
 
     required_if = [
-        ('state', 'present', ('zone_type',), True),
+        ("state", "present", ("zone_type",), True),
     ]
 
     # required_together = [
@@ -500,14 +555,16 @@ def main():
     #     ["network", "mask"]
     # ]
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                            required_if=required_if,
-                        #    required_together=required_together,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        required_if=required_if,
+        #    required_together=required_together,
+        supports_check_mode=True,
+    )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
+
     fw = SophosFirewall(
         username=module.params.get("username"),
         password=module.params.get("password"),
@@ -516,10 +573,7 @@ def main():
         verify=module.params.get("verify"),
     )
 
-    result = {
-        "changed": False,
-        "check_mode": False
-    }
+    result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
@@ -547,8 +601,10 @@ def main():
 
     elif state == "absent" and exist_check["exists"]:
         api_response = remove_zone(fw, module, result)
-        if (api_response["Response"]["Zone"]["Status"]["#text"]
-                == "Configuration applied successfully."):
+        if (
+            api_response["Response"]["Zone"]["Status"]["#text"]
+            == "Configuration applied successfully."
+        ):
             result["changed"] = True
         result["api_response"] = api_response
 
@@ -560,8 +616,10 @@ def main():
             api_response = update_zone(fw, module, result)
 
             if api_response:
-                if (api_response["Response"]["Zone"]["Status"]["#text"]
-                        == "Configuration applied successfully."):
+                if (
+                    api_response["Response"]["Zone"]["Status"]["#text"]
+                    == "Configuration applied successfully."
+                ):
                     result["changed"] = True
                 result["api_response"] = api_response
             else:
