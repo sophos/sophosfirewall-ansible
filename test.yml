@@ -508,29 +508,95 @@
     #     state: updated
     #   delegate_to: localhost
 
-    - name: Update LDAP Auth
-      sophos.sophos_firewall.sfos_authentication_ldap:
+    # - name: Update LDAP Auth
+    #   sophos.sophos_firewall.sfos_authentication_ldap:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     servername: test8
+    #     serveraddress: '192.168.0.8'
+    #     port_ldap: '636'
+    #     version: 3
+    #     anonymouslogin: Enable
+    #     connectionsecurity: SSL
+    #     bindDN: admin
+    #     ldap_password: sophosfirewall
+    #     appendbaseDN: Enable
+    #     baseDN: DC=sophos,DC=com
+    #     authenticationattribute: johndo9
+    #     displaynameattribute: JohnDoe
+    #     emailaddressattribute: mail
+    #     groupnameattribute: mx=1001
+    #     expirydateattribute: date
+    #     validateservercertificate: Disable
+    #     clientcertificate: ApplianceCertificate
+    #     state: updated
+    #   delegate_to: localhost
+
+    # - name: Update Azure AD SSO new
+    #   sophos.sophos_firewall.sfos_authentication_azure:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+  
+    #     servername: Sophostest
+    #     applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9555'
+    #     tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    #     redirecturi: uk-abn-utm-stage-118.uk.network.green.so5phos
+    #     displayname: upn
+    #     emailaddress: email
+    #     fallbackusergroup: Open Group
+    #     usertype: Administrator
+    #     rolemapping:
+    #       identifiertypeandprofile:
+    #           identifiertype:
+    #             - groups
+    #             - groups
+    #             - groups
+    #           identifiervalue:
+    #             - AAD-SFNetAdministrators
+    #             - AAD-SFEEReadOnly
+    #             - AAD-SFAudit
+    #           profileid:
+    #             - Administrator
+    #             - ReadOnly
+    #             - Audit Admin
+    #     state: updated
+    #   delegate_to: localhost
+
+    - name: Update Azure AD SSO new with User
+      sophos.sophos_firewall.sfos_authentication_azure:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        servername: test8
-        serveraddress: '192.168.0.8'
-        port_ldap: '636'
-        version: 3
-        anonymouslogin: Enable
-        connectionsecurity: SSL
-        bindDN: admin
-        ldap_password: sophosfirewall
-        appendbaseDN: Enable
-        baseDN: DC=sophos,DC=com
-        authenticationattribute: johndo9
-        displaynameattribute: JohnDoe
-        emailaddressattribute: mail
-        groupnameattribute: mx=1001
-        expirydateattribute: date
-        validateservercertificate: Disable
-        clientcertificate: ApplianceCertificate
+  
+        servername: Sophostest990
+        applicationid: '079999-71fb-888e-66622-tt331ddd5'
+        tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+        redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+        displayname: upn
+        emailaddress: email
+        fallbackusergroup: Open Group
+        usertype: User
+        rolemapping:
+          identifiertypeandprofile:
+              identifiertype:
+                - groups
+                - groups
+                - groups
+              identifiervalue:
+                - AAD-SFNetAdministrators
+                - AAD-SFEEReadOnly
+                - AAD-SFAudit
+              profileid:
+                - Administrator
+                - ReadOnly
+                - Audit Admin
         state: updated
       delegate_to: localhost

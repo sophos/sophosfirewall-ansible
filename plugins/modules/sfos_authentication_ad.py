@@ -657,9 +657,9 @@ def main():
         elif state == "updated" and "ServerName" in result["api_response"]:
             
             if eval_servername(module, exist_settings):
-                # module.exit_json(msg=f"eval=true1")
+                
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                    
                     api_response = update_ad_add(fw, module, result)
                     print(f'toppp2',api_response)
             
@@ -674,7 +674,7 @@ def main():
                         
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true4")
+                    
                     api_response = update_ad_update(fw, module, result)
                     print(f'toppp2',api_response)
             
@@ -690,7 +690,7 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true6")
+                    
                     api_response = update_ad_add(fw, module, result)
                     print(f'toppp2',api_response)
             
@@ -705,7 +705,7 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true7")
+                
                 api_response = update_ad_update(fw, module, result)
                     
                 if api_response:
