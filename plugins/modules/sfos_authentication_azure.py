@@ -941,7 +941,7 @@ def main():
                     if eval_changed(module, exist_settings):
                        
                         api_response = update_azure_add(fw, module, result)
-                        print(f'toppp2',api_response)
+                    
                 
                         if api_response:
                             if (api_response['Response']['AzureADSSO']["Status"]["#text"]
@@ -956,7 +956,7 @@ def main():
                     if eval_changed(module, exist_settings):
                         
                         api_response = update_azure_update(fw, module, result)
-                        print(f'toppp2',api_response)
+                        
                 
                         if api_response:
                             if (api_response['Response']['AzureADSSO']["Status"]["#text"]
@@ -973,7 +973,7 @@ def main():
                         if eval_changed(module, exist_settings):
                             
                             api_response = update_azure_add_user(fw, module, result)
-                            print(f'toppp2',api_response)
+                            
                     
                             if api_response:
                                 if (api_response['Response']['AzureADSSO']["Status"]["#text"]
@@ -988,7 +988,7 @@ def main():
                         if eval_changed(module, exist_settings):
                             
                             api_response = update_azure_update_user(fw, module, result)
-                            print(f'toppp2',api_response)
+                            
                     
                             if api_response:
                                 if (api_response['Response']['AzureADSSO']["Status"]["#text"]
@@ -1009,7 +1009,7 @@ def main():
             if eval_list_new_servername(module, exist_settings):
                         module.exit_json(msg=f"eval=true44")
                         api_response = update_azure_add(fw, module, result)
-                        print(f'toppp2',api_response)
+                        
                 
                         if api_response:
                             if (api_response['Response']['AzureADSSO']["Status"]["#text"]
@@ -1037,7 +1037,7 @@ def main():
                 if eval_list_new_servername(module, exist_settings):
                             
                             api_response = update_azure_add_user(fw, module, result)
-                            print(f'toppp2',api_response)
+                            
                     
                             if api_response:
                                 if (api_response['Response']['AzureADSSO']["Status"]["#text"]

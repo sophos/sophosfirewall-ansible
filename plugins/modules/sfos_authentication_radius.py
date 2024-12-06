@@ -205,10 +205,7 @@ def create_radius(fw_obj, module, result):
         "accountingport": module.params.get("accountingport"),
         "sharedsecret": module.params.get("sharedsecret")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -225,7 +222,7 @@ def create_radius(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
 def update_radius_add(fw_obj, module, result):
@@ -273,10 +270,7 @@ def update_radius_add(fw_obj, module, result):
         "accountingport": module.params.get("accountingport"),
         "sharedsecret": module.params.get("sharedsecret")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+  
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -294,7 +288,7 @@ def update_radius_add(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
 def update_radius_update(fw_obj, module, result):
@@ -342,10 +336,7 @@ def update_radius_update(fw_obj, module, result):
         "accountingport": module.params.get("accountingport"),
         "sharedsecret": module.params.get("sharedsecret")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+   
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -363,7 +354,7 @@ def update_radius_update(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
 
@@ -535,10 +526,7 @@ def remove_radius(fw_obj, module, result):
     template_vars = {
         "name": module.params.get("servername")
     }
-    # print(template_vars)
-    # final_payload = payload.format(**template_vars)
-    # print("Final Payload with Variables Substituted:")
-    # print(final_payload)
+    
     try:
         with contextlib.redirect_stdout(output_buffer):
             resp = fw_obj.submit_xml(
@@ -556,7 +544,7 @@ def remove_radius(fw_obj, module, result):
     except RequestException as error:
         module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
     
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
+    
     return resp
 
 
@@ -576,26 +564,14 @@ def main():
         "timeout": {"type": "str", "required": False},
         "domainname": {"type": "str", "required": False},
         "enableaccounting": {"type": "str", "choices": ["Enable", "None"]},
-        # "nas_identifier": {"type": "str", "required": False},
-        # "nas_port_type": {"type": "str", "required": False},
         "accountingport": {"type": "str", "required": False},
         "attributes": {"type": "dict", "required": False},
         "state": {"type": "str", "required": True, "choices": ["updated", "query", "absent"]}
     }
 
-    # required_if = [
-    #     ('state', 'present', ['user_password', 'user_type', 'group', 'email'], False),
-    #     ('user_type', 'Administrator', ['profile'], True)
-    # ]
-
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
-
+    
     module = AnsibleModule(argument_spec=argument_spec,
-                        #    required_if=required_if,
-                        #    required_together=required_together,
+                        
                            supports_check_mode=True
                            )
     
@@ -623,7 +599,7 @@ def main():
     
     
     if state == "absent":
-                # module.exit_json(msg=f"eval=true")
+               
                 api_response = remove_radius(fw, module, result)
                 
                 if api_response:
@@ -660,9 +636,9 @@ def main():
             
             if eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                    
                     api_response = update_radius_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
@@ -675,9 +651,9 @@ def main():
                         
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                    
                     api_response = update_radius_update(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
@@ -691,9 +667,9 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                   
                     api_response = update_radius_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                  
             
                     if api_response:
                         if (api_response["Response"]["RADIUSServer"]["Status"]["#text"]
@@ -706,7 +682,7 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true")
+               
                 api_response = update_radius_update(fw, module, result)
                     
                 if api_response:

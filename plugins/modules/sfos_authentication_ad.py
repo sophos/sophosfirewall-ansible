@@ -661,7 +661,7 @@ def main():
                 if eval_changed(module, exist_settings):
                     
                     api_response = update_ad_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]
@@ -676,7 +676,7 @@ def main():
                 if eval_changed(module, exist_settings):
                     
                     api_response = update_ad_update(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]
@@ -692,7 +692,7 @@ def main():
         if eval_list_new_servername(module, exist_settings):
                     
                     api_response = update_ad_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["ActiveDirectory"]["Status"]["#text"]

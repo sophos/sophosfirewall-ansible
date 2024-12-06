@@ -460,7 +460,7 @@ def main():
     
     
     if state == "absent":
-                # module.exit_json(msg=f"eval=true")
+                
                 api_response = remove_tacacs(fw, module, result)
                 if api_response:
                     if api_response['Response']["AuthenticationServer"]["TACACSServer"]["Status"]["#text"] == "Configuration applied successfully.":
@@ -495,11 +495,11 @@ def main():
         elif state == "updated" and "ServerName" in result["api_response"]:
             
             if eval_servername(module, exist_settings):
-                # module.exit_json(msg=f"eval=true1")
+                
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                    
                     api_response = update_tacacs_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["TACACSServer"]["Status"]["#text"]
@@ -512,9 +512,9 @@ def main():
                         
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true4")
+                    
                     api_response = update_tacacs_update(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["TACACSServer"]["Status"]["#text"]
@@ -528,9 +528,9 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true6")
+                    
                     api_response = update_tacacs_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                   
             
                     if api_response:
                         if (api_response["Response"]["TACACSServer"]["Status"]["#text"]
@@ -543,7 +543,7 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true7")
+                
                 api_response = update_tacacs_update(fw, module, result)
                     
                 if api_response:

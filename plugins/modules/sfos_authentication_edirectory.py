@@ -553,7 +553,7 @@ def main():
     
     
     if state == "absent":
-                # module.exit_json(msg=f"eval=true")
+                
                 api_response = remove_edirectory(fw, module, result)
                 
                 if api_response:
@@ -590,9 +590,9 @@ def main():
             
             if eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true")
+                    
                     api_response = update_edirectory_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["EDirectory"]["Status"]["#text"]
@@ -607,7 +607,7 @@ def main():
                 if eval_changed(module, exist_settings):
                     # module.exit_json(msg=f"eval=true")
                     api_response = update_edirectory_update(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["EDirectory"]["Status"]["#text"]
@@ -621,9 +621,9 @@ def main():
     if isinstance(result["api_response"], list):
         
         if eval_list_new_servername(module, exist_settings):
-                    # module.exit_json(msg=f"eval=true9")
+                    
                     api_response = update_edirectory_add(fw, module, result)
-                    print(f'toppp2',api_response)
+                    
             
                     if api_response:
                         if (api_response["Response"]["EDirectory"]["Status"]["#text"]
@@ -636,7 +636,7 @@ def main():
         else:
     
             if eval_list_update_server(module, exist_settings):
-                # module.exit_json(msg=f"eval=true10")
+                
                 api_response = update_edirectory_update(fw, module, result)
                     
                 if api_response:
