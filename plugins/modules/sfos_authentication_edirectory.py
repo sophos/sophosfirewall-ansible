@@ -8,13 +8,13 @@ import sys
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: sfos_authentication_edirectory.py
 
 short_description: Manage Authentication settings eDirectory
 
-version_added: "1.0.0"
+version_added: "1.3.0"
 
 description: Manage authentication servers (Configure > Authentication > Servers> Add) on Sophos Firewall
 
@@ -42,10 +42,10 @@ options:
         description: password for bind
         type: str
         required: false
-     connectionsecurity:
+    connectionsecurity:
         description: Encryption
-        type: Str
-        choices": [Simple, SSL, TLS]}
+        type: str
+        choices: [Simple, SSL, TLS]
     validateservercertificate:
         description: Validate Server Certificate
         type: str
@@ -70,9 +70,9 @@ options:
 author:
     - Matt Mullen (@mamullen13316)
     - Philip Finucane (@philfinucane)
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Update eDirectory 
   sophos.sophos_firewall.sfos_authentication_edirectory:
     username: "{{ username }}"
@@ -92,15 +92,15 @@ EXAMPLES = r'''
     state: updated
     delegate_to: localhost
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 api_response:
     description: Serialized object containing the API response.
     type: dict
     returned: always
 
-'''
+"""
 import io
 import contextlib
 output_buffer = io.StringIO()

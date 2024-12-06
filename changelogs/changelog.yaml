@@ -104,3 +104,26 @@ releases:
     fragments:
     - 1.2.1.yaml
     release_date: '2024-12-04'
+  1.3.0:
+    changes:
+      release_summary: This release adds modules for working with authentication servers
+    modules:
+    - description: Manage Authentication settings Active Directory.
+      name: sfos_authentication_ad
+      namespace: ''
+    - description: Manage Authentication settings AzureADSSO.
+      name: sfos_authentication_azure
+      namespace: ''
+    - description: Manage Authentication settings eDirectory.
+      name: sfos_authentication_edirectory
+      namespace: ''
+    - description: Manage Authentication settings LDAP.
+      name: sfos_authentication_ldap
+      namespace: ''
+    - description: Manage Authentication settings Radius.
+      name: sfos_authentication_radius
+      namespace: ''
+    - description: Manage Authentication settings Tacacs.
+      name: sfos_authentication_tacacs
+      namespace: ''
+    release_date: '2024-12-06'

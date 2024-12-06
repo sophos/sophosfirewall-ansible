@@ -14,7 +14,7 @@ module: sfos_authentication_radius.py
 
 short_description: Manage Authentication settings Radius
 
-version_added: "1.0.0"
+version_added: "1.3.0"
 
 description: Manage authentication servers (Configure > Authentication > Servers> Add) on Sophos Firewall
 
