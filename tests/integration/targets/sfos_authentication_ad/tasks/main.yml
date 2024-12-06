@@ -1,0 +1,172 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH ACTIVE DIRECTORY SETTINGS
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+- name: ADD ACTIVE DIRECTORY SERVER
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.171'
+    ad_port: '636'
+    netbiosdomain: test.sophos.comwe
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dnn
+    emailaddressattribute: mail
+    domainname: sophos.com
+    searchqueries: 
+      - dc=sophos,dc=cof
+      - dc=sophos,dc=ir
+    state: updated
+  register: set_ad
+
+- name: ASSERTION CHECK FOR ADD ACTIVE DIRECTORY SERVER
+  assert:
+    that: 
+      - set_ad is changed
+      - set_ad['api_response']['Response']['ActiveDirectory']['Status']['@code'] == '200'
+      - set_ad['api_response']['Response']["ActiveDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD ACTIVE DIRECTORY SERVER2
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    servername: Test2
+    serveraddress: '192.168.0.11'
+    ad_port: '636'
+    netbiosdomain: test.sophos.comwe
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dnn
+    emailaddressattribute: mail
+    domainname: sophos.com
+    searchqueries: 
+      - dc=sophos,dc=co
+      - dc=sophos,dc=ie
+    state: updated
+  register: set_ad2
+
+- name: ASSERTION CHECK FOR ADD ACTIVE DIRECTORY SERVER2
+  assert:
+    that: 
+      - set_ad2 is changed
+      - set_ad2['api_response']['Response']['ActiveDirectory']['Status']['@code'] == '200'
+      - set_ad2['api_response']['Response']["ActiveDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE ACTIVE DIRECTORY SERVER CONFIG
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.9'
+    ad_port: '636'
+    netbiosdomain: test.sophos.com
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dnn
+    emailaddressattribute: mail
+    domainname: sophos.com
+    searchqueries: 
+      - dc=sophos,dc=fr
+      - dc=sophos,dc=de
+    state: updated
+  register: set_ad_update
+
+- name: ASSERTION CHECK FOR Update ACTIVE DIRECTORY SERVER
+  assert:
+    that: 
+      - set_ad_update is changed
+      - set_ad_update['api_response']['Response']['ActiveDirectory']['Status']['@code'] == '200'
+      - set_ad_update['api_response']['Response']["ActiveDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE ACTIVE DIRECTORY SERVER
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.9'
+    ad_port: '636'
+    netbiosdomain: test.sophos.com
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dnn
+    emailaddressattribute: mail
+    domainname: sophos.com
+    searchqueries: 
+      - dc=sophos,dc=fr
+      - dc=sophos,dc=de
+    state: absent
+  register: set_ad_remove
+
+- name: ASSERTION CHECK FOR REMOVE ACTIVE DIRECTORY SERVER
+  assert:
+    that: 
+      - set_ad_remove is changed
+      - set_ad_remove['api_response']['Response']["AuthenticationServer"]['ActiveDirectory']['Status']['@code'] == '200'
+      - set_ad_remove['api_response']['Response']["AuthenticationServer"]["ActiveDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE ACTIVE DIRECTORY SERVER2
+  sfos_authentication_ad:
+    <<: *sfos_connection_params
+    servername: Test2
+    serveraddress: '192.168.0.11'
+    ad_port: '636'
+    netbiosdomain: test.sophos.comwe
+    adsusername: admin
+    ad_password: testtest
+    connectionsecurity: SSL
+    validcertreq: Disable
+    displaynameattribute: dnn
+    emailaddressattribute: mail
+    domainname: sophos.com
+    searchqueries: 
+      - dc=sophos,dc=co
+      - dc=sophos,dc=ie
+    state: absent
+  register: set_ad_remove2
+
+- name: ASSERTION CHECK FOR REMOVE ACTIVE DIRECTORY SERVER2
+  assert:
+    that: 
+      - set_ad_remove2 is changed
+      - set_ad_remove2['api_response']['Response']["AuthenticationServer"]['ActiveDirectory']['Status']['@code'] == '200'
+      - set_ad_remove2['api_response']['Response']["AuthenticationServer"]["ActiveDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'

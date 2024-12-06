@@ -1,0 +1,125 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH TACACS SETTINGS
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+
+
+
+- name: ADD TACACS SERVER
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.75'
+    tac_port: '49'
+    sharedsecret: testtest
+    state: updated
+  register: set_tacacs
+
+- name: ASSERTION CHECK FOR ADD TACACS SERVER
+  assert:
+    that: 
+      - set_tacacs is changed
+      - set_tacacs['api_response']['Response']['TACACSServer']['Status']['@code'] == '200'
+      - set_tacacs['api_response']['Response']["TACACSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD TACACS SERVER2
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    servername: Test1
+    serveraddress: '192.168.0.5'
+    tac_port: '49'
+    sharedsecret: testtest
+    state: updated
+  register: set_tacacs2
+
+- name: ASSERTION CHECK FOR ADD TACACS SERVER2
+  assert:
+    that: 
+      - set_tacacs2 is changed
+      - set_tacacs2['api_response']['Response']['TACACSServer']['Status']['@code'] == '200'
+      - set_tacacs2['api_response']['Response']["TACACSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE TACACS SERVER CONFIG
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.78'
+    tac_port: '49'
+    sharedsecret: testtest
+    state: updated
+  register: set_tacacs_update
+
+- name: ASSERTION CHECK FOR Update TACACS SERVER
+  assert:
+    that: 
+      - set_tacacs_update is changed
+      - set_tacacs_update['api_response']['Response']['TACACSServer']['Status']['@code'] == '200'
+      - set_tacacs_update['api_response']['Response']["TACACSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE TACACS SERVER
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    servername: Test
+    serveraddress: '192.168.0.78'
+    tac_port: '49'
+    sharedsecret: testtest
+    state: absent
+  register: set_tacacs_remove
+
+- name: ASSERTION CHECK FOR REMOVE TACACS SERVER
+  assert:
+    that: 
+      - set_tacacs_remove is changed
+      - set_tacacs_remove['api_response']['Response']["AuthenticationServer"]['TACACSServer']['Status']['@code'] == '200'
+      - set_tacacs_remove['api_response']['Response']["AuthenticationServer"]["TACACSServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE TACACS SERVER2
+  sfos_authentication_tacacs:
+    <<: *sfos_connection_params
+    servername: Test1
+    serveraddress: '192.168.0.5'
+    tac_port: '49'
+    sharedsecret: testtest
+    state: absent
+  register: set_tacacs_remove2
+
+- name: ASSERTION CHECK FOR REMOVE TACACS SERVER2
+  assert:
+    that: 
+      - set_tacacs_remove2 is changed
+      - set_tacacs_remove2['api_response']['Response']["AuthenticationServer"]['TACACSServer']['Status']['@code'] == '200'
+      - set_tacacs_remove2['api_response']['Response']["AuthenticationServer"]["TACACSServer"]["Status"]["#text"] == 'Configuration applied successfully.'

@@ -1,0 +1,150 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH EDIRECTORY SETTINGS
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+
+
+
+- name: ADD EDIRECTORY SERVER
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    servername: Test
+    serveripdomain: '192.168.0.1'
+    port_edir: '1812'
+    binddn: CN=user1,CN=Users,DC=example,DC=com
+    dn_password: testtest
+    connectionsecurity: SSL
+    validateservercertificate: Enable
+    clientcertificate: Webadmin
+    basedn: o=sophos.com
+    state: updated
+  register: set_edirectory
+
+- name: ASSERTION CHECK FOR ADD EDIRECTORY SERVER
+  assert:
+    that: 
+      - set_edirectory is changed
+      - set_edirectory['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD EDIRECTORY SERVER2
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    servername: Test1
+    serveripdomain: '192.168.0.2'
+    port_edir: '1812'
+    binddn: CN=user1,CN=Users,DC=example,DC=com
+    dn_password: testtest
+    connectionsecurity: SSL
+    validateservercertificate: Enable
+    clientcertificate: Webadmin
+    basedn: o=sophos.com
+    state: updated
+  register: set_edirectory2
+
+- name: ASSERTION CHECK FOR ADD EDIRECTORY SERVER2
+  assert:
+    that: 
+      - set_edirectory2 is changed
+      - set_edirectory2['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory2['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE EDIRECTORY SERVER CONFIG
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    servername: Test
+    serveripdomain: '192.168.0.5'
+    port_edir: '1812'
+    binddn: CN=user1,CN=Users,DC=example,DC=com
+    dn_password: testtest
+    connectionsecurity: SSL
+    validateservercertificate: Enable
+    clientcertificate: Webadmin
+    basedn: o=sophos.com
+    state: updated
+  register: set_edirectory_update
+
+- name: ASSERTION CHECK FOR Update EDIRECTORY SERVER
+  assert:
+    that: 
+      - set_edirectory_update is changed
+      - set_edirectory_update['api_response']['Response']['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_update['api_response']['Response']["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE EDIRECTORY SERVER
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    servername: Test
+    serveripdomain: '192.168.0.5'
+    port_edir: '1812'
+    binddn: CN=user1,CN=Users,DC=example,DC=com
+    dn_password: testtest
+    connectionsecurity: SSL
+    validateservercertificate: Enable
+    clientcertificate: Webadmin
+    basedn: o=sophos.com
+    state: absent
+  register: set_edirectory_remove
+
+- name: ASSERTION CHECK FOR REMOVE EDIRECTORY SERVER
+  assert:
+    that: 
+      - set_edirectory_remove is changed
+      - set_edirectory_remove['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_remove['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE EDIRECTORY SERVER2
+  sfos_authentication_edirectory:
+    <<: *sfos_connection_params
+    servername: Test1
+    serveripdomain: '192.168.0.2'
+    port_edir: '1812'
+    binddn: CN=user1,CN=Users,DC=example,DC=com
+    dn_password: testtest
+    connectionsecurity: SSL
+    validateservercertificate: Enable
+    clientcertificate: Webadmin
+    basedn: o=sophos.com
+    state: absent
+  register: set_edirectory_remove2
+
+- name: ASSERTION CHECK FOR REMOVE EDIRECTORY SERVER2
+  assert:
+    that: 
+      - set_edirectory_remove2 is changed
+      - set_edirectory_remove2['api_response']['Response']["AuthenticationServer"]['EDirectory']['Status']['@code'] == '200'
+      - set_edirectory_remove2['api_response']['Response']["AuthenticationServer"]["EDirectory"]["Status"]["#text"] == 'Configuration applied successfully.'

@@ -11,6 +11,8 @@
     #     hostname: "{{ inventory_hostname }}"
     #     port: 4444
     #     verify: false
+    #     name: TESTHOST55
+    #     ip_address: 3.3.3.3
     #     name: testhost
     #     ip_address: 2.2.2.2
     #     state: query
@@ -28,10 +30,11 @@
     #     hostname: "{{ inventory_hostname }}"
     #     port: 4444
     #     verify: false
-    #     name: TESTNETWORK
+    #     name: TESTNETWORK126
     #     network: 2.2.2.0
     #     mask: 255.255.255.0
     #     host_type: network
+    #     state: present
     #     state: present
     #   delegate_to: localhost
 
@@ -378,7 +381,7 @@
   #         dns2: 2.2.2.2
   #         dns3: 3.3.3.3
   #     dnsquery_config: ChooseIPv4DNSServerOverIPv6
-  #     state: updated
+  #     state: query
   #   delegate_to: localhost
 
     # - name: UPDATE TIME SETTINGS
@@ -400,166 +403,209 @@
     #     state: updated
     #   delegate_to: localhost
 
-    # - name: UPDATE BACKUP SETTINGS
-    #   sophos.sophos_firewall.sfos_backup:
+    # - name: Update Azure AD SSO
+    #   sophos.sophos_firewall.sfos_authentication_azureadsso:
     #     username: "{{ username }}"
     #     password: "{{ password }}"
     #     hostname: "{{ inventory_hostname }}"
     #     port: 4444
     #     verify: false
-    #     mode: Mail
-    #     prefix: devfirewall
-    #     # ftp_server: ftp.sophos.com
-    #     # ftp_username: ftpuser
-    #     # ftp_password: ftppassword
-    #     # ftp_path: home/backup
-    #     frequency: Monthly
-    #     # day: Sunday
-    #     hour: 20
-    #     minute: 30
-    #     date: 1
-    #     # encryption_password: test123
-    #     email_address: testfirewall@sophos.com
-    #     debug: true
+  
+    #     servername: SophosFirewallSSO
+    #     applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9edd8b'
+    #     tenantid: '358a41ff-46d9-49d3-a297-370d894eae6a'
+    #     redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos
+    #     displayname: upn
+    #     emailaddress: email
+    #     fallbackusergroup: Open Group
+    #     usertype: Administrator
+    #     rolemapping:
+    #       identifiertypeandprofile:
+    #           identifiertype:
+    #             - groups
+    #             - groups
+    #             - groups
+    #           identifiervalue:
+    #             - AAD-SFNetAdministrators
+    #             - AAD-SFEEReadOnly
+    #             - AAD-SFAudit
+    #           profileid:
+    #             - Administrator
+    #             - ReadOnly
+    #             - Audit Admin
     #     state: updated
     #   delegate_to: localhost
 
-  # - name: CREATE READ ONLY DEVICE ACCESS PROFILE
-  #   sophos.sophos_firewall.sfos_device_access_profile:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     name: ReadOnlyProfile
-  #     default_permission: Read-Only
-  #     state: present
-  #   delegate_to: localhost
+    # - name: Update Radius Auth
+    #   sophos.sophos_firewall.sfos_authentication_radius:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
 
-  # - name: UPDATE DEVICE ACCESS PROFILE
-  #   sophos.sophos_firewall.sfos_device_access_profile:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     name: ReadOnlyProfile
-  #     dashboard: Read-Write
-  #     system:
-  #       profile: Read-Only
-  #       system_password: Read-Write
-  #     state: absent
-  #   delegate_to: localhost
+    #     servername: test19997
+    #     serveraddress: '192.168.0.119'
+    #     port_radius: '1818'
+    #     groupnameattribute: upngggluuuyyyopo
+    #     timeout: 3
+    #     domainname: sophos.comme
+    #     enableaccounting: Enable
+    #     attributes:
+    #       nas_identifier: testing3
+    #       nas_port_type: 0
+    #     accountingport: 44447
+    #     state: updated
+    #   delegate_to: localhost
+    
+    # - name: Update AD Auth
+    #   sophos.sophos_firewall.sfos_authentication_ad:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+
+    #     servername: Test
+    #     serveraddress: '192.168.0.171'
+    #     ad_port: '636'
+    #     netbiosdomain: test.sophos.comwe
+    #     adsusername: admin
+    #     ad_password: testtest
+    #     connectionsecurity: SSL
+    #     validcertreq: Disable
+    #     displaynameattribute: dnn
+    #     emailaddressattribute: mail
+    #     domainname: sophos.com
+    #     searchqueries: 
+    #     - dc=sophos,dc=cof
+    #     - dc=sophos,dc=ir
+    #     state: updated
+    #   delegate_to: localhost
+
+    # - name: Update TACACS Auth
+    #   sophos.sophos_firewall.sfos_authentication_tacacs:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+
+    #     servername: Test
+    #     serveraddress: '192.168.0.75'
+    #     tac_port: '49'
+    #     sharedsecret: testtest
+    #     state: absent
+    #   delegate_to: localhost
+    
+    # - name: Update eDirectory Auth
+    #   sophos.sophos_firewall.sfos_authentication_edirectory:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     servername: Test54
+    #     serveripdomain: '192.168.0.89'
+    #     port_edir: '1812'
+    #     binddn: CN=user1,CN=Users,DC=example,DC=com
+    #     dn_password: testtest
+    #     connectionsecurity: SSL
+    #     validateservercertificate: Enable
+    #     clientcertificate: Webadmin
+    #     basedn: o=sophos.com
+    #     state: updated
+    #   delegate_to: localhost
+
+    # - name: Update LDAP Auth
+    #   sophos.sophos_firewall.sfos_authentication_ldap:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
+    #     servername: test8
+    #     serveraddress: '192.168.0.8'
+    #     port_ldap: '636'
+    #     version: 3
+    #     anonymouslogin: Enable
+    #     connectionsecurity: SSL
+    #     bindDN: admin
+    #     ldap_password: sophosfirewall
+    #     appendbaseDN: Enable
+    #     baseDN: DC=sophos,DC=com
+    #     authenticationattribute: johndo9
+    #     displaynameattribute: JohnDoe
+    #     emailaddressattribute: mail
+    #     groupnameattribute: mx=1001
+    #     expirydateattribute: date
+    #     validateservercertificate: Disable
+    #     clientcertificate: ApplianceCertificate
+    #     state: updated
+    #   delegate_to: localhost
+
+    # - name: Update Azure AD SSO new
+    #   sophos.sophos_firewall.sfos_authentication_azure:
+    #     username: "{{ username }}"
+    #     password: "{{ password }}"
+    #     hostname: "{{ inventory_hostname }}"
+    #     port: 4444
+    #     verify: false
   
-  # - name: UPDATE MALWARE PROTECTION
-  #   sophos.sophos_firewall.sfos_malware_protection:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     antivirus_engine: Avira
-  #     state: updated
-  #   delegate_to: localhost
+    #     servername: Sophostest
+    #     applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9555'
+    #     tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    #     redirecturi: uk-abn-utm-stage-118.uk.network.green.so5phos
+    #     displayname: upn
+    #     emailaddress: email
+    #     fallbackusergroup: Open Group
+    #     usertype: Administrator
+    #     rolemapping:
+    #       identifiertypeandprofile:
+    #           identifiertype:
+    #             - groups
+    #             - groups
+    #             - groups
+    #           identifiervalue:
+    #             - AAD-SFNetAdministrators
+    #             - AAD-SFEEReadOnly
+    #             - AAD-SFAudit
+    #           profileid:
+    #             - Administrator
+    #             - ReadOnly
+    #             - Audit Admin
+    #     state: updated
+    #   delegate_to: localhost
 
-  # - name: UPDATE ADVANCED THREAT PROTECTION
-  #   sophos.sophos_firewall.sfos_atp:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     enabled: True
-  #     log_policy: Log Only
-  #     inspect_content: untrusted
-  #     state: updated
-  #   delegate_to: localhost
-
-  # - name: UPDATE SNMP AGENT CONFIGURATION
-  #   sophos.sophos_firewall.sfos_snmp_agent:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     # enabled: false
-  #     # name: automationtest
-  #     # description: Testing automation
-  #     # location: AWS Ireland 
-  #     # contact_person: Sophos IT
-  #     agent_port: 171
-  #     state: updated
-  #   delegate_to: localhost
-
-  # - name: Manage SNMPv3 User
-  #   sophos.sophos_firewall.sfos_snmp_user:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     name: snmpv3user1
-  #     accept_queries: Disable
-  #     send_traps: Enable
-  #     authorized_hosts:
-  #         - 10.100.1.104
-  #         - 10.100.1.105
-  #     encryption_algorithm: AES
-  #     encryption_password: sup3rs3cr3tp@ssw0rd
-  #     authentication_algorithm: MD5
-  #     authentication_password: sup3rs3cr3tp@ssw0rd
-  #     state: present
-  #   delegate_to: localhost
-
-  # - name: Manage IPS protection
-  #   sophos.sophos_firewall.sfos_ips:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     enabled: true
-  #     state: updated
-  #   delegate_to: localhost
-
-  # - name: Create syslog server, all logging enabled
-  #   sophos.sophos_firewall.sfos_syslog:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     name: TestSyslog
-  #     address: 10.10.1.100
-  #     udp_port: 514
-  #     secure_connection: Disable
-  #     facility: DAEMON
-  #     severity: Emergency
-  #     format: Device standard
-  #     default_logging: Enable
-  #     state: updated
-  #   delegate_to: localhost
-
-  # - name: Create syslog server, disable selected logs
-  #   sophos.sophos_firewall.sfos_syslog:
-  #     username: "{{ username }}"
-  #     password: "{{ password }}"
-  #     hostname: "{{ inventory_hostname }}"
-  #     port: 4444
-  #     verify: false
-  #     name: TestSyslog
-  #     address: 10.10.1.100
-  #     udp_port: 514
-  #     secure_connection: Disable
-  #     facility: DAEMON
-  #     severity: Emergency
-  #     format: Device standard
-  #     default_logging: Enable
-  #     log_settings:
-  #       security_policy:
-  #         invalid_traffic: Disable
-  #         icmp_errormessage: Disable
-  #       content_filtering:
-  #         ssl_tls: Disable
-  #     state: present
-  #   delegate_to: localhost
+    - name: Update Azure AD SSO new with User
+      sophos.sophos_firewall.sfos_authentication_azure:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+  
+        servername: Sophostest990
+        applicationid: '079999-71fb-888e-66622-tt331ddd5'
+        tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+        redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+        displayname: upn
+        emailaddress: email
+        fallbackusergroup: Open Group
+        usertype: User
+        rolemapping:
+          identifiertypeandprofile:
+              identifiertype:
+                - groups
+                - groups
+                - groups
+              identifiervalue:
+                - AAD-SFNetAdministrators
+                - AAD-SFEEReadOnly
+                - AAD-SFAudit
+              profileid:
+                - Administrator
+                - ReadOnly
+                - Audit Admin
+        state: updated
+      delegate_to: localhost

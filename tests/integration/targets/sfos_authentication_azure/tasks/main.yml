@@ -1,0 +1,309 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH AZURE SETTINGS
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+- name: ADD AZURE SERVER
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test
+    applicationid: '079999-71fb-888e-66622-tt331ddd5'
+    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER
+  assert:
+    that: 
+      - set_azure is changed
+      - set_azure['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD AZURE SERVER1
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test1
+    applicationid: '079999-71fb-888e-66622-ee331ddd5'
+    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure1
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER1
+  assert:
+    that: 
+      - set_azure1 is changed
+      - set_azure1['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure1['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+- name: ADD AZURE SERVER2
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test2
+    applicationid: '079999-71fb-9928e-66622-tt331ddd5'
+    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure2
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER
+  assert:
+    that: 
+      - set_azure2 is changed
+      - set_azure2['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure2['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: UPDATE AZURE SERVER2 CONFIG
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test2
+    applicationid: '079999-71fb-9928e-66622-tt331ddd5'
+    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure_update
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER2 update
+  assert:
+    that: 
+      - set_azure_update is changed
+      - set_azure_update['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure_update['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: ADD AZURE SERVER3
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test3
+    applicationid: '079999-71cc-9928e-66622-tt331ddd5'
+    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure3
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER3
+  assert:
+    that: 
+      - set_azure3 is changed
+      - set_azure3['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure3['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD AZURE SERVER3 update
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test3
+    applicationid: '079999-71cc-9928e-66622-tt331ddd5'
+    tenantid: '358a41ff-46d9-49d1-a297-370d894eae8b'
+    redirecturi: uk-abn-utm-stage-448.uk.network.green.soduphos
+    displayname: upn
+    emailaddress: email
+    fallbackusergroup: Open Group
+    usertype: User
+    rolemapping:
+      identifiertypeandprofile:
+          identifiertype:
+            - groups
+            - groups
+            - groups
+          identifiervalue:
+            - AAD-SFNetAdministrators
+            - AAD-SFEEReadOnly
+            - AAD-SFAudit
+          profileid:
+            - Administrator
+            - ReadOnly
+            - Audit Admin
+    state: updated
+  register: set_azure3_update
+
+- name: ASSERTION CHECK FOR ADD AZURE SERVER3
+  assert:
+    that: 
+      - set_azure3_update is changed
+      - set_azure3_update['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure3_update['api_response']['Response']["AzureADSSO"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+
+- name: REMOVE AZURE SERVER
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test
+    state: absent
+  register: set_azure_remove
+
+- name: ASSERTION CHECK FOR REMOVE AZURE SERVER
+  assert:
+    that: 
+      - set_azure_remove is changed
+      - set_azure_remove['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure_remove['api_response']['Response']['AzureADSSO']["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE AZURE SERVER1
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test1
+    state: absent
+  register: set_azure_remove1
+
+- name: ASSERTION CHECK FOR REMOVE AZURE SERVER2
+  assert:
+    that: 
+      - set_azure_remove1 is changed
+      - set_azure_remove1['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure_remove1['api_response']['Response']['AzureADSSO']["Status"]["#text"] == 'Configuration applied successfully.'
+
+- name: REMOVE AZURE SERVER2
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test2
+    state: absent
+  register: set_azure_remove2
+
+- name: ASSERTION CHECK FOR REMOVE AZURE SERVER2
+  assert:
+    that: 
+      - set_azure_remove2 is changed
+      - set_azure_remove2['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure_remove2['api_response']['Response']['AzureADSSO']["Status"]["#text"] == 'Configuration applied successfully.'
+
+- name: REMOVE AZURE SERVER1
+  sfos_authentication_azure:
+    <<: *sfos_connection_params
+    servername: test3
+    state: absent
+  register: set_azure_remove3
+
+- name: ASSERTION CHECK FOR REMOVE AZURE SERVER2
+  assert:
+    that: 
+      - set_azure_remove3 is changed
+      - set_azure_remove3['api_response']['Response']['AzureADSSO']['Status']['@code'] == '200'
+      - set_azure_remove3['api_response']['Response']['AzureADSSO']["Status"]["#text"] == 'Configuration applied successfully.'

@@ -1,0 +1,441 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: QUERY AUTH LDAP SETTINGS
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    state: query
+  register: query_settings
+
+
+
+
+- name: ADD LDAP SERVER with anonymouslogin
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test
+    serveraddress: '192.168.0.1'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Enable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap
+
+- name: ASSERTION CHECK FOR ADD LDAP SERVER
+  assert:
+    that: 
+      - set_ldap is changed
+      - set_ldap['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+- name: REMOVE LDAP SERVER with anonymouslogin
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test
+    serveraddress: '192.168.0.1'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Enable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: absent
+  register: set_ldap_remove_with_anonymouslogin
+
+- name: ASSERTION CHECK FOR REMOVE LDAP SERVER with anonymouslogin
+  assert:
+    that: 
+      - set_ldap_remove_with_anonymouslogin is changed
+      - set_ldap_remove_with_anonymouslogin['api_response']['Response']["AuthenticationServer"]['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_remove_with_anonymouslogin['api_response']['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+
+- name: ADD LDAP SERVER without anonymouslogin
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test1
+    serveraddress: '192.168.0.5'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap_with_anonymouslogin
+
+- name: ASSERTION CHECK FOR ADD LDAP SERVER
+  assert:
+    that: 
+      - set_ldap_with_anonymouslogin is changed
+      - set_ldap_with_anonymouslogin['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_with_anonymouslogin['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+
+
+
+- name: ADD LDAP SERVER2
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test2
+    serveraddress: '192.168.0.2'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap2
+
+- name: ASSERTION CHECK FOR ADD LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap2 is changed
+      - set_ldap2['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap2['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE LDAP SERVER2 CONFIG
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test2
+    serveraddress: '192.168.0.3'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap2_update
+
+- name: ASSERTION CHECK FOR Update LDAP SERVER
+  assert:
+    that: 
+      - set_ldap2_update is changed
+      - set_ldap2_update['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap2_update['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: ADD LDAP SERVER3
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test3
+    serveraddress: '192.168.0.10'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap3
+
+- name: ASSERTION CHECK FOR ADD LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap3 is changed
+      - set_ldap3['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap3['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE LDAP SERVER3 CONFIG
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test3
+    serveraddress: '192.168.0.11'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap3_update
+
+- name: ASSERTION CHECK FOR Update LDAP SERVER
+  assert:
+    that: 
+      - set_ldap3_update is changed
+      - set_ldap3_update['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap3_update['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: ADD LDAP SERVER4
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test4
+    serveraddress: '192.168.0.22'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap4
+
+- name: ASSERTION CHECK FOR ADD LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap4 is changed
+      - set_ldap4['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap4['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: UPDATE LDAP SERVER4 CONFIG
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test4
+    serveraddress: '192.168.0.21'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: updated
+  register: set_ldap4_update
+
+- name: ASSERTION CHECK FOR Update LDAP SERVER
+  assert:
+    that: 
+      - set_ldap4_update is changed
+      - set_ldap4_update['api_response']['Response']['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap4_update['api_response']['Response']["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE LDAP SERVER
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test1
+    serveraddress: '192.168.0.5'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: absent
+  register: set_ldap_test1_remove
+
+- name: ASSERTION CHECK FOR REMOVE LDAP SERVER
+  assert:
+    that: 
+      - set_ldap_test1_remove is changed
+      - set_ldap_test1_remove['api_response']['Response']["AuthenticationServer"]['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_test1_remove['api_response']['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+
+- name: REMOVE LDAP SERVER2
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test2
+    serveraddress: '192.168.0.3'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: absent
+  register: set_ldap_test2_remove
+
+- name: ASSERTION CHECK FOR REMOVE LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap_test2_remove is changed
+      - set_ldap_test2_remove['api_response']['Response']["AuthenticationServer"]['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_test2_remove['api_response']['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+
+- name: REMOVE LDAP SERVER3
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test3
+    serveraddress: '192.168.0.11'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: absent
+  register: set_ldap_test3_remove
+
+- name: ASSERTION CHECK FOR REMOVE LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap_test3_remove is changed
+      - set_ldap_test3_remove['api_response']['Response']["AuthenticationServer"]['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_test3_remove['api_response']['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
+
+- name: REMOVE LDAP SERVER4
+  sfos_authentication_ldap:
+    <<: *sfos_connection_params
+    servername: test4
+    serveraddress: '192.168.0.21'
+    port_ldap: '636'
+    version: 3
+    anonymouslogin: Disable
+    connectionsecurity: SSL
+    bindDN: admin
+    ldap_password: sophosfirewall
+    appendbaseDN: Enable
+    baseDN: DC=sophos,DC=com
+    authenticationattribute: johndo9
+    displaynameattribute: JohnDoe
+    emailaddressattribute: mail
+    groupnameattribute: mx=1001
+    expirydateattribute: date
+    validateservercertificate: Disable
+    clientcertificate: ApplianceCertificate
+    state: absent
+  register: set_ldap_test2_remove2
+
+- name: ASSERTION CHECK FOR REMOVE LDAP SERVER2
+  assert:
+    that: 
+      - set_ldap_test2_remove2 is changed
+      - set_ldap_test2_remove2['api_response']['Response']["AuthenticationServer"]['LDAPServer']['Status']['@code'] == '200'
+      - set_ldap_test2_remove2['api_response']['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == 'Configuration applied successfully.'
