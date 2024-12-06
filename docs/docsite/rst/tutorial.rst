@@ -245,7 +245,7 @@ The output should look similar to the following:
     TASK [DISPLAY IP ADDRESS] *****************************************************************************************************************************
     ok: [testhost.sophos.com] => {
         "query_host.api_response.Response.IPHost.IPAddress": "2.2.2.2"
-    }
+    \}
 
     PLAY RECAP ********************************************************************************************************************************************
     testhost.sophos.com              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
