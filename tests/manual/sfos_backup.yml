@@ -1,0 +1,29 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: UPDATE BACKUP SETTINGS
+      sophos.sophos_firewall.sfos_backup:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        mode: Mail
+        prefix: devfirewall
+        # ftp_server: ftp.sophos.com
+        # ftp_username: ftpuser
+        # ftp_password: ftppassword
+        # ftp_path: home/backup
+        frequency: Monthly
+        # day: Sunday
+        hour: 20
+        minute: 30
+        date: 1
+        # encryption_password: test123
+        email_address: testfirewall@sophos.com
+        debug: true
+        state: updated
+      delegate_to: localhost

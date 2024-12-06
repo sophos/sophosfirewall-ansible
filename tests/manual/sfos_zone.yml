@@ -1,0 +1,19 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: UPDATE ZONE ADMIN SERVICES
+      sophos.sophos_firewall.sfos_zone:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TESTZONE
+        zone_type: LAN
+        # sslvpn: Enable
+        state: present
+      delegate_to: localhost

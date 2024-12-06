@@ -1,0 +1,18 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: UPDATE ADVANCED THREAT PROTECTION
+      sophos.sophos_firewall.sfos_atp:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        enabled: True
+        log_policy: Log Only
+        inspect_content: untrusted
+        state: updated
+      delegate_to: localhost

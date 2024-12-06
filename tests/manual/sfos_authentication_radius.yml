@@ -1,0 +1,26 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Update Radius Auth
+      sophos.sophos_firewall.sfos_authentication_radius:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        servername: test19997
+        serveraddress: '192.168.0.119'
+        port_radius: '1818'
+        groupnameattribute: upngggluuuyyyopo
+        timeout: 3
+        domainname: sophos.comme
+        enableaccounting: Enable
+        attributes:
+          nas_identifier: testing3
+          nas_port_type: 0
+        accountingport: 44447
+        state: updated
+      delegate_to: localhost

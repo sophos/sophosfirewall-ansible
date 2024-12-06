@@ -1,0 +1,21 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: UPDATE SNMP AGENT CONFIGURATION
+      sophos.sophos_firewall.sfos_snmp_agent:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        # enabled: false
+        # name: automationtest
+        # description: Testing automation
+        # location: AWS Ireland 
+        # contact_person: Sophos IT
+        agent_port: 171
+        state: updated
+      delegate_to: localhost

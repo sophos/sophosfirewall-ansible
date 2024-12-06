@@ -1,0 +1,33 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Update LDAP Auth
+      sophos.sophos_firewall.sfos_authentication_ldap:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        servername: test8
+        serveraddress: '192.168.0.8'
+        port_ldap: '636'
+        version: 3
+        anonymouslogin: Enable
+        connectionsecurity: SSL
+        bindDN: admin
+        ldap_password: sophosfirewall
+        appendbaseDN: Enable
+        baseDN: DC=sophos,DC=com
+        authenticationattribute: johndo9
+        displaynameattribute: JohnDoe
+        emailaddressattribute: mail
+        groupnameattribute: mx=1001
+        expirydateattribute: date
+        validateservercertificate: Disable
+        clientcertificate: ApplianceCertificate
+        state: updated
+      delegate_to: localhost

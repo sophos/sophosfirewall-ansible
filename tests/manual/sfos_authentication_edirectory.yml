@@ -1,0 +1,24 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Update eDirectory Auth
+      sophos.sophos_firewall.sfos_authentication_edirectory:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        servername: Test54
+        serveripdomain: '192.168.0.89'
+        port_edir: '1812'
+        binddn: CN=user1,CN=Users,DC=example,DC=com
+        dn_password: testtest
+        connectionsecurity: SSL
+        validateservercertificate: Enable
+        clientcertificate: Webadmin
+        basedn: o=sophos.com
+        state: updated
+      delegate_to: localhost

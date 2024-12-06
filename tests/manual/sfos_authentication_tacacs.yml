@@ -1,0 +1,20 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+  
+    - name: Update TACACS Auth
+      sophos.sophos_firewall.sfos_authentication_tacacs:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        servername: Test
+        serveraddress: '192.168.0.75'
+        tac_port: '49'
+        sharedsecret: testtest
+        state: absent
+      delegate_to: localhost

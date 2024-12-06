@@ -1,0 +1,23 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Create User
+      sophos.sophos_firewall.sfos_user:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        user: testuser2
+        name: Test User 2
+        description: Update password!
+        user_password: Sup3rS3cr3tP@ssw0rd
+        user_type: Administrator
+        group: Open Group
+        profile: Administrator
+        email: test.user2@sophos.com
+        state: absent
+      delegate_to: localhost

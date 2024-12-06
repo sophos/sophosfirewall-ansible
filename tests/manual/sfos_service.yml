@@ -1,0 +1,60 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+      - name: CREATE SERVICE
+        sophos.sophos_firewall.sfos_service:
+          username: "{{ username }}"
+          password: "{{ password }}"
+          hostname: "{{ inventory_hostname }}"
+          port: 4444
+          verify: false
+          name: IGT_TESTSERVICE
+          type: tcporudp
+          service_list:
+            # - protocol: tcp
+            #   src_port: 1:65535
+            #   dst_port: 80
+            # - protocol: tcp
+            #   src_port: 1:65535
+            #   dst_port: 443
+            - protocol: tcp
+              dst_port: 9999
+          action: replace
+          state: query
+        delegate_to: localhost
+
+      - name: CREATE IP SERVICE
+        sophos.sophos_firewall.sfos_service:
+          username: "{{ username }}"
+          password: "{{ password }}"
+          hostname: "{{ inventory_hostname }}"
+          port: 4444
+          verify: false
+          name: IGT_TESTIPSERVICE
+          type: icmp
+          service_list:
+            - icmp_type: "Echo Reply"
+              icmp_code: "Any Code"
+          state: absent
+        delegate_to: localhost
+
+      - name: ADD SERVICE GROUP
+        sophos.sophos_firewall.sfos_servicegroup:
+          username: "{{ username }}"
+          password: "{{ password }}"
+          hostname: "{{ inventory_hostname }}"
+          port: 4444
+          verify: false
+          name: TESTSERVICEGROUP
+          service_list:
+            # - HTTPS
+            # - HTTP
+            # - FTP
+            - SMTP
+          description: Test Service Group
+          action: replace        
+          state: absent
+        delegate_to: localhost
