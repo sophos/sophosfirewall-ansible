@@ -1,0 +1,253 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE TEST RULES DO NOT EXIST
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - IGT_TESTRULE1
+    - IGT_TESTRULE2
+
+# When the test rules are deleted, the group will be automatically deleted.
+# This is the behavior in the UI, once all rules are removed from the group the group is gone.
+
+- name: CREATE NETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    network: "{{ item.ip_address }}"
+    mask: "{{ item.mask }}"
+    host_type: network
+    state: present   
+  loop:
+    - name: IGT_TESTNETWORK1
+      ip_address: 1.1.1.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK2
+      ip_address: 2.2.2.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK3
+      ip_address: 3.3.3.0
+      mask: 255.255.255.0
+    
+- name: CREATE FIREWALL RULES
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    position: bottom
+    status: enable
+    src_networks:
+      - "{{ item.src_network }}"
+    dst_networks:
+      - "{{ item.dst_network }}"
+    service_list:
+      - HTTPS
+    action: accept
+    state: present
+  register: create_rule
+  loop:
+    - name: IGT_TESTRULE1
+      src_network: IGT_TESTNETWORK1
+      dst_network: IGT_TESTNETWORK2
+    - name: IGT_TESTRULE2
+      src_network: IGT_TESTNETWORK1
+      dst_network: IGT_TESTNETWORK3
+
+- name: CREATE FIREWALL RULE GROUP
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    description: Test rule group created during Ansible integration testing
+    policy_list:
+      - IGT_TESTRULE1
+    policy_type: Any
+    source_zones:
+      - LAN
+    dest_zones:
+      - WAN
+    state: present
+
+- name: QUERY FIREWALL RULE GROUP
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    state: query
+  register: query_rulegroup
+
+- name: ASSERTION CHECK FOR QUERY FIREWALL RULE GROUP
+  assert:
+    that: 
+      - query_rulegroup is not changed
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Name'] == "IGT_TESTGROUP"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Description'] == "Test rule group created during Ansible integration testing"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SecurityPolicyList']['SecurityPolicy'] == "IGT_TESTRULE1"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SourceZones']['Zone'] == "LAN"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['DestinationZones']['Zone'] == "WAN"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Policytype'] == "Any"
+
+- name: CREATE EXISTING FIREWALL RULE GROUP
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    description: Test rule group created during Ansible integration testing
+    policy_list:
+      - IGT_TESTRULE1
+    policy_type: Any
+    source_zones:
+      - LAN
+    dest_zones:
+      - WAN
+    state: present
+  register: create_existing
+
+- name: ASSERTION CHECK FOR CREATE EXISTING FIREWALL RULE 
+  assert:
+    that: 
+      - create_existing is not changed
+      - create_existing['api_response']['Response']['FirewallRuleGroup']['Name'] == "IGT_TESTGROUP"
+
+- name: ADD RULE TO RULE GROUP
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    policy_list:
+      - IGT_TESTRULE2
+    state: updated
+  register: update_rule
+
+- name: ASSERTION CHECK FOR ADD RULE TO RULE GROUP
+  assert:
+    that: 
+      - update_rule is changed
+      - update_rule['api_response']['Response']['FirewallRuleGroup']['Status']['@code'] == "200"
+      - update_rule['api_response']['Response']['FirewallRuleGroup']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE GROUP FOR ADD RULE TO RULE GROUP
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    state: query
+  register: query_rulegroup
+
+- name: ASSERTION CHECK FOR ADD RULE TO RULE GROUP
+  assert:
+    that: 
+      - query_rulegroup is not changed
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Name'] == "IGT_TESTGROUP"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Description'] == "Test rule group created during Ansible integration testing"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SecurityPolicyList']['SecurityPolicy'] == ['IGT_TESTRULE2', 'IGT_TESTRULE1']
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SourceZones']['Zone'] == "LAN"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['DestinationZones']['Zone'] == "WAN"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Policytype'] == "Any"
+
+- name: ADD ZONES
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    source_zones:
+      - DMZ
+    dest_zones:
+      - VPN
+    state: updated
+  register: update_rulegroup
+
+- name: ASSERTION CHECK FOR ADD ZONES
+  assert:
+    that: 
+      - update_rulegroup is changed
+      - update_rulegroup['api_response']['Response']['FirewallRuleGroup']['Status']['@code'] == "200"
+      - update_rulegroup['api_response']['Response']['FirewallRuleGroup']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE GROUP FOR ADD ZONES
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_TESTGROUP
+    state: query
+  register: query_rulegroup
+
+- name: ASSERTION CHECK FOR ADD ZONES
+  assert:
+    that: 
+      - query_rulegroup is not changed
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Name'] == "IGT_TESTGROUP"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Description'] == "Test rule group created during Ansible integration testing"
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SecurityPolicyList']['SecurityPolicy'] == ['IGT_TESTRULE2', 'IGT_TESTRULE1']
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['SourceZones']['Zone'] == ['DMZ', 'LAN']
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['DestinationZones']['Zone'] == ['WAN', 'VPN']
+      - query_rulegroup['api_response']['Response']['FirewallRuleGroup']['Policytype'] == "Any"
+
+
+- name: REMOVE IGT_TESTRULE
+  sophos.sophos_firewall.sfos_firewall_rule:
+    <<: *sfos_connection_params
+    name: "{{ item }}"
+    state: absent
+  register: remove_rule
+  loop:
+    - IGT_TESTRULE1
+    - IGT_TESTRULE2
+
+# - name: ASSERTION CHECK FOR REMOVE IGT_TESTRULE
+#   assert:
+#     that: 
+#       - remove_rule is changed
+#       - remove_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+#       - remove_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+#   loop:
+#     - remove_rule
+
+- name: QUERY FOR IGT_RULEGROUP NONEXISTING
+  sophos.sophos_firewall.sfos_firewall_rulegroup:
+    <<: *sfos_connection_params
+    name: IGT_RULEGROUP
+    state: query
+  register: query_nonexist
+
+- name: ASSERTION CHECK FOR QUERY IGT_RULEGROUP
+  assert:
+    that: 
+      - query_nonexist is not changed
+      - query_nonexist['api_response'] == "No. of records Zero."
+
+- name: REMOVE TEST NETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    network: "{{ item.ip_address }}"
+    mask: "{{ item.mask }}"
+    state: absent
+    host_type: network
+  loop:
+    - name: IGT_TESTNETWORK1
+      ip_address: 1.1.1.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK2
+      ip_address: 2.2.2.0
+      mask: 255.255.255.0
+    - name: IGT_TESTNETWORK3
+      ip_address: 3.3.3.0
+      mask: 255.255.255.0
