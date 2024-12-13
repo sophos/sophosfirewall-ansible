@@ -1,0 +1,24 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: MANAGE FIREWALL RULE GROUP
+      sophos.sophos_firewall.sfos_firewall_rulegroup:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TESTRULEGROUP1
+        description: Created by Ansible
+        policy_list:
+          - ANSIBLE DEMO
+        source_zones:
+          - LAN
+        dest_zones:
+          - WAN
+        policy_type: Any
+        state: present
+      delegate_to: localhost
