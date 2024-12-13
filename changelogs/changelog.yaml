@@ -127,3 +127,14 @@ releases:
       name: sfos_authentication_tacacs
       namespace: ''
     release_date: '2024-12-06'
+  1.4.0:
+    changes:
+      release_summary: This release introduces a new module for working with firewall
+        rule groups.
+    fragments:
+    - 1.4.0.yaml
+    modules:
+    - description: Manage Firewall Rules (Protect > Rules & policies).
+      name: sfos_firewall_rulegroup
+      namespace: ''
+    release_date: '2024-12-13'

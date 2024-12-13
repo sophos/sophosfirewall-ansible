@@ -2,25 +2,47 @@
 
 **Topics**
 
-- <a href="#v1-3-0">v1\.3\.0</a>
-    - <a href="#new-modules">New Modules</a>
-- <a href="#v1-2-1">v1\.2\.1</a>
+- <a href="#v1-4-0">v1\.4\.0</a>
     - <a href="#release-summary">Release Summary</a>
-    - <a href="#bugfixes">Bugfixes</a>
-- <a href="#v1-2-0">v1\.2\.0</a>
+    - <a href="#new-modules">New Modules</a>
+- <a href="#v1-3-0">v1\.3\.0</a>
     - <a href="#release-summary-1">Release Summary</a>
     - <a href="#new-modules-1">New Modules</a>
-- <a href="#v1-1-0">v1\.1\.0</a>
+- <a href="#v1-2-1">v1\.2\.1</a>
     - <a href="#release-summary-2">Release Summary</a>
-    - <a href="#new-modules-2">New Modules</a>
-- <a href="#v1-0-0">v1\.0\.0</a>
+    - <a href="#bugfixes">Bugfixes</a>
+- <a href="#v1-2-0">v1\.2\.0</a>
     - <a href="#release-summary-3">Release Summary</a>
+    - <a href="#new-modules-2">New Modules</a>
+- <a href="#v1-1-0">v1\.1\.0</a>
+    - <a href="#release-summary-4">Release Summary</a>
     - <a href="#new-modules-3">New Modules</a>
+- <a href="#v1-0-0">v1\.0\.0</a>
+    - <a href="#release-summary-5">Release Summary</a>
+    - <a href="#new-modules-4">New Modules</a>
+
+<a id="v1-4-0"></a>
+## v1\.4\.0
+
+<a id="release-summary"></a>
+### Release Summary
+
+This release introduces a new module for working with firewall rule groups\.
+
+<a id="new-modules"></a>
+### New Modules
+
+* sophos\.sophos\_firewall\.sfos\_firewall\_rulegroup \- Manage Firewall Rules \(Protect \> Rules \& policies\)\.
 
 <a id="v1-3-0"></a>
 ## v1\.3\.0
 
-<a id="new-modules"></a>
+<a id="release-summary-1"></a>
+### Release Summary
+
+This release adds modules for working with authentication servers
+
+<a id="new-modules-1"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_authentication\_ad \- Manage Authentication settings Active Directory\.
@@ -33,7 +55,7 @@
 <a id="v1-2-1"></a>
 ## v1\.2\.1
 
-<a id="release-summary"></a>
+<a id="release-summary-2"></a>
 ### Release Summary
 
 Minor bug fixes
@@ -47,12 +69,12 @@ Minor bug fixes
 <a id="v1-2-0"></a>
 ## v1\.2\.0
 
-<a id="release-summary-1"></a>
+<a id="release-summary-3"></a>
 ### Release Summary
 
 This release adds modules for working with IPS and Syslog settings
 
-<a id="new-modules-1"></a>
+<a id="new-modules-2"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_ips \- Manage IPS protection \(Protect \> Intrusion Protection \> IPS policies\)\.
@@ -61,12 +83,12 @@ This release adds modules for working with IPS and Syslog settings
 <a id="v1-1-0"></a>
 ## v1\.1\.0
 
-<a id="release-summary-2"></a>
+<a id="release-summary-4"></a>
 ### Release Summary
 
 This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall
 
-<a id="new-modules-2"></a>
+<a id="new-modules-3"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_snmp\_agent \- Manage SNMP Agent \(System \> Administration \> SNMP\)\.
@@ -75,12 +97,12 @@ This release contains new modules for working with the SNMP agent and SNMPv3 use
 <a id="v1-0-0"></a>
 ## v1\.0\.0
 
-<a id="release-summary-3"></a>
+<a id="release-summary-5"></a>
 ### Release Summary
 
 This is the first proper release of the <code>sophos\.sophos\_firewall</code> collection\.
 
-<a id="new-modules-3"></a>
+<a id="new-modules-4"></a>
 ### New Modules
 
 * sophos\.sophos\_firewall\.sfos\_admin\_settings \- Manage Admin and user settings \(System \> Administration\)\.
