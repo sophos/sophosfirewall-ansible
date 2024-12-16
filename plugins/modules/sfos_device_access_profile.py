@@ -315,7 +315,7 @@ EXAMPLES = r"""
     delegate_to: localhost
 
 - name: CREATE A WIRELESS ADMIN PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -333,7 +333,7 @@ EXAMPLES = r"""
     delegate_to: localhost
 
 - name: UPDATE PROFILE PERMISSIONS
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -349,7 +349,7 @@ EXAMPLES = r"""
     delegate_to: localhost
 
 - name: RETRIEVE PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -360,7 +360,7 @@ EXAMPLES = r"""
     delegate_to: localhost
 
 - name: DELETE PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
