@@ -572,9 +572,9 @@
         port: 4444
         verify: false
         servername: SophosFirewallSSO
-        applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9edd8b'
-        tenantid: '358a41ff-46d9-49d3-a297-370d894eae6a'
-        redirecturi: uk-abn-utm-stage-1.uk.network.green.sophos
+        applicationid: '12345-123ed-1213e-1234-dd1234abcd'
+        tenantid: '12345-1234-abcd-cdef-12345abcdef'
+        redirecturi: sophos.test.com
         displayname: upn
         emailaddress: email
         fallbackusergroup: Open Group
@@ -709,9 +709,9 @@
         port: 4444
         verify: false
         servername: Sophostest
-        applicationid: '07c6493f-71fb-4cfe-9b06-dd331a9555'
-        tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-        redirecturi: uk-abn-utm-stage-118.uk.network.green.so5phos
+        applicationid: '12345-123ed-1213e-1234-dd1234abcd2'
+        tenantid: '12345-1234-abcd-cdef-12345abcdef'
+        redirecturi: sophos.test.com
         displayname: upn
         emailaddress: email
         fallbackusergroup: Open Group
@@ -741,9 +741,9 @@
         port: 4444
         verify: false
         servername: Sophostest990
-        applicationid: '079999-71fb-888e-66622-tt331ddd5'
-        tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-        redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+        applicationid: '12345-123ed-1213e-1234-dd1234abcd1'
+        tenantid: '12345-1234-abcd-cdef-12345abcdef
+        redirecturi: sophos.test.com
         displayname: upn
         emailaddress: email
         fallbackusergroup: Open Group

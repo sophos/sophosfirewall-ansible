@@ -34,9 +34,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test
-    applicationid: '079999-71fb-888e-66622-tt331ddd5'
-    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abcd'
+    tenantid: '12345-1234-abcd-cdef-12345abcdef'
+    redirecturi: testest.sophos.com
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group
@@ -71,9 +71,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test1
-    applicationid: '079999-71fb-888e-66622-ee331ddd5'
-    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abc1'
+    tenantid: '12345-1234-abcd-cdef-12345abcde1'
+    redirecturi: test1.sophos.com
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group
@@ -106,9 +106,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test2
-    applicationid: '079999-71fb-9928e-66622-tt331ddd5'
-    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abc2'
+    tenantid: '12345-1234-abcd-cdef-12345abcde2'
+    redirecturi: test2.sophos.com
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group
@@ -143,9 +143,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test2
-    applicationid: '079999-71fb-9928e-66622-tt331ddd5'
-    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abc22'
+    tenantid: '12345-1234-abcd-cdef-12345abcde22'
+    redirecturi: test2.sophos.comuphos
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group
@@ -179,9 +179,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test3
-    applicationid: '079999-71cc-9928e-66622-tt331ddd5'
-    tenantid: '358a41ff-46d9-49d3-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-118.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abcd3'
+    tenantid: '12345-1234-abcd-cdef-12345abcdef3'
+    redirecturi: test3.sophos.com
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group
@@ -216,9 +216,9 @@
   sfos_authentication_azure:
     <<: *sfos_connection_params
     servername: test3
-    applicationid: '079999-71cc-9928e-66622-tt331ddd5'
-    tenantid: '358a41ff-46d9-49d1-a297-370d894eae8b'
-    redirecturi: uk-abn-utm-stage-448.uk.network.green.soduphos
+    applicationid: '12345-123ed-1213e-1234-dd1234abcd3'
+    tenantid: '12345-1234-abcd-cdef-12345abcdef3'
+    redirecturi: test3.sophos.com
     displayname: upn
     emailaddress: email
     fallbackusergroup: Open Group

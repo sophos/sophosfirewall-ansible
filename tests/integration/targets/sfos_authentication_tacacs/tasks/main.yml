@@ -80,7 +80,7 @@
     state: updated
   register: set_tacacs_update
 
-- name: ASSERTION CHECK FOR Update TACACS SERVER
+- name: ASSERTION CHECK FOR UPDATE TACACS SERVER
   assert:
     that: 
       - set_tacacs_update is changed

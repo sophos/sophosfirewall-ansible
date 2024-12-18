@@ -101,7 +101,7 @@
     state: updated
   register: set_radius_update
 
-- name: ASSERTION CHECK FOR Update RADIUS SERVER
+- name: ASSERTION CHECK FOR UPDATE RADIUS SERVER
   assert:
     that: 
       - set_radius_update is changed
