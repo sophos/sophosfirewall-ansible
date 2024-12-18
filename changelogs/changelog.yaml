@@ -138,3 +138,10 @@ releases:
       name: sfos_firewall_rulegroup
       namespace: ''
     release_date: '2024-12-13'
+  1.4.1:
+    changes:
+      bugfixes:
+      - Correct test files
+    fragments:
+    - 1.4.1.yaml
+    release_date: '2024-12-18'

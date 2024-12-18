@@ -2,6 +2,8 @@
 
 **Topics**
 
+- <a href="#v1-4-1">v1\.4\.1</a>
+    - <a href="#bugfixes">Bugfixes</a>
 - <a href="#v1-4-0">v1\.4\.0</a>
     - <a href="#release-summary">Release Summary</a>
     - <a href="#new-modules">New Modules</a>
@@ -10,7 +12,7 @@
     - <a href="#new-modules-1">New Modules</a>
 - <a href="#v1-2-1">v1\.2\.1</a>
     - <a href="#release-summary-2">Release Summary</a>
-    - <a href="#bugfixes">Bugfixes</a>
+    - <a href="#bugfixes-1">Bugfixes</a>
 - <a href="#v1-2-0">v1\.2\.0</a>
     - <a href="#release-summary-3">Release Summary</a>
     - <a href="#new-modules-2">New Modules</a>
@@ -20,6 +22,14 @@
 - <a href="#v1-0-0">v1\.0\.0</a>
     - <a href="#release-summary-5">Release Summary</a>
     - <a href="#new-modules-4">New Modules</a>
+
+<a id="v1-4-1"></a>
+## v1\.4\.1
+
+<a id="bugfixes"></a>
+### Bugfixes
+
+* Correct test files
 
 <a id="v1-4-0"></a>
 ## v1\.4\.0
@@ -60,7 +70,7 @@ This release adds modules for working with authentication servers
 
 Minor bug fixes
 
-<a id="bugfixes"></a>
+<a id="bugfixes-1"></a>
 ### Bugfixes
 
 * Allow use of \'any\' keyword for src/dst networks and services for sfos\_firewall\_rule module
