@@ -742,7 +742,7 @@
         verify: false
         servername: Sophostest990
         applicationid: '12345-123ed-1213e-1234-dd1234abcd1'
-        tenantid: '12345-1234-abcd-cdef-12345abcdef
+        tenantid: '12345-1234-abcd-cdef-12345abcdef'
         redirecturi: sophos.test.com
         displayname: upn
         emailaddress: email
