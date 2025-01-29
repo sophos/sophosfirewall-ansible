@@ -66,7 +66,7 @@ EXAMPLES = r"""
     location: AWS
     contact_person: Network Operations
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Query advanced threat protection settings
   sophos.sophos_firewall.sfos_snmp_agent:
@@ -76,7 +76,7 @@ EXAMPLES = r"""
     port: 4444
     verify: false
     state: query
-    delegate_to: localhost
+  delegate_to: localhost
 """
 
 RETURN = r"""

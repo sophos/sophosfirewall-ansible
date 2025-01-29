@@ -164,6 +164,7 @@ EXAMPLES = r"""
     group: Open Group
     email: test.user@sophos.com
     state: present
+  delegate_to: localhost
 """
 
 RETURN = r"""

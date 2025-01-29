@@ -92,6 +92,7 @@ EXAMPLES = r"""
     verify: false
     name: TESTACLRULE
     state: query
+  delegate_to: localhost
 
 - name: Create Local service ACL exception rule
   sophos.sophos_firewall.sfos_service_acl_exception:
@@ -114,6 +115,7 @@ EXAMPLES = r"""
       - HTTPS
     action: drop
     state: present
+  delegate_to: localhost
 """
 
 RETURN = r"""

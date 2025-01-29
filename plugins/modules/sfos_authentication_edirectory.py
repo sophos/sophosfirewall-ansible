@@ -90,7 +90,7 @@ EXAMPLES = r"""
     clientcertificate: Webadmin
     basedn: o=sophos.com
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 """
 

@@ -97,7 +97,7 @@ EXAMPLES = r"""
       minute: 28
       second: 59
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 """
 

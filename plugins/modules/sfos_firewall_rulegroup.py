@@ -97,6 +97,7 @@ EXAMPLES = r"""
     dest_zones:
       - WAN
     state: present
+  delegate_to: localhost
 """
 
 RETURN = r"""

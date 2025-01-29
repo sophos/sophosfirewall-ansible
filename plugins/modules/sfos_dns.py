@@ -99,7 +99,7 @@ EXAMPLES = r"""
       dns2: 4.2.2.2
       dns3: 1.1.1.1
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 """
 
