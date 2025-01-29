@@ -128,7 +128,7 @@ EXAMPLES = r'''
     validateservercertificate: Enable
     clientCertificate: ApplianceCertificate
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 '''
 

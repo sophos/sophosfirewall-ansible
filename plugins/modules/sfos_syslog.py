@@ -393,7 +393,7 @@ EXAMPLES = r"""
     format: Device standard
     default_logging: Enable
     state: present
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Create syslog server, disable selected logs
   sophos.sophos_firewall.sfos_syslog:
@@ -417,7 +417,7 @@ EXAMPLES = r"""
       content_filtering:
         ssl_tls: Disable
     state: present
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Query syslog server
   sophos.sophos_firewall.sfos_syslog:
@@ -428,7 +428,7 @@ EXAMPLES = r"""
     verify: false
     name: TestSyslog
     state: query
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Remove syslog server
   sophos.sophos_firewall.sfos_syslog:
@@ -439,7 +439,7 @@ EXAMPLES = r"""
     verify: false
     name: TestSyslog
     state: absent
-    delegate_to: localhost
+  delegate_to: localhost
 """
 
 RETURN = r"""

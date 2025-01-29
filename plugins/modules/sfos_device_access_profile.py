@@ -312,10 +312,10 @@ EXAMPLES = r"""
     name: ReadOnlyAll
     default_permission: Read-Only
     state: present
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: CREATE A WIRELESS ADMIN PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -330,10 +330,10 @@ EXAMPLES = r"""
         wireless_protection_access_point: Read-Write
         wireless_protection_mesh: Read-Write
     state: present
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: UPDATE PROFILE PERMISSIONS
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -346,10 +346,10 @@ EXAMPLES = r"""
         log_viewer: Read-Write
         reports_access: Read-Write
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: RETRIEVE PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -357,10 +357,10 @@ EXAMPLES = r"""
     verify: false
     name: ExampleProfile
     state: query
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: DELETE PROFILE
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_device_access_profile:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
@@ -368,7 +368,7 @@ EXAMPLES = r"""
     verify: false
     name: ExampleProfile
     state: absent
-    delegate_to: localhost
+  delegate_to: localhost
 """
 
 RETURN = r"""

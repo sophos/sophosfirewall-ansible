@@ -92,6 +92,7 @@ EXAMPLES = r"""
     verify: false
     name: TESTACLRULE
     state: query
+  delegate_to: localhost
 
 - name: Create Local service ACL exception rule
   sophos.sophos_firewall.sfos_service_acl_exception:
@@ -114,6 +115,7 @@ EXAMPLES = r"""
       - HTTPS
     action: drop
     state: present
+  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -370,9 +372,10 @@ def main():
         new_dest_list = sorted(module.params.get("dest_list"))
         if new_dest_list:
             new_dest_list = sorted(new_dest_list)
-        exist_dest_list = exist_check["api_response"]["Response"]["LocalServiceACL"][
-            "Hosts"
-        ]["DstHost"]
+        if "DstHost" in exist_check["api_response"]["Response"]["LocalServiceACL"]["Hosts"]:
+            exist_dest_list = exist_check["api_response"]["Response"]["LocalServiceACL"]["Hosts"]["DstHost"]
+        else:
+            exist_dest_list = []
         if isinstance(exist_dest_list, str):
             exist_dest_list = [exist_dest_list]
         else:

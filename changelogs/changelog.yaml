@@ -145,3 +145,12 @@ releases:
     fragments:
     - 1.4.1.yaml
     release_date: '2024-12-18'
+  1.4.2:
+    changes:
+      bugfixes:
+      - Fixed issue with service_acl_exception crashing when no destination hosts
+        are defined
+      release_summary: Bugfix
+    fragments:
+    - 1.4.2.yaml
+    release_date: '2025-01-29'

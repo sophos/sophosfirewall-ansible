@@ -131,6 +131,7 @@ EXAMPLES = r"""
       - HTTPS
       - SSH
     state: present
+  delegate_to: localhost
 """
 
 RETURN = r"""

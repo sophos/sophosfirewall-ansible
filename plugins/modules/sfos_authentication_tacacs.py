@@ -63,7 +63,7 @@ EXAMPLES = r'''
     tac_port: '49'
     sharedsecret: testtest
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 '''
 

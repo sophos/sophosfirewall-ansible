@@ -117,7 +117,7 @@ EXAMPLES = r'''
             - ReadOnly
             - Audit Admin
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 '''
 

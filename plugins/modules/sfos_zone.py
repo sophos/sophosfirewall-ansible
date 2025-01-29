@@ -203,6 +203,7 @@ EXAMPLES = r"""
     verify: false
     name: TESTZONE
     state: absent
+  delegate_to: localhost
 """
 
 RETURN = r"""

@@ -121,7 +121,7 @@ EXAMPLES = r"""
     minute: 30
     encryption_password: backupencryptionpassword
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 """
 

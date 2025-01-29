@@ -104,7 +104,7 @@ EXAMPLES = r'''
         nas_port_type: 0
     accountingport: 4444
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 '''
 

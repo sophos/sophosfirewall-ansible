@@ -88,8 +88,8 @@ EXAMPLES = r"""
     encryption_password: "{{ encryption_password }}"
     authentication_algorithm: MD5
     authentication_password: "{{ authentication_password }}"
-    state: present
-    delegate_to: localhost
+    state: present 
+  delegate_to: localhost
 
 - name: Query SNMPv3 User
   sophos.sophos_firewall.sfos_snmp_user:
@@ -100,7 +100,7 @@ EXAMPLES = r"""
     verify: false
     name: snmpv3user
     state: query
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Update SNMPv3 User
   sophos.sophos_firewall.sfos_snmp_user:
@@ -116,7 +116,7 @@ EXAMPLES = r"""
     encryption_password: "{{ encryption_password }}"
     authentication_password: "{{ authentication_password }}"
     state: present
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Remove SNMPv3 User
   sophos.sophos_firewall.sfos_snmp_user:
@@ -128,7 +128,7 @@ EXAMPLES = r"""
     enabled: true
     name: snmpv3user
     state: absent
-    delegate_to: localhost
+  delegate_to: localhost
 """
 
 RETURN = r"""

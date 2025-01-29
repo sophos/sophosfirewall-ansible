@@ -46,7 +46,7 @@ EXAMPLES = r"""
     verify: false
     enabled: true
     state: updated
-    delegate_to: localhost
+  delegate_to: localhost
 
 - name: Query IPS protection settings
   sophos.sophos_firewall.sfos_ips:
@@ -56,7 +56,7 @@ EXAMPLES = r"""
     port: 4444
     verify: false
     state: query
-    delegate_to: localhost
+  delegate_to: localhost
 """
 
 RETURN = r"""
