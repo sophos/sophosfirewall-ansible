@@ -723,7 +723,12 @@ def update_syslog(fw_obj, exist_settings, module, result):
     Returns:
         dict: API response
     """
-    exist_settings = exist_settings["api_response"]["Response"]["SyslogServers"][0]
+    if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], dict):
+        exist_settings = exist_settings["api_response"]["Response"]["SyslogServers"]
+    if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], list):
+        for syslog_server in exist_settings["api_response"]["Response"]["SyslogServers"]:
+            if syslog_server["Name"] == module.params.get("name"):
+                exist_settings = syslog_server
 
     syslog_format = "3" if module.params.get("format") == "Standard syslog" else "DeviceStandardFormat"
     log_settings = get_with_default(module.params, "log_settings", {})
@@ -828,7 +833,13 @@ def eval_changed(module, exist_settings):
     Returns:
         bool: Return true if any settings are different, otherwise return false
     """
-    exist_settings = exist_settings["api_response"]["Response"]["SyslogServers"][0]
+
+    if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], dict):
+        exist_settings = exist_settings["api_response"]["Response"]["SyslogServers"]
+    if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], list):
+        for syslog_server in exist_settings["api_response"]["Response"]["SyslogServers"]:
+            if syslog_server["Name"] == module.params.get("name"):
+                exist_settings = syslog_server
 
     if module.params.get("address") and not module.params.get("address") == exist_settings["ServerAddress"]:
         return True
@@ -850,9 +861,11 @@ def eval_changed(module, exist_settings):
         expected_format = "3" if fmt == "Standard syslog" else "DeviceStandardFormat"
         if not expected_format == exist_settings["Format"]:
             return True
-    
-    if module.params.get("security_policy"):
-        security_policy = module.params.get("security_policy")
+
+    log_settings = module.params.get("log_settings", {})
+        
+    if log_settings.get("security_policy"):
+        security_policy = log_settings.get("security_policy", {})
         policy_rules = security_policy.get("policy_rules")
         invalid_traffic = security_policy.get("invalid_traffic")
         local_acls = security_policy.get("local_acls")
@@ -887,8 +900,8 @@ def eval_changed(module, exist_settings):
             ):
             return True
     
-    if module.params.get("ips"):
-        ips = module.params.get("ips")
+    if log_settings.get("ips"):
+        ips = log_settings.get("ips")
         anomaly = ips.get("anomaly")
         signatures = ips.get("signatures")
         if (anomaly and not anomaly == exist_settings["LogSettings"]["IPS"]["Anomaly"] or
@@ -896,8 +909,8 @@ def eval_changed(module, exist_settings):
         ):
             return True
 
-    if module.params.get("anti_virus"):
-        anti_virus = module.params.get("anti_virus")
+    if log_settings.get("anti_virus"):
+        anti_virus = log_settings.get("anti_virus")
         http = anti_virus.get("http")
         ftp = anti_virus.get("ftp")
         smtp = anti_virus.get("smtp")
@@ -919,8 +932,8 @@ def eval_changed(module, exist_settings):
         ):
             return True
     
-    if module.params.get("anti_spam"):
-        anti_spam = module.params.get("anti_spam")
+    if log_settings.get("anti_spam"):
+        anti_spam = log_settings.get("anti_spam")
         pop3 = anti_spam.get("pop3")
         imap = anti_spam.get("imap")
         smtps = anti_spam.get("smtps")
@@ -935,8 +948,8 @@ def eval_changed(module, exist_settings):
             return True
         
 
-    if module.params.get("content_filtering"):
-        content_filtering = module.params.get("content_filtering")
+    if log_settings.get("content_filtering"):
+        content_filtering = log_settings.get("content_filtering")
         web_filter = content_filtering.get("web_filter")
         application_filter = content_filtering.get("application_filter")
         web_content_policy = content_filtering.get("web_content_policy")
@@ -948,8 +961,8 @@ def eval_changed(module, exist_settings):
         ):
             return True
 
-    if module.params.get("events"):
-        events = module.params.get("events")
+    if log_settings.get("events"):
+        events = log_settings.get("events")
         admin = events.get("admin")
         authentication = events.get("authentication")
         system = events.get("system")
@@ -959,44 +972,44 @@ def eval_changed(module, exist_settings):
         ):
             return True
 
-    if module.params.get("web_server_protection"):
-        web_server_protection = module.params.get("web_server_protection")
+    if log_settings.get("web_server_protection"):
+        web_server_protection = log_settings.get("web_server_protection")
         waf_events = web_server_protection.get("waf_events")
         if waf_events and not waf_events == exist_settings["LogSettings"]["WebServerProtection"]["WAFEvents"]:
             return True
 
-    if module.params.get("atp"):
-        atp = module.params.get("atp")
+    if log_settings.get("atp"):
+        atp = log_settings.get("atp")
         atp_events = atp.get("atp_events")
         if atp_events and not atp_events == exist_settings["LogSettings"]["ATP"]["ATPEvents"]:
             return True
     
-    if module.params.get("wireless"):
-        wireless = module.params.get("wireless")
+    if log_settings.get("wireless"):
+        wireless = log_settings.get("wireless")
         access_points_ssid = wireless.get("access_points_ssid")
         if access_points_ssid and not access_points_ssid == exist_settings["LogSettings"]["Wireless"]["AccessPoints_SSID"]:
             return True
     
-    if module.params.get("heartbeat"):
-        heartbeat = module.params.get("heartbeat")
+    if log_settings.get("heartbeat"):
+        heartbeat = log_settings.get("heartbeat")
         endpoint_status = heartbeat.get("endpoint_status")
         if endpoint_status and not endpoint_status == exist_settings["LogSettings"]["Heartbeat"]["EndpointStatus"]:
             return True
     
-    if module.params.get("system_health"):
-        system_health = module.params.get("system_health")
+    if log_settings.get("system_health"):
+        system_health = log_settings.get("system_health")
         usage = system_health.get("usage")
         if usage and not usage == exist_settings["LogSettings"]["SystemHealth"]["Usage"]:
             return True
         
-    if module.params.get("zeroday_protection"):
-        zeroday_protection = module.params.get("zeroday_protection")
+    if log_settings.get("zeroday_protection"):
+        zeroday_protection = log_settings.get("zeroday_protection")
         zeroday_protection_events = zeroday_protection.get("zeroday_protection_events")
         if zeroday_protection_events and not zeroday_protection_events == exist_settings["LogSettings"]["ZeroDayProtection"]["ZeroDayProtectionEvents"]:
             return True
 
-    if module.params.get("sdwan"):
-        sdwan = module.params.get("sdwan")
+    if log_settings.get("sdwan"):
+        sdwan = log_settings.get("sdwan")
         profile = sdwan.get("profile")
         sla = sdwan.get("sla")
         route = sdwan.get("route")
