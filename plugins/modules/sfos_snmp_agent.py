@@ -68,7 +68,7 @@ EXAMPLES = r"""
     state: updated
   delegate_to: localhost
 
-- name: Query advanced threat protection settings
+- name: Query SNMP settings
   sophos.sophos_firewall.sfos_snmp_agent:
     username: "{{ username }}"
     password: "{{ password }}"
