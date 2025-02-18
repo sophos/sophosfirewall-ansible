@@ -154,3 +154,10 @@ releases:
     fragments:
     - 1.4.2.yaml
     release_date: '2025-01-29'
+  1.4.3:
+    changes:
+      bugfixes:
+      - Fixed an issue where the sfos_syslog module would fail to update log settings
+    fragments:
+    - 1.4.3.yaml
+    release_date: '2025-02-18'
