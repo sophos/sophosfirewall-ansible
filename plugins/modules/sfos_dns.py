@@ -87,7 +87,7 @@ author:
 
 EXAMPLES = r"""
 - name: Update DNS servers
-  sophos.sophos_firewall.sfos_admin_settings:
+  sophos.sophos_firewall.sfos_dns:
     username: "{{ username }}"
     password: "{{ password }}"
     hostname: "{{ inventory_hostname }}"
