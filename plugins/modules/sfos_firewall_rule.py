@@ -86,7 +86,7 @@ options:
             - Destination network(s).
         type: list
         elements: str
-    services:
+    service_list:
         description:
             - Name of service(s).
         type: list
@@ -127,7 +127,7 @@ EXAMPLES = r"""
     dst_networks:
       - DSTNET1
       - DSTNET2
-    services:
+    service_list:
       - HTTPS
       - SSH
     state: present
