@@ -2,11 +2,13 @@
 
 **Topics**
 
+- <a href="#v1-4-3">v1\.4\.3</a>
+    - <a href="#bugfixes">Bugfixes</a>
 - <a href="#v1-4-2">v1\.4\.2</a>
     - <a href="#release-summary">Release Summary</a>
-    - <a href="#bugfixes">Bugfixes</a>
-- <a href="#v1-4-1">v1\.4\.1</a>
     - <a href="#bugfixes-1">Bugfixes</a>
+- <a href="#v1-4-1">v1\.4\.1</a>
+    - <a href="#bugfixes-2">Bugfixes</a>
 - <a href="#v1-4-0">v1\.4\.0</a>
     - <a href="#release-summary-1">Release Summary</a>
     - <a href="#new-modules">New Modules</a>
@@ -15,7 +17,7 @@
     - <a href="#new-modules-1">New Modules</a>
 - <a href="#v1-2-1">v1\.2\.1</a>
     - <a href="#release-summary-3">Release Summary</a>
-    - <a href="#bugfixes-2">Bugfixes</a>
+    - <a href="#bugfixes-3">Bugfixes</a>
 - <a href="#v1-2-0">v1\.2\.0</a>
     - <a href="#release-summary-4">Release Summary</a>
     - <a href="#new-modules-2">New Modules</a>
@@ -26,6 +28,14 @@
     - <a href="#release-summary-6">Release Summary</a>
     - <a href="#new-modules-4">New Modules</a>
 
+<a id="v1-4-3"></a>
+## v1\.4\.3
+
+<a id="bugfixes"></a>
+### Bugfixes
+
+* Fixed an issue where the sfos\_syslog module would fail to update log settings
+
 <a id="v1-4-2"></a>
 ## v1\.4\.2
 
@@ -34,7 +44,7 @@
 
 Bugfix
 
-<a id="bugfixes"></a>
+<a id="bugfixes-1"></a>
 ### Bugfixes
 
 * Fixed issue with service\_acl\_exception crashing when no destination hosts are defined
@@ -42,7 +52,7 @@ Bugfix
 <a id="v1-4-1"></a>
 ## v1\.4\.1
 
-<a id="bugfixes-1"></a>
+<a id="bugfixes-2"></a>
 ### Bugfixes
 
 * Correct test files
@@ -86,7 +96,7 @@ This release adds modules for working with authentication servers
 
 Minor bug fixes
 
-<a id="bugfixes-2"></a>
+<a id="bugfixes-3"></a>
 ### Bugfixes
 
 * Allow use of \'any\' keyword for src/dst networks and services for sfos\_firewall\_rule module
