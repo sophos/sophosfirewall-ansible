@@ -730,7 +730,6 @@ def update_syslog(fw_obj, exist_settings, module, result):
             if syslog_server["Name"] == module.params.get("name"):
                 exist_settings = syslog_server
 
-    syslog_format = "3" if module.params.get("format") == "Standard syslog" else "DeviceStandardFormat"
     log_settings = get_with_default(module.params, "log_settings", {})
 
     security_policy = get_with_default(log_settings,"security_policy", {})
@@ -747,14 +746,19 @@ def update_syslog(fw_obj, exist_settings, module, result):
     zeroday_protection = get_with_default(log_settings,"zeroday_protection", {})
     sdwan = get_with_default(log_settings,"sdwan", {})
 
+    if module.params.get("format"):
+        syslog_format = "3" if module.params.get("format") == "Standard syslog" else "DeviceStandardFormat"
+    else:
+        syslog_format = exist_settings["Format"]
+
     template_vars = {
         "name": module.params.get("name"),
-        "address": module.params.get("address", exist_settings["ServerAddress"]),
-        "udp_port": module.params.get("udp_port", exist_settings["Port"]),
-        "secure_connection": module.params.get("secure_connection", exist_settings["EnableSecureConnection"]),
-        "facility": module.params.get("facility", exist_settings["Facility"]),
-        "severity": module.params.get("severity", exist_settings["SeverityLevel"]),
-        "format": syslog_format if syslog_format else exist_settings["Format"],
+        "address": get_with_default(module.params,"address", exist_settings["ServerAddress"]),
+        "udp_port": get_with_default(module.params, "udp_port", exist_settings["Port"]),
+        "secure_connection": get_with_default(module.params, "secure_connection", exist_settings["EnableSecureConnection"]),
+        "facility": get_with_default(module.params, "facility", exist_settings["Facility"]),
+        "severity": get_with_default(module.params,"severity", exist_settings["SeverityLevel"]),
+        "format": syslog_format,
         "policy_rules": get_with_default(security_policy, "policy_rules", exist_settings["LogSettings"]["SecurityPolicy"]["PolicyRules"]),
         "invalid_traffic": get_with_default(security_policy, "invalid_traffic", exist_settings["LogSettings"]["SecurityPolicy"]["InvalidTraffic"]),
         "local_acls": get_with_default(security_policy, "local_acls", exist_settings["LogSettings"]["SecurityPolicy"]["LocalACLs"]),
