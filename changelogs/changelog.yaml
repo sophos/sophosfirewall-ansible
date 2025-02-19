@@ -161,3 +161,12 @@ releases:
     fragments:
     - 1.4.3.yaml
     release_date: '2025-02-18'
+  1.4.4:
+    changes:
+      bugfixes:
+      - Fixed an issue where the sfos_syslog module required unneccessary arguments
+        when updating logging settings.
+      release_summary: This is a bugfix release for the Sophos Firewall Ansible collection.
+    fragments:
+    - 1.4.4.yaml
+    release_date: '2025-02-19'
