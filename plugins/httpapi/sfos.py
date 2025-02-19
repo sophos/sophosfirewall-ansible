@@ -1,12 +1,14 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 DOCUMENTATION = """
 ---
 module: sfos
 short_description: HTTPAPI plugin for Sophos Firewall (SFOS)
 description:
-  - This plugin enables communication with a Sophos Firewall (SFOS) using HTTPAPI.
-  - It supports authentication, API requests, and response handling.
+  - This plugin enables communication with a Sophos Firewall (SFOS)
 version_added: "1.5.0"
-author: "Your Name (@yourgithub)"
+author: "Matt Mullen (@mamullen13316)"
 """
 
 from ansible_collections.ansible.netcommon.plugins.plugin_utils.httpapi_base import HttpApiBase
@@ -14,7 +16,7 @@ from sophosfirewall_python.firewallapi import SophosFirewall, SophosFirewallAuth
 from requests.exceptions import RequestException
 import sys
 
-sys.stderr.write("SophosFirewall HTTPAPI Plugin is being loaded...\n")
+# sys.stderr.write("SophosFirewall HTTPAPI Plugin is being loaded...\n")
 
 class HttpApi(HttpApiBase):
     """Ansible HTTPAPI plugin for Sophos Firewall"""
