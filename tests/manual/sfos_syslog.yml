@@ -4,6 +4,18 @@
   gather_facts: false
 
   tasks:
+    - name: Query syslog server
+      sophos.sophos_firewall.sfos_syslog:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TestSyslog1
+        state: query
+      delegate_to: localhost
+      tags: query
+
     - name: Create syslog server, all logging enabled
       sophos.sophos_firewall.sfos_syslog:
         username: "{{ username }}"
@@ -11,7 +23,7 @@
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        name: TestSyslog
+        name: TestSyslog1
         address: 10.10.1.100
         udp_port: 514
         secure_connection: Disable
@@ -21,82 +33,103 @@
         default_logging: Enable
         state: present
       delegate_to: localhost
+      tags: create
 
-    - name: Update syslog server with some logging disable
+    - name: Update syslog server, change UDP port
       sophos.sophos_firewall.sfos_syslog:
         username: "{{ username }}"
         password: "{{ password }}"
         hostname: "{{ inventory_hostname }}"
         port: 4444
         verify: false
-        name: TestSyslog
+        name: TestSyslog1
         address: 10.10.1.100
-        udp_port: 514
-        secure_connection: Disable
-        facility: DAEMON
-        severity: Emergency
-        format: Device standard
-        default_logging: Enable
-        log_settings:
-          security_policy:
-            bridge_acls: Enable
-            dos_attack: Enable
-            dropped_fragment: Enable
-            dropped_icmpredirect: Enable
-            dropped_sourceroute: Enable
-            heartbeat: Enable
-            icmp_errormessage: Enable
-            invalid_traffic: Enable
-            ipmacpair_filtering: Enable
-            ipspoof_prevention: Enable
-            local_acls: Enable
-            mac_filtering: Enable
-            policy_rules: Enable
-            protected_application_server: Enable
-            ssl_vpntunnel: Enable
-          system_health:
-            usage: Enable
-          web_server_protection:
-            waf_events: Enable
-          wireless:
-            access_points_ssid: Enable
-          zeroday_protection:
-            zeroday_protection_events: Enable
-          content_filtering:
-            application_filter: Enable
-            ssl_tls: Enable
-            web_content_policy: Enable
-            web_filter: Enable
-          atp:
-            atp_events: Enable
-          anti_spam:
-            imap: Enable
-            imaps: Enable
-            pop3: Enable
-            pops: Enable
-            smtps: Enable
-          anti_virus:
-            ftp: Enable
-            http: Enable
-            https: Enable
-            imap: Enable
-            imaps: Enable
-            pop3: Enable
-            pops: Enable
-            smtp: Enable
-            smtps: Enable
-          events:
-            admin: Enable
-            authentication: Enable
-            system: Enable
-          heartbeat:
-            endpoint_status: Enable
-          ips:
-            anomaly: Enable
-            signatures: Enable
-          sdwan:
-            profile: Enable
-            route: Enable
-            sla: Enable
+        udp_port: 515
         state: updated
       delegate_to: localhost
+      tags: update_udp
+
+    - name: Update syslog server, all logging disabled
+      sophos.sophos_firewall.sfos_syslog:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TestSyslog1
+        log_settings:
+          security_policy:
+            bridge_acls: Disable
+            dos_attack: Disable
+            dropped_fragment: Disable
+            dropped_icmpredirect: Disable
+            dropped_sourceroute: Disable
+            heartbeat: Disable
+            icmp_errormessage: Disable
+            invalid_traffic: Disable
+            ipmacpair_filtering: Disable
+            ipspoof_prevention: Disable
+            local_acls: Disable
+            mac_filtering: Disable
+            policy_rules: Disable
+            protected_application_server: Disable
+            ssl_vpntunnel: Disable
+          system_health:
+            usage: Disable
+          web_server_protection:
+            waf_events: Disable
+          wireless:
+            access_points_ssid: Disable
+          zeroday_protection:
+            zeroday_protection_events: Disable
+          content_filtering:
+            application_filter: Disable
+            ssl_tls: Disable
+            web_content_policy: Disable
+            web_filter: Disable
+          atp:
+            atp_events: Disable
+          anti_spam:
+            imap: Disable
+            imaps: Disable
+            pop3: Disable
+            pops: Disable
+            smtps: Disable
+          anti_virus:
+            ftp: Disable
+            http: Disable
+            https: Disable
+            imap: Disable
+            imaps: Disable
+            pop3: Disable
+            pops: Disable
+            smtp: Disable
+            smtps: Disable
+          events:
+            admin: Disable
+            authentication: Disable
+            system: Disable
+          heartbeat:
+            endpoint_status: Disable
+          ips:
+            anomaly: Disable
+            signatures: Disable
+          sdwan:
+            profile: Disable
+            route: Disable
+            sla: Disable
+        state: updated
+      delegate_to: localhost
+      tags: update_logging
+
+    - name: Remove syslog server
+      sophos.sophos_firewall.sfos_syslog:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ inventory_hostname }}"
+        port: 4444
+        verify: false
+        name: TestSyslog1
+        state: absent
+      delegate_to: localhost
+      tags: remove
