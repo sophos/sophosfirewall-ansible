@@ -94,6 +94,7 @@
             imaps: Disable
             pop3: Disable
             pops: Disable
+            smtp: Disable
             smtps: Disable
           anti_virus:
             ftp: Disable
