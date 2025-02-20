@@ -787,6 +787,7 @@ def update_syslog(fw_obj, exist_settings, module, result):
         "av_imaps": get_with_default(anti_virus, "imaps", exist_settings["LogSettings"]["AntiVirus"]["IMAPS"]),
         "as_pop3": get_with_default(anti_spam, "pop3", exist_settings["LogSettings"]["AntiSpam"]["POP3"]),
         "as_imap": get_with_default(anti_spam, "imap", exist_settings["LogSettings"]["AntiSpam"]["IMAP"]),
+        "as_smtp": get_with_default(anti_spam, "smtp", exist_settings["LogSettings"]["AntiSpam"]["SMTP"]),
         "as_smtps": get_with_default(anti_spam, "smtps", exist_settings["LogSettings"]["AntiSpam"]["SMTPS"]),
         "as_pops": get_with_default(anti_spam, "pops", exist_settings["LogSettings"]["AntiSpam"]["POPS"]),
         "as_imaps": get_with_default(anti_spam, "imaps", exist_settings["LogSettings"]["AntiSpam"]["IMAPS"]),
@@ -895,7 +896,8 @@ def eval_changed(module, exist_settings):
             dropped_fragment and not dropped_fragment == exist_settings["LogSettings"]["SecurityPolicy"]["DroppedFragmentedTraffic"] or
             mac_filtering and not mac_filtering == exist_settings["LogSettings"]["SecurityPolicy"]["MACFiltering"] or
             ipmacpair_filtering and not ipmacpair_filtering == exist_settings["LogSettings"]["SecurityPolicy"]["IP-MACPairFiltering"] or
-            ipspoof_prevention and not ipspoof_prevention == exist_settings["LogSettings"]["SecurityPolicy"]["IP-IPSpoofPrevention"] or
+            ipspoof_prevention and not ipspoof_prevention == exist_settings["LogSettings"]["SecurityPolicy"].get("IP-IPSpoofPrevention") or
+            ipspoof_prevention and not ipspoof_prevention == exist_settings["LogSettings"]["SecurityPolicy"].get("IPSpoofPrevention") or
             ssl_vpntunnel and not ssl_vpntunnel == exist_settings["LogSettings"]["SecurityPolicy"]["SSLVPNTunnel"] or
             protected_application_server and not protected_application_server == exist_settings["LogSettings"]["SecurityPolicy"]["ProtectedApplicationServer"] or
             heartbeat and not heartbeat == exist_settings["LogSettings"]["SecurityPolicy"]["Heartbeat"] or
@@ -940,11 +942,13 @@ def eval_changed(module, exist_settings):
         anti_spam = log_settings.get("anti_spam")
         pop3 = anti_spam.get("pop3")
         imap = anti_spam.get("imap")
+        smtp = anti_spam.get("smtp")
         smtps = anti_spam.get("smtps")
         pops = anti_spam.get("pops")
         imaps = anti_spam.get("imaps")
         if (pop3 and not pop3 == exist_settings["LogSettings"]["AntiSpam"]["POP3"] or
             imap and not imap == exist_settings["LogSettings"]["AntiSpam"]["IMAP"] or
+            smtp and not smtp == exist_settings["LogSettings"]["AntiSpam"]["SMTP"] or
             smtps and not smtps == exist_settings["LogSettings"]["AntiSpam"]["SMTPS"] or
             pops and not pops == exist_settings["LogSettings"]["AntiSpam"]["POPS"] or
             imaps and not imaps == exist_settings["LogSettings"]["AntiSpam"]["IMAPS"]
@@ -1103,6 +1107,7 @@ def main():
             "anti_spam": {"type": "dict", "required": False, "default": {}, "options": {
                 "pop3": {"type": "str", "choices": ["Enable", "Disable"]},
                 "imap": {"type": "str", "choices": ["Enable", "Disable"]},
+                "smtp": {"type": "str", "choices": ["Enable", "Disable"]},
                 "smtps": {"type": "str", "choices": ["Enable", "Disable"]},
                 "pops": {"type": "str", "choices": ["Enable", "Disable"]},
                 "imaps": {"type": "str", "choices": ["Enable", "Disable"]}
