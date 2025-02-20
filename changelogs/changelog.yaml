@@ -170,3 +170,12 @@ releases:
     fragments:
     - 1.4.4.yaml
     release_date: '2025-02-19'
+  1.4.5:
+    changes:
+      bugfixes:
+      - Fixed an issue where the sfos_syslog module was missing the ability to enable
+        logging for anti-spam smtp events.
+      release_summary: This is a bugfix release for the Sophos Firewall Ansible collection.
+    fragments:
+    - 1.4.5.yaml
+    release_date: '2025-02-20'
