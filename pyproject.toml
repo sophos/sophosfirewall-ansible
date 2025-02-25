@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sophosfirewall-ansible"
-version = "1.4.5"
+version = "1.4.6"
 description = "Ansible modules for Sophos Firewall"
 authors = ["Matt Mullen <matt.mullen@sophos.com>"]
 license = "GNU GENERAL PUBLIC LICENSE"
