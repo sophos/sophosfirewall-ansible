@@ -149,7 +149,7 @@ def update_atp(fw_obj, module, result):
 
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.update(xml_tag="ATP", update_params=update_params, debug=True)
+            resp = fw_obj.update(xml_tag="ATP", update_params=update_params, timeout=90, debug=True)
     except SophosFirewallAuthFailure as error:
         module.fail_json(msg="Authentication error: {0}".format(error), **result)
     except SophosFirewallAPIError as error:
