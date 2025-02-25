@@ -1,0 +1,310 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
+  when: sfos_username is not defined or
+        sfos_password is not defined or
+        sfos_hostname is not defined or
+        sfos_port is not defined or
+        sfos_verify is not defined
+
+- name: SET VARS
+  set_fact:
+    sfos_connection_params: &sfos_connection_params
+      username: "{{ sfos_username }}"
+      password: "{{ sfos_password }}"
+      hostname: "{{ sfos_hostname }}"
+      port: "{{ sfos_port }}"
+      verify: "{{ sfos_verify }}"
+  no_log: true
+
+- name: ENSURE TEST VPN CONNECTIONS DO NOT EXIST
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - IGT_TEST_SITE_TO_SITE
+
+- name: ENSURE IGT_TESTNETWORKS DO NOT EXIST
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - IGT_VPNTEST01
+    - IGT_VPNTEST02
+    - IGT_VPNTEST03
+    - IGT_VPNTEST04
+
+- name: CREATE TEST NETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item.name }}"
+    network: "{{ item.network }}"
+    mask: 255.255.255.0
+    host_type: network
+    state: present
+  loop:
+    - name: IGT_VPNTEST01
+      network: 10.100.1.0
+    - name: IGT_VPNTEST02
+      network: 10.100.2.0
+    - name: IGT_VPNTEST03
+      network: 10.100.3.0
+    - name: IGT_VPNTEST04
+      network: 10.100.4.0
+  register: create_networks
+
+- name: CREATE IPSEC SITE-TO-SITE VPN CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_SITE_TO_SITE
+    description: Testing IPSec Connection from Ansible
+    connection_type: SiteToSite
+    gateway_type: RespondOnly
+    profile: IKEv2
+    authentication_type: PresharedKey
+    preshared_key: testkey1234567890!
+    listening_interface: PortB
+    gateway_address: 10.100.100.11
+    local_id_type: DNS
+    local_id: portB.example.vpn.sophos.com
+    local_subnet: 
+      - IGT_VPNTEST01
+    remote_subnet: 
+      - IGT_VPNTEST02
+    state: present
+  register: ipsec_connection_add
+
+- name: ASSERTION CHECK FOR CREATE IPSEC VPN CONNECTION
+  assert:
+    that: 
+      - ipsec_connection_add is changed
+      - ipsec_connection_add['api_response']['Response']['Configuration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in ipsec_connection_add['api_response']['Response']['Configuration']['Status']['#text']"
+
+- name: QUERY IPSEC SITE-TO-SITE CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    state: query
+    name: IGT_TEST_SITE_TO_SITE
+  register: query_ipsec_connection
+
+- name: ASSERTION CHECK FOR QUERY IPSEC SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - query_ipsec_connection is not changed
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Description'] == 'Testing IPSec Connection from Ansible'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['ConnectionType'] == 'SiteToSite'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Policy'] == 'IKEv2'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['ActionOnVPNRestart'] == 'RespondOnly'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['AuthenticationType'] == 'PresharedKey'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['SubnetFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['EndpointFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['AliasLocalWANPort'] == 'PortB'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteHost'] == '10.100.100.11'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['SubnetFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalIDType'] == 'DNS'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalID'] == 'portB.example.vpn.sophos.com'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteNetwork']['Network'] == 'IGT_VPNTEST02'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalIDType'] == 'DNS'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalSubnet'] == 'IGT_VPNTEST01'
+
+
+- name: UPDATE IPSEC SITE-TO-SITE CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_SITE_TO_SITE
+    description: Updated by Ansible integration testing
+    local_subnet:
+      - IGT_VPNTEST01
+      - IGT_VPNTEST03
+    remote_subnet:
+      - IGT_VPNTEST02
+      - IGT_VPNTEST04
+    state: updated
+  register: update_ipsec_connection
+
+- name: ASSERTION CHECK FOR UPDATE IPSEC SITE-TO-SITE VPN CONNECTION
+  assert:
+    that: 
+      - update_ipsec_connection is changed
+      - update_ipsec_connection['api_response']['Response']['Configuration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_ipsec_connection['api_response']['Response']['Configuration']['Status']['#text']"
+
+- name: QUERY UPDATED IPSEC CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    state: query
+    name: IGT_TEST_SITE_TO_SITE
+  register: query_ipsec_connection
+
+- name: ASSERTION CHECK FOR QUERY UPDATED IPSEC SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - query_ipsec_connection is not changed
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Description'] == 'Updated by Ansible integration testing'
+      - "'IGT_VPNTEST01' in query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalSubnet']"
+      - "'IGT_VPNTEST03' in query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalSubnet']"
+      - "'IGT_VPNTEST02' in query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteNetwork']['Network']"
+      - "'IGT_VPNTEST04' in query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteNetwork']['Network']"
+
+- name: UPDATE IPSEC CONNECTION NOCHG
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_SITE_TO_SITE
+    description: Updated by Ansible integration testing
+    connection_type: SiteToSite
+    gateway_type: RespondOnly
+    profile: IKEv2
+    #authentication_type: PresharedKey
+    #preshared_key: testkey1234567890!
+    listening_interface: PortB
+    gateway_address: 10.100.100.11
+    local_id_type: DNS
+    local_id: portB.example.vpn.sophos.com
+    local_subnet: 
+      - IGT_VPNTEST01
+      - IGT_VPNTEST03
+    remote_subnet: 
+      - IGT_VPNTEST02
+      - IGT_VPNTEST04
+    state: updated
+  register: update_ipsec_connection
+
+- name: ASSERTION CHECK FOR UPDATE IPSEC SITE-TO-SITE VPN CONNECTION NOCHG
+  assert:
+    that: 
+      - update_ipsec_connection is not changed
+
+- name: REMOVE IPSEC SITE-TO-SITE CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_SITE_TO_SITE
+    state: absent
+  register: remove_ipsec_connection
+
+- name: ASSERTION CHECK FOR REMOVE IPSEC SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - remove_ipsec_connection is changed
+      - remove_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Status']['@code'] == "200"
+      - remove_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Status']['#text'] == "Configuration applied successfully."
+
+
+- name: REMOVE NONEXISTING IPSEC SITE-TO-SITE CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_SITE_TO_SITE
+    state: absent
+  register: remove_ipsec_connection
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - remove_ipsec_connection is not changed
+      - remove_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Status'] == "No. of records Zero."
+
+- name: CREATE IPSEC VPN CONNECTION USING TUNNEL
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_TUNNEL
+    description: VPN using Tunnel created by Ansible
+    connection_type: TunnelInterface
+    gateway_type: RespondOnly
+    profile: DefaultBranchOffice 
+    authentication_type: RSAKey
+    remote_rsa_key: testkey
+    listening_interface: PortB
+    gateway_address: 10.10.10.11
+    local_id_type: DNS
+    local_id: portB.example.vpn.sophos.com
+    remote_id_type: IP Address
+    remote_id: 2.2.2.2
+    state: present
+  register: ipsec_connection_add
+
+- name: ASSERTION CHECK FOR CREATE IPSEC VPN CONNECTION USING TUNNEL
+  assert:
+    that: 
+      - ipsec_connection_add is changed
+      - ipsec_connection_add['api_response']['Response']['Configuration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in ipsec_connection_add['api_response']['Response']['Configuration']['Status']['#text']"
+
+- name: QUERY IPSEC VPN USING TUNNEL
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    state: query
+    name: IGT_TEST_TUNNEL
+  register: query_ipsec_connection
+
+- name: ASSERTION CHECK FOR QUERY IPSEC SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - query_ipsec_connection is not changed
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Description'] == 'VPN using Tunnel created by Ansible'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['ConnectionType'] == 'TunnelInterface'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Policy'] == 'DefaultBranchOffice'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['ActionOnVPNRestart'] == 'RespondOnly'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['AuthenticationType'] == 'RSAKey'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['SubnetFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['EndpointFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['AliasLocalWANPort'] == 'PortB'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteHost'] == '10.10.10.11'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['SubnetFamily'] == 'IPv4'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalIDType'] == 'DNS'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalID'] == 'portB.example.vpn.sophos.com'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['RemoteNetwork']['Network'] == 'Any'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalIDType'] == 'DNS'
+      - query_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['LocalSubnet'] == 'Any'
+
+- name: ACTIVATE IPSEC CONNECTION TUNNEL
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_TUNNEL
+    active: True
+    state: updated
+  register: ipsec_connection_activate
+
+- name: ASSERTION CHECK FOR ACTIVATE IPSEC VPN TUNNEL
+  assert:
+    that: 
+      - ipsec_connection_activate is changed
+      - ipsec_connection_activate['api_response']['Response']['Configuration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in ipsec_connection_activate['api_response']['Response']['Configuration']['Status']['#text']"
+
+- name: REMOVE IPSEC TUNNEL CONNECTION
+  sophos.sophos_firewall.sfos_ipsec_connection:
+    <<: *sfos_connection_params
+    name: IGT_TEST_TUNNEL
+    state: absent
+  register: remove_ipsec_connection
+
+- name: ASSERTION CHECK FOR REMOVE IPSEC SITE-TO-SITE CONNECTION
+  assert:
+    that: 
+      - remove_ipsec_connection is changed
+      - remove_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Status']['@code'] == "200"
+      - remove_ipsec_connection['api_response']['Response']['VPNIPSecConnection']['Configuration']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE TESTNETWORKS
+  sophos.sophos_firewall.sfos_ip_host:
+    <<: *sfos_connection_params
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - IGT_VPNTEST01
+    - IGT_VPNTEST02
+    - IGT_VPNTEST03
+    - IGT_VPNTEST04
+
+
+
+
+
