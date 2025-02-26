@@ -2,20 +2,24 @@
 - name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
   hosts: all
   gather_facts: false
-
+  
   tasks:
+
+    - name: ADD IP HOST
+      sophos.sophos_firewall.sfos_ip_host:
+        name: testhost
+        ip_address: 1.1.1.1
+        state: present
+      tags:
+        - add
+
     - name: QUERY IP HOST
       sophos.sophos_firewall.sfos_ip_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: testhost
-        ip_address: 2.2.2.2
         state: query
-      delegate_to: localhost
       register: query_host
+      tags:
+        - query
 
     - name: DISPLAY IP ADDRESS
       ansible.builtin.debug:
@@ -23,29 +27,31 @@
 
     - name: ADD IP HOST TYPE NETWORK
       sophos.sophos_firewall.sfos_ip_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TESTNETWORK
         network: 2.2.2.0
         mask: 255.255.255.0
         host_type: network
         state: present
-      delegate_to: localhost
 
     - name: ADD IP HOST TYPE IPRANGE
       sophos.sophos_firewall.sfos_ip_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TESTRANGE
         start_ip: 1.1.1.1
         end_ip: 1.1.1.10
         host_type: range
         state: query
-      delegate_to: localhost
 
+    - name: REMOVE IP HOST
+      sophos.sophos_firewall.sfos_ip_host:
+        name: testhost
+        state: absent
+      tags:
+        - remove
+
+    - name: UPDATE IP HOST
+      sophos.sophos_firewall.sfos_ip_host:
+        name: testhost
+        ip_address: 2.2.2.2
+        state: updated
+      tags:
+        - update

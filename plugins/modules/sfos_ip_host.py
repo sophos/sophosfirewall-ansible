@@ -68,43 +68,25 @@ author:
 EXAMPLES = r"""
 - name: Create IP Host
   sophos.sophos_firewall.sfos_ip_host:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTHOST
     ip_address: 1.1.1.1
     state: present
-  delegate_to: localhost
 
 - name: Create IP Network
   sophos.sophos_firewall.sfos_ip_host:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTNETWORK
     network: 1.1.1.0
     mask: 255.255.255.0
     host_type: network
     state: present
-  delegate_to: localhost
 
 - name: Create IP Range
   sophos.sophos_firewall.sfos_ip_host:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTRANGE
     start_ip: 10.1.1.1
     end_ip: 10.1.1.2
     host_type: range
     state: present
-  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -133,13 +115,14 @@ from ipaddress import AddressValueError
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_host(fw_obj, module, result):
+def get_host(connection, module, result):
     """Get IP Host from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -147,79 +130,65 @@ def get_host(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_ip_host(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_ip_host", module_args={"name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+    
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def make_request(request_method, module, result, **kwargs):
+def make_request(connection, request_method, module, result, **kwargs):
     try:
-        resp = request_method(**kwargs)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk(request_method, module_args=kwargs)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+    
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
+    return resp["response"]
 
-def create_host(fw_obj, module, result):
+def create_host(connection, module, result):
     """Create an IP Host on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): HTTPAPI Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
     Returns:
         dict: API response
     """
-    # try:
-    #     resp = fw_obj.create_ip_host(
-    #         name=module.params.get("name"), ip_address=module.params.get("ip_address")
-    #     )
-    # except SophosFirewallAuthFailure as error:
-    #     module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    # except SophosFirewallAPIError as error:
-    #     module.fail_json(msg="API Error: {0}".format(error), **result)
-    # except RequestException as error:
-    #     module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    # else:
-    #     return resp
     kwargs = dict(name=module.params.get("name"))
 
     if module.params.get("host_type") == "ip":
         kwargs["ip_address"] = module.params.get("ip_address")
-        return make_request(fw_obj.create_ip_host, module, result, **kwargs)
+        return make_request(connection, "create_ip_host", module, result, **kwargs)
 
     if module.params.get("host_type") == "network":
         kwargs["ip_address"] = module.params.get("network")
         kwargs["mask"] = module.params.get("mask")
         kwargs["host_type"] = "Network"
-        return make_request(fw_obj.create_ip_host, module, result, **kwargs)
+        return make_request(connection, "create_ip_host", module, result, **kwargs)
 
     if module.params.get("host_type") == "range":
         kwargs["start_ip"] = module.params.get("start_ip")
         kwargs["end_ip"] = module.params.get("end_ip")
         kwargs["host_type"] = "IPRange"
-        return make_request(fw_obj.create_ip_host, module, result, **kwargs)
+        return make_request(connection, "create_ip_host", module, result, **kwargs)
 
 
-def remove_host(fw_obj, module, result):
+def remove_host(connection, module, result):
     """Remove an IP Host from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -227,62 +196,46 @@ def remove_host(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="IPHost", name=module.params.get("name"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "IPHost", "name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+    
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_host(fw_obj, module, result):
+def update_host(connection, module, result):
     """Update an existing IP Host on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
     Returns:
         dict: API response
     """
-    # try:
-    #     resp = fw_obj.update(
-    #         xml_tag="IPHost",
-    #         update_params={"IPAddress": module.params.get("ip_address")},
-    #         name=module.params.get("name")
-    #     )
-    # except SophosFirewallAuthFailure as error:
-    #     module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    # except SophosFirewallAPIError as error:
-    #     module.fail_json(msg="API Error: {0}".format(error), **result)
-    # except RequestException as error:
-    #     module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    # else:
-    #     return resp
-
     kwargs = dict(name=module.params.get("name"), xml_tag="IPHost")
 
     if module.params.get("host_type") == "ip":
         kwargs["update_params"] = {"IPAddress": module.params.get("ip_address")}
-        return make_request(fw_obj.update, module, result, **kwargs)
+        return make_request(connection, "update", module, result, **kwargs)
 
     if module.params.get("host_type") == "network":
         kwargs["update_params"] = {
             "IPAddress": module.params.get("network"),
             "Subnet": module.params.get("mask"),
         }
-        return make_request(fw_obj.update, module, result, **kwargs)
+        return make_request(connection, "update", module, result, **kwargs)
 
     if module.params.get("host_type") == "range":
         kwargs["update_params"] = {
             "StartIPAddress": module.params.get("start_ip"),
             "EndIPAddress": module.params.get("end_ip"),
         }
-        return make_request(fw_obj.update, module, result, **kwargs)
+        return make_request(connection, "update", module, result, **kwargs)
 
 
 def validate_ip(ip_address, module, result):
@@ -302,11 +255,6 @@ def validate_ip(ip_address, module, result):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "ip_address": {"type": "str"},
         "start_ip": {"type": "str"},
@@ -376,14 +324,6 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
@@ -396,8 +336,15 @@ def main():
         if module.params.get("host_type") == "network":
             validate_ip(module.params.get("network"), module, result)
             validate_ip(module.params.get("mask"), module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
 
-    exist_check = get_host(fw, module, result)
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_host(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -408,7 +355,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_host(fw, module, result)
+        api_response = create_host(connection, module, result)
         if (
             api_response["Response"]["IPHost"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -420,7 +367,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_host(fw, module, result)
+        api_response = remove_host(connection, module, result)
         if (
             api_response["Response"]["IPHost"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -437,7 +384,7 @@ def main():
             if exist_check["api_response"]["Response"]["IPHost"][
                 "IPAddress"
             ] != module.params.get("ip_address"):
-                api_response = update_host(fw, module, result)
+                api_response = update_host(connection, module, result)
 
         if module.params.get("host_type") == "network":
             if exist_check["api_response"]["Response"]["IPHost"][
@@ -451,7 +398,7 @@ def main():
             ] != module.params.get(
                 "mask"
             ):
-                api_response = update_host(fw, module, result)
+                api_response = update_host(connection, module, result)
 
         if module.params.get("host_type") == "range":
             if exist_check["api_response"]["Response"]["IPHost"][
@@ -465,7 +412,7 @@ def main():
             ] != module.params.get(
                 "end_ip"
             ):
-                api_response = update_host(fw, module, result)
+                api_response = update_host(connection, module, result)
 
         if api_response:
             if (
