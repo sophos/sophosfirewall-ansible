@@ -7,7 +7,7 @@ module: sfos
 short_description: HTTPAPI plugin for Sophos Firewall (SFOS)
 description:
   - This plugin enables communication with a Sophos Firewall (SFOS)
-version_added: "1.5.0"
+version_added: "2.0.0"
 author: "Matt Mullen (@mamullen13316)"
 """
 

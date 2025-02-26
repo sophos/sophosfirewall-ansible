@@ -12,8 +12,8 @@ requirements:
   - sophosfirewall-python
 
 notes:
-  - Beginning in version 1.5.0, this module requires use of an httpapi connection plugin.
-  - Existing playbooks from versions prior to 1.5.0 will need to be updated, removing C(username), C(password), C(hostname), C(port) and C(verify) arguments from tasks.
+  - Beginning in version 2.0.0, this module requires use of an httpapi connection plugin.
+  - Existing playbooks from versions prior to 2.0.0 will need to be updated, removing C(username), C(password), C(hostname), C(port) and C(verify) arguments from tasks.
   - These settings can now be configured as inventory, playbook, or task variables. Example inventory configuration::
 
       all:
