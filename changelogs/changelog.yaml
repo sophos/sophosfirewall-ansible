@@ -170,3 +170,23 @@ releases:
     fragments:
     - 1.4.4.yaml
     release_date: '2025-02-19'
+  1.4.5:
+    changes:
+      bugfixes:
+      - Fixed an issue where the sfos_syslog module was missing the ability to enable
+        logging for anti-spam smtp events.
+      release_summary: This is a bugfix release for the Sophos Firewall Ansible collection.
+    fragments:
+    - 1.4.5.yaml
+    release_date: '2025-02-20'
+  1.5.0:
+    changes:
+      release_summary: This release introduces a new module for working with IPSec
+        site-to-site VPN connections on Sophos Firewall
+    fragments:
+    - 1.5.0.yaml
+    modules:
+    - description: Manage IPSec Connection (Configure > Site-to-site VPN > IPSec).
+      name: sfos_ipsec_connection
+      namespace: ''
+    release_date: '2025-02-25'
