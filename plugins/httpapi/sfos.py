@@ -4,7 +4,7 @@
 DOCUMENTATION = """
 ---
 module: sfos
-short_description: HTTPAPI plugin for Sophos Firewall (SFOS)
+short_description: HttpApi plugin for Sophos Firewall (SFOS)
 description:
   - This plugin enables communication with a Sophos Firewall (SFOS)
 version_added: "2.0.0"
@@ -24,6 +24,7 @@ class HttpApi(HttpApiBase):
     def send_request(self, data=None, headers=None):
         """Required method, even if not used"""
         raise NotImplementedError("send_request() is not yet implemented.")
+    #TODO: Implement interaction with REST API (SFOS v22 and later)
 
     def invoke_sdk(self, method_name, module_args=None):
         """Send request to the firewall using sophosfirewall-python SDK.
@@ -40,7 +41,10 @@ class HttpApi(HttpApiBase):
         method = getattr(client, method_name)
 
         try:
-            resp = method(**module_args)
+            if module_args:
+                resp = method(**module_args)
+            else:
+                resp = method()
         except SophosFirewallZeroRecords as error:
             return {"success": True, "exists": False, "response": str(error)}
         except SophosFirewallAuthFailure as error:
