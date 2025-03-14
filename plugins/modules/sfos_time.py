@@ -81,12 +81,7 @@ author:
 
 EXAMPLES = r"""
 - name: Update Time Settings
-  sophos.sophos_firewall.sfos_time:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
+  sophos.sophos_firewall.sfos_time:e
     timezone: Europe/London
     date:
       year: 2024
@@ -97,8 +92,6 @@ EXAMPLES = r"""
       minute: 28
       second: 59
     state: updated
-  delegate_to: localhost
-
 """
 
 RETURN = r"""
@@ -129,13 +122,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_time_settings(fw_obj, module, result):
+def get_time_settings(connection, module, result):
     """Get current time settings from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -143,31 +137,31 @@ def get_time_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("Time")
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_tag", module_args={"xml_tag": "Time"})
 
-    return {"exists": True, "api_response": resp}
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
-def update_time_settings(fw_obj, module, result):
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
+
+def update_time_settings(connection, module, result):
     """Update Time settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
     Returns:
         dict: API response
     """
-    update_params = fw_obj.get_tag("Time")["Response"]["Time"]
+    update_params = connection.invoke_sdk("get_tag", module_args={"xml_tag": "Time"})["response"]["Response"]["Time"]
 
     date_settings = module.params.get("date", {})
     if date_settings:
@@ -200,11 +194,16 @@ def update_time_settings(fw_obj, module, result):
     if module.params.get("timezone"):
         update_params["TimeZone"] = module.params.get("timezone")
 
-    # module.exit_json(msg=f"update_params: {update_params}")
+    try:
+        resp = connection.invoke_sdk("update", module_args={"xml_tag":"Time", "update_params": update_params})
 
-    resp = fw_obj.update(xml_tag="Time", update_params=update_params)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return resp
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def eval_changed(module, exist_settings):
@@ -261,11 +260,6 @@ def eval_changed(module, exist_settings):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "date": {
             "type": "dict",
             "required": False,
@@ -288,39 +282,27 @@ def main():
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
     }
 
-    # required_if = [
-    #     ('state', 'present', ['user_password', 'user_type', 'group', 'email'], False),
-    #     ('user_type', 'Administrator', ['profile'], True)
-    # ]
-
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
-
     module = AnsibleModule(
         argument_spec=argument_spec,
-        #    required_if=required_if,
-        #    required_together=required_together,
         supports_check_mode=True,
     )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_settings = get_time_settings(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_time_settings(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -332,7 +314,7 @@ def main():
 
     elif state == "updated":
         if eval_changed(module, exist_settings):
-            api_response = update_time_settings(fw, module, result)
+            api_response = update_time_settings(connection, module, result)
             if api_response:
                 if (
                     api_response["Response"]["Time"]["Status"]["#text"]

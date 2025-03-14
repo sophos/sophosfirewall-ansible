@@ -304,23 +304,12 @@ author:
 EXAMPLES = r"""
 - name: CREATE A READ-ONLY PROFILE
   sophos.sophos_firewall.sfos_device_access_profile:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: ReadOnlyAll
     default_permission: Read-Only
     state: present
-  delegate_to: localhost
 
 - name: CREATE A WIRELESS ADMIN PROFILE
   sophos.sophos_firewall.sfos_device_access_profile:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: WirelessAdmin
     default_permission: Read-Only
     wireless_protection:
@@ -330,15 +319,9 @@ EXAMPLES = r"""
         wireless_protection_access_point: Read-Write
         wireless_protection_mesh: Read-Write
     state: present
-  delegate_to: localhost
 
 - name: UPDATE PROFILE PERMISSIONS
   sophos.sophos_firewall.sfos_device_access_profile:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: ExampleProfile
     system:
         central_management: Read-Only
@@ -346,29 +329,16 @@ EXAMPLES = r"""
         log_viewer: Read-Write
         reports_access: Read-Write
     state: updated
-  delegate_to: localhost
 
 - name: RETRIEVE PROFILE
   sophos.sophos_firewall.sfos_device_access_profile:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: ExampleProfile
     state: query
-  delegate_to: localhost
 
 - name: DELETE PROFILE
   sophos.sophos_firewall.sfos_device_access_profile:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: ExampleProfile
     state: absent
-  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -399,13 +369,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_profile(fw_obj, module, result):
+def get_profile(connection, module, result):
     """Get device access profile from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -413,17 +384,17 @@ def get_profile(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_admin_profile(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_admin_profile", module_args={"name": module.params.get("name")})
+    except Exception as error:
+            module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
 
 
 def flatten_args(module):
@@ -446,11 +417,11 @@ def flatten_args(module):
     return params
 
 
-def create_profile(fw_obj, module, result):
+def create_profile(connection, module, result):
     """Create a Device Access Profile on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -460,22 +431,21 @@ def create_profile(fw_obj, module, result):
     create_params = flatten_args(module)
 
     try:
-        resp = fw_obj.create_admin_profile(**create_params)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("create_admin_profile", module_args=create_params)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return resp
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_profile(fw_obj, module, result):
+def update_profile(connection, module, result):
     """Update admin settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -485,15 +455,14 @@ def update_profile(fw_obj, module, result):
     update_params = flatten_args(module)
 
     try:
-        resp = fw_obj.update_admin_profile(**update_params)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("update_admin_profile", module_args=update_params)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return resp
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def arg_to_xml(arg):
@@ -567,11 +536,11 @@ def eval_changed(module, exist_settings):
     return False
 
 
-def remove_profile(fw_obj, module, result):
+def remove_profile(connection, module, result):
     """Remove a Device Access Profile from Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -579,27 +548,22 @@ def remove_profile(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag="AdministrationProfile", name=module.params.get("name")
+        resp = connection.invoke_sdk("remove", module_args={
+            "xml_tag": "AdministrationProfile", "name": module.params.get("name")
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"type": "str", "required": True},
         "default_permission": {
             "type": "str",
@@ -718,19 +682,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_check = get_profile(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_profile(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -741,7 +705,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_profile(fw, module, result)
+        api_response = create_profile(connection, module, result)
         if (
             api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -753,7 +717,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_profile(fw, module, result)
+        api_response = remove_profile(connection, module, result)
         if (
             api_response["Response"]["AdministrationProfile"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -766,7 +730,7 @@ def main():
 
     elif state == "updated" and exist_check["exists"]:
         if eval_changed(module, exist_check):
-            api_response = update_profile(fw, module, result)
+            api_response = update_profile(connection, module, result)
 
             if api_response:
                 if (

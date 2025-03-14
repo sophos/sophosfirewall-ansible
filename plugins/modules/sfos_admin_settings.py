@@ -142,37 +142,20 @@ author:
 EXAMPLES = r"""
 - name: Update hostname settings
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     hostname_settings:
         hostname: sophos-firewall-dev1
         description: Automation Testing 1
     state: updated
-    delegate_to: localhost
 
 - name: Update webadmin settings
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     webadmin_settings:
         vpnportal_https_port: 444
         userportal_https_port: 4445
     state: updated
-    delegate_to: localhost
 
 - name: Update loginsecurity settings
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     login_security:
         logout_session: 120
         block_login: Enable
@@ -180,15 +163,9 @@ EXAMPLES = r"""
         duration: 30
         minutes: 1
     state: updated
-    delegate_to: localhost
 
 - name: Update administrator password complexity settings
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     password_complexity:
         complexity_check: Enable
         enforce_min_length: Enable
@@ -197,28 +174,15 @@ EXAMPLES = r"""
         include_special: Enable
         min_length: 10
     state: updated
-    delegate_to: localhost
 
 - name: Update login disclaimer
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     login_disclaimer: Enable
     state: updated
-    delegate_to: localhost
 
 - name: Query admin settings
   sophos.sophos_firewall.sfos_admin_settings:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     state: query
-    delegate_to: localhost
 """
 
 RETURN = r"""
@@ -249,13 +213,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_admin_settings(fw_obj, module, result):
+def get_admin_settings(connection, module, result):
     """Get current admin settings from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -263,24 +228,24 @@ def get_admin_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_admin_settings()
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_admin_settings")
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def update_admin_settings(fw_obj, module, result):
+def update_admin_settings(connection, module, result):
     """Update admin settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -293,7 +258,7 @@ def update_admin_settings(fw_obj, module, result):
     if hostname_settings:
         resp_list.append(
             update_request(
-                module, result, fw_obj.update_hostname_settings, **hostname_settings
+                module, result, connection, "update_hostname_settings", **hostname_settings
             )
         )
 
@@ -301,7 +266,7 @@ def update_admin_settings(fw_obj, module, result):
     if webadmin_settings:
         resp_list.append(
             update_request(
-                module, result, fw_obj.update_webadmin_settings, **webadmin_settings
+                module, result, connection, "update_webadmin_settings", **webadmin_settings
             )
         )
 
@@ -309,7 +274,7 @@ def update_admin_settings(fw_obj, module, result):
     if login_security:
         resp_list.append(
             update_request(
-                module, result, fw_obj.update_loginsecurity_settings, **login_security
+                module, result, connection, "update_loginsecurity_settings", **login_security
             )
         )
 
@@ -319,7 +284,8 @@ def update_admin_settings(fw_obj, module, result):
             update_request(
                 module,
                 result,
-                fw_obj.update_passwordcomplexity_settings,
+                connection,
+                "update_passwordcomplexity_settings",
                 **password_complexity
             )
         )
@@ -333,19 +299,20 @@ def update_admin_settings(fw_obj, module, result):
         )
         resp_list.append(
             update_request(
-                module, result, fw_obj.update_login_disclaimer, **login_disclaimer
+                module, result, connection, "update_login_disclaimer", **login_disclaimer
             )
         )
 
     return resp_list
 
 
-def update_request(module, result, method, **args):
+def update_request(module, result, connection, method, **args):
     """Generate the update request using the SDK.
 
     Args:
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
+        connection (Connection): Ansible Connection object
         method (method): SophosFirewall object method to be used for the request
 
     Returns:
@@ -353,16 +320,14 @@ def update_request(module, result, method, **args):
     """
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = method(**args)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    return resp
+            resp = connection.invoke_sdk(method, module_args=args)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def eval_changed(module, exist_settings):
@@ -505,11 +470,6 @@ def eval_changed(module, exist_settings):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "hostname_settings": {
             "type": "dict",
             "required": False,
@@ -552,6 +512,7 @@ def main():
                 "include_special": {"type": "str", "required": False},
                 "min_length": {"type": "str", "required": False},
             },
+            "no_log": False
         },
         "login_disclaimer": {
             "type": "str",
@@ -561,39 +522,28 @@ def main():
         "state": {"type": "str", "required": True, "choices": ["updated", "query"]},
     }
 
-    # required_if = [
-    #     ('state', 'present', ['user_password', 'user_type', 'group', 'email'], False),
-    #     ('user_type', 'Administrator', ['profile'], True)
-    # ]
-
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        #    required_if=required_if,
-        #    required_together=required_together,
         supports_check_mode=True,
     )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_settings = get_admin_settings(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_admin_settings(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -605,7 +555,7 @@ def main():
 
     elif state == "updated":
         if eval_changed(module, exist_settings):
-            api_response = update_admin_settings(fw, module, result)
+            api_response = update_admin_settings(connection, module, result)
 
             result["api_response"] = []
             if api_response:

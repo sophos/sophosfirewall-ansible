@@ -162,11 +162,6 @@ author:
 EXAMPLES = r"""
 - name: Create Zone
   sophos.sophos_firewall.sfos_zone:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTZONE
     description: Zone created by Ansible
     zone_type: LAN
@@ -174,21 +169,11 @@ EXAMPLES = r"""
 
 - name: Display Existing Zone
   sophos.sophos_firewall.sfos_zone:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTZONE
     state: query
 
 - name: Update Zone Admin Services
   sophos.sophos_firewall.sfos_zone:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTZONE
     https: Enable
     ssh: Enable
@@ -196,11 +181,6 @@ EXAMPLES = r"""
 
 - name: Remove Zone
   sophos.sophos_firewall.sfos_zone:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTZONE
     state: absent
   delegate_to: localhost
@@ -230,13 +210,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_zone(fw_obj, module, result):
+def get_zone(connection, module, result):
     """Get firewall rule from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -244,24 +225,23 @@ def get_zone(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_zone(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_zone", module_args={"name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def create_zone(fw_obj, module, result):
+    return {"exists": True, "api_response": resp["response"]}
+
+def create_zone(connection, module, result):
     """Create a firewall rule on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -292,26 +272,25 @@ def create_zone(fw_obj, module, result):
     }
 
     try:
-        resp = fw_obj.create_zone(
-            name=module.params.get("name"),
-            zone_type=module.params.get("zone_type"),
-            zone_params=zone_params,
+        resp = connection.invoke_sdk("create_zone", module_args={
+            "name": module.params.get("name"),
+            "zone_type": module.params.get("zone_type"),
+            "zone_params": zone_params,
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def remove_zone(fw_obj, module, result):
+    return resp["response"]
+
+def remove_zone(connection, module, result):
     """Remove a zone from Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection(Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -319,22 +298,21 @@ def remove_zone(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="Zone", name=module.params.get("name"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "Zone", "name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_zone(fw_obj, module, result):
+def update_zone(connection, module, result):
     """Update an existing zone on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connectiononnection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -365,18 +343,17 @@ def update_zone(fw_obj, module, result):
     }
 
     try:
-        resp = fw_obj.update_zone(
-            name=module.params.get("name"), zone_params=zone_params
+        resp = connection.invoke_sdk("update_zone", module_args={
+            "name": module.params.get("name"), "zone_params": zone_params
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 def eval_changed(module, exist_settings):
     """Evaluate the provided arguments against existing settings.
@@ -514,11 +491,6 @@ def eval_settings(exist_settings, key, value, group):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "zone_type": {"choices": ["LAN", "DMZ"], "required": False},
         "description": {"type": "str", "required": False},
@@ -551,34 +523,28 @@ def main():
         ("state", "present", ("zone_type",), True),
     ]
 
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
-
     module = AnsibleModule(
         argument_spec=argument_spec,
         required_if=required_if,
-        #    required_together=required_together,
         supports_check_mode=True,
     )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_check = get_zone(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_zone(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -589,7 +555,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_zone(fw, module, result)
+        api_response = create_zone(connection, module, result)
         if (
             api_response["Response"]["Zone"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -601,7 +567,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_zone(fw, module, result)
+        api_response = remove_zone(connection, module, result)
         if (
             api_response["Response"]["Zone"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -614,7 +580,7 @@ def main():
 
     elif state == "updated" and exist_check["exists"]:
         if eval_changed(module, exist_check["api_response"]):
-            api_response = update_zone(fw, module, result)
+            api_response = update_zone(connection, module, result)
 
             if api_response:
                 if (

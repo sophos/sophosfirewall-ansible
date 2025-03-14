@@ -77,22 +77,12 @@ author:
 EXAMPLES = r"""
 - name: Retrieve Service
   sophos.sophos_firewall.sfos_service:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTSERVICE
     state: query
   delegate_to: localhost
 
 - name: Create Service
   sophos.sophos_firewall.sfos_service:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTSERVICEWEB
     type: tcporudp
     service_list:
@@ -103,15 +93,9 @@ EXAMPLES = r"""
         src_port: 1:65535
         dst_port: 443
     state: present
-  delegate_to: localhost
 
 - name: Add service to service list
   sophos.sophos_firewall.sfos_service:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTSERVICEWEB
     service_list:
       - protocol: tcp
@@ -123,11 +107,6 @@ EXAMPLES = r"""
 
 - name: Add ICMP service
   sophos.sophos_firewall.sfos_service:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTICMP
     type: icmp
     service_list:
@@ -161,6 +140,7 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
 def build_service_list(module):
@@ -170,6 +150,7 @@ def build_service_list(module):
         module (obj): AnsibleModule object
     """
     service_list = []
+    svc_type = None
     service_type = module.params.get("type")
     if service_type == "tcporudp":
         svc_type = "TCPorUDP"
@@ -198,11 +179,11 @@ def build_service_list(module):
     return svc_type, service_list
 
 
-def get_service(fw_obj, module, result):
+def get_service(connection, module, result):
     """Get Service from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -210,24 +191,23 @@ def get_service(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_service(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_service", module_args={"name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def create_service(fw_obj, module, result):
+    return {"exists": True, "api_response": resp["response"]}
+
+def create_service(connection, module, result):
     """Create an Service on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -237,29 +217,27 @@ def create_service(fw_obj, module, result):
 
     svc_type, service_list = build_service_list(module)
 
-    # module.fail_json(f"service_list: {service_list}")
-
     try:
-        resp = fw_obj.create_service(
-            name=module.params.get("name"),
-            service_type=svc_type,
-            service_list=service_list,
+        resp = connection.invoke_sdk("create_service", module_args={
+            "name": module.params.get("name"),
+            "service_type": svc_type,
+            "service_list": service_list,
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def remove_service(fw_obj, module, result):
+def remove_service(connection, module, result):
     """Remove an Service from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -267,22 +245,21 @@ def remove_service(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="Services", name=module.params.get("name"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "Services", "name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_service(fw_obj, module, result):
+def update_service(connection, module, result):
     """Update an existing Service on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -292,20 +269,20 @@ def update_service(fw_obj, module, result):
     svc_type, service_list = build_service_list(module)
 
     try:
-        resp = fw_obj.update_service(
-            name=module.params.get("name"),
-            service_type=svc_type,
-            service_list=service_list,
-            action=module.params.get("action"),
+        resp = connection.invoke_sdk("update_service", module_args={
+            "name": module.params.get("name"),
+            "service_type": svc_type,
+            "service_list": service_list,
+            "action": module.params.get("action"),
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def ensure_list(source):
@@ -326,11 +303,6 @@ def ensure_list(source):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "type": {"type": "str", "choices": ["tcporudp", "ip", "icmp", "icmpv6"]},
         "service_list": {
@@ -370,18 +342,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
-    exist_check = get_service(fw, module, result)
+
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_service(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -392,7 +365,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_service(fw, module, result)
+        api_response = create_service(connection, module, result)
         if (
             api_response["Response"]["Services"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -404,7 +377,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_service(fw, module, result)
+        api_response = remove_service(connection, module, result)
         if (
             api_response["Response"]["Services"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -432,7 +405,7 @@ def main():
             ),
             key=lambda d: sorted(d.items()),
         ) != sorted(new_service_list, key=lambda d: sorted(d.items())):
-            api_response = update_service(fw, module, result)
+            api_response = update_service(connection, module, result)
             if (
                 api_response["Response"]["Services"]["Status"]["#text"]
                 == "Configuration applied successfully."

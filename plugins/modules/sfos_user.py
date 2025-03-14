@@ -151,11 +151,6 @@ author:
 EXAMPLES = r"""
 - name: Create User
   sophos.sophos_firewall.sfos_user:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     user: testuser
     name: Test User
     description: Testing user creation from Ansible
@@ -164,7 +159,6 @@ EXAMPLES = r"""
     group: Open Group
     email: test.user@sophos.com
     state: present
-  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -195,13 +189,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_user(fw_obj, module, result):
+def get_user(connection, module, result):
     """Get user from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -209,24 +204,24 @@ def get_user(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_user(username=module.params.get("user"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_user", module_args={"username": module.params.get("user")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def create_user(fw_obj, module, result):
+def create_user(connection, module, result):
     """Create a user on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -262,24 +257,21 @@ def create_user(fw_obj, module, result):
 
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.create_user(**user_params, debug=True)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0}\n {1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+            resp = connection.invoke_sdk("create_user", module_args={"debug": True, **user_params})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def remove_user(fw_obj, module, result):
+def remove_user(connection, module, result):
     """Remove a user from Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -287,22 +279,21 @@ def remove_user(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="User", name=module.params.get("user"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "User", "name": module.params.get("user")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_user(fw_obj, module, result):
+def update_user(connection, module, result):
     """Update an existing user on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -343,38 +334,33 @@ def update_user(fw_obj, module, result):
     try:
         if module.params.get("user_password"):
             with contextlib.redirect_stdout(output_buffer):
-                resp = fw_obj.update_user_password(
-                    username=module.params.get("user"),
-                    new_password=module.params.get("user_password"),
-                    debug=True,
+                resp = connection.invoke_sdk("update_user_password", module_args={
+                    "username": module.params.get("user"),
+                    "new_password": module.params.get("user_password"),
+                    "debug": True,
+                    }
                 )
+                
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.update(
-                xml_tag="User",
-                update_params=user_params,
-                name=module.params.get("name"),
-                debug=True,
+            resp = connection.invoke_sdk("update", module_args={
+                "xml_tag": "User",
+                "update_params": user_params,
+                "name": module.params.get("name"),
+                "debug": True,
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "user": {"type": "str", "required": True},
         "name": {"type": "str"},
         "description": {"type": "str"},
@@ -425,34 +411,28 @@ def main():
         ("user_type", "Administrator", ["profile"], True),
     ]
 
-    # required_together = [
-    #     ["start_ip", "end_ip"],
-    #     ["network", "mask"]
-    # ]
-
     module = AnsibleModule(
         argument_spec=argument_spec,
         required_if=required_if,
-        #    required_together=required_together,
         supports_check_mode=True,
     )
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_check = get_user(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_user(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -463,7 +443,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_user(fw, module, result)
+        api_response = create_user(connection, module, result)
         if (
             api_response["Response"]["User"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -475,7 +455,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_user(fw, module, result)
+        api_response = remove_user(connection, module, result)
         if (
             api_response["Response"]["User"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -487,7 +467,7 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-        api_response = update_user(fw, module, result)
+        api_response = update_user(connection, module, result)
 
         if api_response:
             if (

@@ -81,11 +81,6 @@ author:
 EXAMPLES = r"""
 - name: Create Firewall Rule Group
   sophos.sophos_firewall.sfos_firewall_rulegroup:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TEST RULEGROUP
     description: Test rule group created by Ansible
     policy_list:
@@ -124,13 +119,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_firewallrulegroup(fw_obj, module, result):
+def get_firewallrulegroup(connection, module, result):
     """Get firewall rule group from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -138,24 +134,24 @@ def get_firewallrulegroup(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_rulegroup(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_rulegroup", module_args={"name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def create_firewallrulegroup(fw_obj, module, result):
+def create_firewallrulegroup(connection, module, result):
     """Create a firewall rule group on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -171,22 +167,21 @@ def create_firewallrulegroup(fw_obj, module, result):
         policy_type=module.params.get("policy_type")
     )
     try:
-        resp = fw_obj.create_rulegroup(**params)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("create_rulegroup", module_args=params)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def update_firewallrulegroup(fw_obj, module, result):
+def update_firewallrulegroup(connection, module, result):
     """Update an existing firewall rule group on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -205,25 +200,19 @@ def update_firewallrulegroup(fw_obj, module, result):
     )
 
     try:
-        resp = fw_obj.update_rulegroup(**params)
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("update_rulegroup", module_args=params)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"type": "str", "required": True},
         "description": {"type": "str"},
         "policy_list": {"type": "list", "elements": "str"},
@@ -252,19 +241,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_check = get_firewallrulegroup(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_firewallrulegroup(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -275,7 +264,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_firewallrulegroup(fw, module, result)
+        api_response = create_firewallrulegroup(connection, module, result)
         if (
             api_response["Response"]["FirewallRuleGroup"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -287,7 +276,7 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-        api_response = update_firewallrulegroup(fw, module, result)
+        api_response = update_firewallrulegroup(connection, module, result)
 
         if api_response:
             if (

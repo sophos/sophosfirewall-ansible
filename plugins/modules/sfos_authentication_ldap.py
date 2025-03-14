@@ -107,11 +107,6 @@ author:
 EXAMPLES = r'''
 - name: Update Azure AD SSO
   sophos.sophos_firewall.sfos_authentication_ldap:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     servername: Test
     serveraddress: '192.168.0.1'
     port_ldap: '636'
@@ -128,7 +123,6 @@ EXAMPLES = r'''
     validateservercertificate: Enable
     clientCertificate: ApplianceCertificate
     state: updated
-  delegate_to: localhost
 
 '''
 
@@ -158,13 +152,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_ldap_settings(fw_obj, module, result):
+def get_ldap_settings(connection, module, result):
     """Get current settings from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -172,24 +167,24 @@ def get_ldap_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("AuthenticationServer")['Response']['AuthenticationServer']["LDAPServer"]
+        resp = connection.invoke_sdk("get_tag", module_args={"xml_tag": "AuthenticationServer"})
             
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
-def create_ldap(fw_obj, module, result):
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]['Response']['AuthenticationServer']["LDAPServer"]}
+
+def create_ldap(connection, module, result):
     """Create an LDAP Server on Sophos Firewall when none exists
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -267,52 +262,42 @@ def create_ldap(fw_obj, module, result):
     if anonymous == "Enable":
         try:
             with contextlib.redirect_stdout(output_buffer):
-                resp = fw_obj.submit_xml(
-                    template_data=payload,
-                    template_vars=template_vars,
-                    debug=True
+                resp = connection.invoke_sdk("submit_xml", module_args={
+                    "template_data": payload,
+                    "template_vars": template_vars,
+                    "debug": True
+                    }
                 )
-                
-                
-        except SophosFirewallAuthFailure as error:
-            module.fail_json(msg="Authentication error: {0}".format(error), **result)
-        except SophosFirewallAPIError as error:
-            module.fail_json(
-                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-            )
-        except RequestException as error:
-            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-        return resp
+        except Exception as error:
+            module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+        if not resp["success"]:
+            module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
     else:
         if anonymous == "Disable":
             try:
                 with contextlib.redirect_stdout(output_buffer):
-                    resp = fw_obj.submit_xml(
-                        template_data=payload2,
-                        template_vars=template_vars,
-                        debug=True
+                    resp = connection.invoke_sdk("submit_xml", module_args={
+                        "template_data": payload2,
+                        "template_vars": template_vars,
+                        "debug": True
+                        }
                     )
-                    
-            except SophosFirewallAuthFailure as error:
-                module.fail_json(msg="Authentication error: {0}".format(error), **result)
-            except SophosFirewallAPIError as error:
-                module.fail_json(
-                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-                )
-            except RequestException as error:
-                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-            
-       
-            return resp
-            
+            except Exception as error:
+                module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-def update_ldap_add(fw_obj, module, result):
+            if not resp["success"]:
+                module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+            return resp["response"]
+            
+def update_ldap_add(connection, module, result):
     """Add additional LDAP server on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -393,50 +378,44 @@ def update_ldap_add(fw_obj, module, result):
   
         try:
             with contextlib.redirect_stdout(output_buffer):
-                resp = fw_obj.submit_xml(
-                    template_data=payload,
-                    template_vars=template_vars,
-                    set_operation="add",
-                    debug=True
+                resp = connection.invoke_sdk("submit_xml", module_args={
+                    "template_data": payload,
+                    "template_vars": template_vars,
+                    "set_operation": "add",
+                    "debug": True
+                    }
                 )
-        except SophosFirewallAuthFailure as error:
-            module.fail_json(msg="Authentication error: {0}".format(error), **result)
-        except SophosFirewallAPIError as error:
-            module.fail_json(
-                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-            )
-        except RequestException as error:
-            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        
-        
-        return resp
+        except Exception as error:
+            module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+        if not resp["success"]:
+            module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
     else:
         if anonymous == "Disable":
             try:
                 with contextlib.redirect_stdout(output_buffer):
-                    resp = fw_obj.submit_xml(
-                        template_data=payload2,
-                        template_vars=template_vars,
-                        set_operation="add",
-                        debug=True
+                    resp = connection.invoke_sdk("submit_xml", module_args={
+                        "template_data": payload2,
+                        "template_vars": template_vars,
+                        "set_operation": "add",
+                        "debug": True
+                        }
                     )
-            except SophosFirewallAuthFailure as error:
-                module.fail_json(msg="Authentication error: {0}".format(error), **result)
-            except SophosFirewallAPIError as error:
-                module.fail_json(
-                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-                )
-            except RequestException as error:
-                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-            
-        # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-        return resp
+            except Exception as error:
+                module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-def update_ldap_update(fw_obj, module, result):
+            if not resp["success"]:
+                module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
+
+def update_ldap_update(connection, module, result):
     """Update existing LDAP settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -515,45 +494,39 @@ def update_ldap_update(fw_obj, module, result):
     if anonymous == "Enable":
         try:
             with contextlib.redirect_stdout(output_buffer):
-                resp = fw_obj.submit_xml(
-                    template_data=payload,
-                    template_vars=template_vars,
-                    set_operation="update",
-                    debug=True
+                resp = connection.invoke_sdk("submit_xml", module_args={
+                    "template_data": payload,
+                    "template_vars": template_vars,
+                    "set_operation": "update",
+                    "debug": True
+                    }
                 )
-        except SophosFirewallAuthFailure as error:
-            module.fail_json(msg="Authentication error: {0}".format(error), **result)
-        except SophosFirewallAPIError as error:
-            module.fail_json(
-                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-            )
-        except RequestException as error:
-            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        
-        
-        return resp
+        except Exception as error:
+            module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+        if not resp["success"]:
+            module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
     else:
         if anonymous == "Disable":
-
             try:
                 with contextlib.redirect_stdout(output_buffer):
-                    resp = fw_obj.submit_xml(
-                        template_data=payload2,
-                        template_vars=template_vars,
-                        set_operation="update",
-                        debug=True
+                    resp = connection.invoke_sdk("submit_xml", module_args={
+                        "template_data": payload2,
+                        "template_vars": template_vars,
+                        "set_operation": "update",
+                        "debug": True
+                        }
                     )
-            except SophosFirewallAuthFailure as error:
-                module.fail_json(msg="Authentication error: {0}".format(error), **result)
-            except SophosFirewallAPIError as error:
-                module.fail_json(
-                    msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-                )
-            except RequestException as error:
-                module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        
-        
-        return resp
+            except Exception as error:
+                module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+            if not resp["success"]:
+                module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
+    
 def eval_changed(module, exist_settings):
     """Evaluate the provided arguments against existing settings. 
 
@@ -807,11 +780,11 @@ def eval_list_update_server(module, exist_settings):
     return False
 
 
-def remove_ldap(fw_obj, module, result):
+def remove_ldap(connection, module, result):
     """Remove a LDAP Server on a Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -833,33 +806,25 @@ def remove_ldap(fw_obj, module, result):
    
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation=None,
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "set_operation": None,
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "servername": {"type": "str", "required": False},
         "serveraddress": {"type": "str", "required": False},
         "port_ldap": {"type": "str", "required": False},
@@ -879,25 +844,12 @@ def main():
         "clientcertificate": {"type": "str", "choices": ["None", "ApplianceCertificate", "Webadmin"]},
         "state": {"type": "str", "required": True, "choices": ["updated", "query", "absent"]}
     }
-
-    
-
     module = AnsibleModule(argument_spec=argument_spec,
-                        
                            supports_check_mode=True
                            )
     
-
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
 
     result = {
         "changed": False,
@@ -906,13 +858,21 @@ def main():
 
     state = module.params.get("state")
 
-    exist_settings = get_ldap_settings(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_ldap_settings(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
     
     
     if state == "absent":
                 
-                api_response = remove_ldap(fw, module, result)
+                api_response = remove_ldap(connection, module, result)
                 
                 if api_response:
                     if api_response['Response']["AuthenticationServer"]["LDAPServer"]["Status"]["#text"] == "Configuration applied successfully.":
@@ -934,7 +894,7 @@ def main():
         elif state == "updated" and result["api_response"].get('Status') == 'No. of records Zero.':
             
                 
-                api_response = create_ldap(fw, module, result)
+                api_response = create_ldap(connection, module, result)
                 
                 if api_response:
                     
@@ -950,7 +910,7 @@ def main():
             if eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
                     
-                    api_response = update_ldap_add(fw, module, result)
+                    api_response = update_ldap_add(connection, module, result)
                    
             
                     if api_response:
@@ -965,7 +925,7 @@ def main():
             if not eval_servername(module, exist_settings):
                 if eval_changed(module, exist_settings):
                     
-                    api_response = update_ldap_update(fw, module, result)
+                    api_response = update_ldap_update(connection, module, result)
                     
             
                     if api_response:
@@ -981,7 +941,7 @@ def main():
         
         if eval_list_new_servername(module, exist_settings):
                     
-                    api_response = update_ldap_add(fw, module, result)
+                    api_response = update_ldap_add(connection, module, result)
                     
             
                     if api_response:
@@ -996,7 +956,7 @@ def main():
     
             if eval_list_update_server(module, exist_settings):
                 
-                api_response = update_ldap_update(fw, module, result)
+                api_response = update_ldap_update(connection, module, result)
                     
                 if api_response:
                     if (api_response["Response"]["LDAPServer"]["Status"]["#text"] == "Configuration applied successfully."):

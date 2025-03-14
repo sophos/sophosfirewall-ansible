@@ -61,11 +61,6 @@ author:
 EXAMPLES = r"""
 - name: CREATE MAC HOST
   sophos.sophos_firewall.sfos_xmlapi:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     xml_tag: MACHost
     data: |
             <MACHost>
@@ -75,15 +70,9 @@ EXAMPLES = r"""
                 <MACAddress>00:16:76:49:33:FF</MACAddress>
             </MACHost>
     state: present
-  delegate_to: localhost
 
 - name: UPDATE MAC HOST
   sophos.sophos_firewall.sfos_xmlapi:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     xml_tag: MACHost
     data: |
             <MACHost>
@@ -93,27 +82,15 @@ EXAMPLES = r"""
                 <MACAddress>00:16:76:49:01:01</MACAddress>
             </MACHost>
     state: updated
-  delegate_to: localhost
 
 - name: GET MAC HOST
   sophos.sophos_firewall.sfos_xmlapi:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     xml_tag: MACHost
     name: TESTMACHOST1
     state: query
-  delegate_to: localhost
 
 - name: REMOVE MAC HOST
   sophos.sophos_firewall.sfos_xmlapi:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: TESTMACHOST1
     xml_tag: MACHost
     state: absent
@@ -144,13 +121,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def query(fw_obj, module, result):
+def query(connection, module, result):
     """Retrieve data from Sophos Firewall using XML tag.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -170,30 +148,31 @@ def query(fw_obj, module, result):
             if "Name" in xml_data[xml_tag]:
                 name = xml_data[xml_tag]["Name"]
 
+    resp = {}
+
     try:
         if name:
-            resp = fw_obj.get_tag_with_filter(xml_tag=xml_tag, key="Name", value=name)
+            resp = connection.invoke_sdk("get_tag_with_filter", module_args={"xml_tag": xml_tag, "key":"Name", "value":name})
         if key and not name:
-            resp = fw_obj.get_tag_with_filter(xml_tag=xml_tag, key=key, value=value)
+            resp = connection.invoke_sdk("get_tag_with_filter", module_args={"xml_tag": xml_tag, "key": key, "value": value})
         if not key and not name:
-            resp = fw_obj.get_tag(xml_tag=xml_tag)
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+            resp = connection.invoke_sdk("get_tag", module_args={"xml_tag": xml_tag})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def create(fw_obj, module, result):
+    return {"exists": True, "api_response": resp["response"]}
+
+def create(connection, module, result):
     """Perform API add operation on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -202,22 +181,20 @@ def create(fw_obj, module, result):
     """
 
     try:
-        resp = fw_obj.submit_xml(template_data=module.params.get("data"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("submit_xml", module_args={"template_data":module.params.get("data")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def remove(fw_obj, module, result):
+    return resp["response"]
+
+def remove(connection, module, result):
     """Remove an object from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -225,24 +202,23 @@ def remove(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(
-            xml_tag=module.params.get("xml_tag"), name=module.params.get("name")
+        resp = connection.invoke_sdk("remove", module_args={
+            "xml_tag": module.params.get("xml_tag"), "name": module.params.get("name")
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def update(fw_obj, module, result):
+    return resp["response"]
+
+def update(connection, module, result):
     """Perform API update operation on Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -251,27 +227,21 @@ def update(fw_obj, module, result):
     """
 
     try:
-        resp = fw_obj.submit_xml(
-            template_data=module.params.get("data"), set_operation="update"
+        resp = connection.invoke_sdk("submit_xml", module_args={
+            "template_data": module.params.get("data"), "set_operation": "update"
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"type": "str"},
         "xml_tag": {"type": "str", "required": True},
         "key": {"type": "str"},
@@ -296,18 +266,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
-    exist_check = query(fw, module, result)
+
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = query(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -318,7 +289,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create(fw, module, result)
+        api_response = create(connection, module, result)
         if (
             api_response["Response"][module.params.get("xml_tag")]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -330,7 +301,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove(fw, module, result)
+        api_response = remove(connection, module, result)
         if (
             api_response["Response"][module.params.get("xml_tag")]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -346,10 +317,8 @@ def main():
         xml_data = parse(module.params.get("data"))
         exist_check["api_response"]["Response"][xml_tag].pop("@transactionid")
 
-        # module.exit_json(msg=f"xml_data: {xml_data}, exist_check: {exist_check['api_response']['Response']}")
-
         if exist_check["api_response"]["Response"][xml_tag] != xml_data[xml_tag]:
-            api_response = update(fw, module, result)
+            api_response = update(connection, module, result)
             if (
                 api_response["Response"][xml_tag]["Status"]["#text"]
                 == "Configuration applied successfully."
