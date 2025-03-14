@@ -2,36 +2,47 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-- name: CHECK VARS
+- name: CHECK REQUIRED VARS
   ansible.builtin.fail:
     msg: | 
       Please ensure these variables are set in tests/integration/integration_config.yml: 
-      sfos_username, sfos_password, sfos_hostname, sfos_port, sfos_verify
-  when: sfos_username is not defined or
-        sfos_password is not defined or
-        sfos_hostname is not defined or
-        sfos_port is not defined or
-        sfos_verify is not defined
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
 
-- name: SET VARS
-  set_fact:
-    sfos_connection_params: &sfos_connection_params
-      username: "{{ sfos_username }}"
-      password: "{{ sfos_password }}"
-      hostname: "{{ sfos_hostname }}"
-      port: "{{ sfos_port }}"
-      verify: "{{ sfos_verify }}"
-  no_log: true
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
 
 - name: ENSURE igt_testuser DOES NOT EXIST
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     state: absent
    
 - name: CREATE USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     name: Integration TestUser
     description: Created by integration testing
@@ -52,7 +63,6 @@
 
 - name: QUERY USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     state: query
   register: query_user
@@ -69,7 +79,6 @@
 
 - name: CREATE EXISTING USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     name: Integration TestUser
     description: Created by integration testing
@@ -89,7 +98,6 @@
 
 - name: UPDATE USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     name: Integration TestUser
     description: Updated by integration test
@@ -105,7 +113,6 @@
 
 - name: QUERY USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     state: query
   register: query_user
@@ -118,7 +125,6 @@
 
 - name: REMOVE igt_testuser
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     state: absent
   register: remove_user
@@ -132,7 +138,6 @@
 
 - name: REMOVE NONEXISTING USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     state: absent
   register: remove_nonexist
@@ -145,7 +150,6 @@
 
 - name: UPDATE NONEXISTING USER
   sophos.sophos_firewall.sfos_user:
-    <<: *sfos_connection_params
     user: igt_testuser
     description:  Updated description
     state: updated
