@@ -10,23 +10,6 @@ class ModuleDocFragment(object):
     BASE = r"""
 requirements:
   - sophosfirewall-python
-
-notes:
-  - Beginning in version 2.0.0, this module requires use of an httpapi connection plugin.
-  - Existing playbooks from versions prior to 2.0.0 will need to be updated, removing C(username), C(password), C(hostname), C(port) and C(verify) arguments from tasks.
-  - These settings can now be configured as inventory, playbook, or task variables. Example inventory configuration::
-
-      all:
-        hosts:
-          testfirewall:
-            ansible_host: <firewall_ip_or_hostname>
-        vars:
-          ansible_user: <firewall_username>
-          ansible_password: <firewall_password>
-          ansible_connection: ansible.netcommon.httpapi
-          ansible_httpapi_validate_certs: false
-          ansible_httpapi_port: 4444
-          ansible_network_os: sophos.sophos_firewall.sfos
-
-  - The C(delegate_to) parameter is also no longer required, and should be removed as it will cause tasks to fail.
+  - Beginning in version 2.0.0, this module requires use of an httpapi connection plugin. See the  R(HTTPAPI example,ansible_collections.sophos.sophos_firewall.docsite.httpapi_example) for details.
+options: {}
 """
