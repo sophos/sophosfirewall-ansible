@@ -6,11 +6,6 @@
   tasks:
     - name: Create IPSec Connection with Tunnel Interface
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_Tunnel
         description: Testing IPSec Connection from Ansible
         connection_type: TunnelInterface
@@ -25,16 +20,10 @@
         remote_id_type: IP Address
         remote_id: 2.2.2.2
         state: present
-      delegate_to: localhost
       tags: tunnel
 
     - name: Create IPSec Connection Site-to-Site
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_S2S
         description: Testing IPSec Connection from Ansible
         connection_type: SiteToSite
@@ -51,16 +40,10 @@
         remote_subnet: 
           - TESTVPNSUB2
         state: present
-      delegate_to: localhost
       tags: site-to-site
 
     - name: Create IPSec Connection Host-to-Host
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_H2H
         description: Testing IPSec Connection from Ansible
         connection_type: HostToHost
@@ -71,17 +54,11 @@
         listening_interface: PortB
         gateway_address: 10.100.100.10
         state: present
-      delegate_to: localhost
       tags: host-to-host
 
 
     - name: Update IPSec Connection
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_S2S
         description: Description updated by Ansible
         gateway_address: 10.10.10.1
@@ -91,70 +68,43 @@
           - TESTVPNSUB2
         listening_interface: PortB
         state: updated
-      delegate_to: localhost
       tags: update
 
     - name: Update IPSec Tunnel
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_Tunnel
         description: Description updated by Ansible
         gateway_address: 10.10.10.1
         listening_interface: PortB
         state: updated
-      delegate_to: localhost
       tags: update_tunnel
 
     - name: Activate IPSec Connection
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_S2S
         active: false
         state: updated
-      delegate_to: localhost
       tags: activate
 
     - name: Establish IPSec Connection
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        name: Test_IPSec_Connection
+        name: Test_IPSec_Connection_S2S
         connection: True
         state: updated
-      delegate_to: localhost
       tags: establish
 
     - name: Query IPSec Connection
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: Test_IPSec_Connection_Tunnel
         state: query
-      delegate_to: localhost
       tags: query
 
     - name: Remove IPSec Connection
       sophos.sophos_firewall.sfos_ipsec_connection:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        name: Test_IPSec_Connection
+        name: "{{ item }}"
         state: absent
-      delegate_to: localhost
+      loop:
+        - Test_IPSec_Connection_S2S
+        # - Test_IPSec_Connection_Tunnel
+        # - Test_IPSec_Connection_H2H
       tags: remove

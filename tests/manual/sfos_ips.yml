@@ -6,11 +6,5 @@
   tasks:
     - name: Manage IPS protection
       sophos.sophos_firewall.sfos_ips:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         enabled: true
         state: updated
-      delegate_to: localhost

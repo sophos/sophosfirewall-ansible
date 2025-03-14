@@ -6,11 +6,6 @@
   tasks:
     - name: UPDATE TIME SETTINGS
       sophos.sophos_firewall.sfos_time:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         # timezone: Europe/London
         # date:
         #   year: 2024
@@ -21,4 +16,3 @@
           minute: 01
           second: 01
         state: updated
-      delegate_to: localhost

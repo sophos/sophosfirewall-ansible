@@ -6,23 +6,12 @@
   tasks:
     - name: Query syslog server
       sophos.sophos_firewall.sfos_syslog:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TestSyslog1
         state: query
-      delegate_to: localhost
       tags: query
 
     - name: Create syslog server, all logging enabled
       sophos.sophos_firewall.sfos_syslog:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TestSyslog1
         address: 10.10.1.100
         udp_port: 514
@@ -32,30 +21,18 @@
         format: Device standard
         default_logging: Enable
         state: present
-      delegate_to: localhost
       tags: create
 
     - name: Update syslog server, change UDP port
       sophos.sophos_firewall.sfos_syslog:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TestSyslog1
         address: 10.10.1.100
         udp_port: 515
         state: updated
-      delegate_to: localhost
       tags: update_udp
 
     - name: Update syslog server, all logging disabled
       sophos.sophos_firewall.sfos_syslog:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TestSyslog1
         log_settings:
           security_policy:
@@ -120,17 +97,10 @@
             route: Disable
             sla: Disable
         state: updated
-      delegate_to: localhost
       tags: update_logging
 
     - name: Remove syslog server
       sophos.sophos_firewall.sfos_syslog:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: TestSyslog1
         state: absent
-      delegate_to: localhost
       tags: remove

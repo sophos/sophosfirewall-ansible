@@ -6,11 +6,6 @@
   tasks:
     - name: Update Azure AD SSO new
       sophos.sophos_firewall.sfos_authentication_azure:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         servername: Sophostest
         applicationid: '12345-12345-12345-12345-12345'
         tenantid: '123456-123456-123456-123456-123456'
@@ -34,15 +29,9 @@
                 - ReadOnly
                 - Audit Admin
         state: updated
-      delegate_to: localhost
 
     - name: Update Azure AD SSO new with User
       sophos.sophos_firewall.sfos_authentication_azure:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         servername: Sophostest990
         applicationid: '1234567-1234567-1234567-1234567-1234567'
         tenantid: '1234568-1234568-123456-123456-123456'
@@ -66,4 +55,3 @@
                 - ReadOnly
                 - Audit Admin
         state: updated
-      delegate_to: localhost

@@ -6,16 +6,10 @@
   tasks:
     - name: UPDATE DNS SETTINGS
       sophos.sophos_firewall.sfos_dns:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         ipv4_settings:
             dns_source: Static
             dns1: 1.1.1.1
             dns2: 2.2.2.2
-            dns3: 3.3.3.3
+            dns3: 4.4.4.4
         dnsquery_config: ChooseIPv4DNSServerOverIPv6
         state: updated
-      delegate_to: localhost

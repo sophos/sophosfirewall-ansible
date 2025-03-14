@@ -7,11 +7,6 @@
 
     - name: XMLAPI MODULE
       sophos.sophos_firewall.sfos_xmlapi:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         xml_tag: MACHost
         name: "{{ item.name }}"
         # key: Name
@@ -25,7 +20,6 @@
                   <MACAddress>{{ item.mac }}</MACAddress>
               </MACHost>
         state: query
-      delegate_to: localhost
       loop:
         - name: TESTMACHOST1
           mac: 00:16:76:49:33:01

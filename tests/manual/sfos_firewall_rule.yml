@@ -6,11 +6,6 @@
   tasks:
     - name: ADD FIREWALL RULE
       sophos.sophos_firewall.sfos_firewall_rule:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: IGT_TESTRULE
         position: before
         status: disable
@@ -22,5 +17,4 @@
         service_list:
           - HTTPS
         action: accept
-        state: query
-      delegate_to: localhost
+        state: present

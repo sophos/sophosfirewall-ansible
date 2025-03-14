@@ -6,37 +6,20 @@
   tasks:
     - name: Update hostname settings
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         hostname_settings:
           hostname: sophos-firewall-dev1
           description: Automation Testing 1
         state: updated
-      delegate_to: localhost
-
+      
     - name: Update webadmin settings
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         webadmin_settings:
           vpnportal_https_port: 444
           userportal_https_port: 4445
         state: updated
-      delegate_to: localhost
-
+      
     - name: Update loginsecurity settings
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         login_security:
           logout_session: 120
           block_login: Enable
@@ -44,15 +27,9 @@
           duration: 30
           minutes: 1
         state: updated
-      delegate_to: localhost
-
+      
     - name: Update administrator password complexity settings
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         password_complexity:
           complexity_check: Enable
           enforce_min_length: Enable
@@ -61,36 +38,18 @@
           include_special: Enable
           min_length: 10
         state: updated
-      delegate_to: localhost
 
     - name: Update login disclaimer
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        login_disclaimer: true
+        login_disclaimer: Enable
         state: updated
-      delegate_to: localhost
 
     - name: Query admin settings
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         state: query
-      delegate_to: localhost
 
     - name: REVERT SETTINGS TO INITIAL
       sophos.sophos_firewall.sfos_admin_settings:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         hostname_settings:
           hostname: sophos-firewall-dev1
           description: Automation Testing 1
@@ -112,4 +71,3 @@
           min_length: 10
         login_disclaimer: Disable
         state: updated
-      delegate_to: localhost
