@@ -190,3 +190,29 @@ releases:
       name: sfos_ipsec_connection
       namespace: ''
     release_date: '2025-02-25'
+  2.0.0:
+    changes:
+      breaking_changes:
+      - Existing playbooks developed on versions prior to 2.x must be modified with
+        these changes in order to function
+      - The ``delegate_to`` localhost is no longer required on tasks, and will cause
+        the task to fail if configured
+      - The arguments ``username``, ``password``, ``port``, and ``verify`` arguments
+        are no longer supported on tasks
+      - The variable ``ansible_network_os`` must be set to ``sophos.sophos_firewall.sfos``
+      release_summary: 'This release implements an HTTPAPI plugin for managing connections.
+        It eliminates the need to define credentials at each task and removes the
+        need to delegate tasks to localhost.
+
+        Please see the `HTTPAPI Plugin Example <https://sophosfirewall-ansible.readthedocs.io/en/latest/docsite/httpapi_example.html>`_
+        for details.
+
+        '
+    fragments:
+    - 2.0.0.yaml
+    plugins:
+      httpapi:
+      - description: HttpApi plugin for Sophos Firewall (SFOS).
+        name: sfos
+        namespace: null
+    release_date: '2025-03-17'
