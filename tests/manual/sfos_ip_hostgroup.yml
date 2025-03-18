@@ -6,15 +6,9 @@
   tasks:
     - name: ADD IP HOSTGROUP
       sophos.sophos_firewall.sfos_ip_hostgroup:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: IGT_TESTHOSTGROUP
-        # host_list:
-        #   - TESTHOST3
-        # description: Test hostgroup
-        # action: remove        
-        state: absent
-      delegate_to: localhost
+        host_list:
+          - testhost
+        description: Test hostgroup
+        action: add        
+        state: present

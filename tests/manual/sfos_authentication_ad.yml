@@ -6,11 +6,6 @@
   tasks:
     - name: Update AD Auth
       sophos.sophos_firewall.sfos_authentication_ad:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         servername: Test
         serveraddress: '192.168.0.171'
         ad_port: '636'
@@ -18,12 +13,11 @@
         adsusername: admin
         ad_password: testtest
         connectionsecurity: SSL
-        validcertreq: Disable
+        validcertreq: Enable
         displaynameattribute: dnn
         emailaddressattribute: mail
-        domainname: sophos.com
+        domainname: sophosapps.com
         searchqueries: 
         - dc=sophos,dc=cof
         - dc=sophos,dc=ir
-        state: updated
-      delegate_to: localhost
+        state: query

@@ -1,25 +1,13 @@
 # Copyright 2023 Sophos Ltd.  All rights reserved.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-- name: SET VARS
-  set_fact:
-    sfos_connection_params: &sfos_connection_params
-      username: "{{ sfos_username }}"
-      password: "{{ sfos_password }}"
-      hostname: "{{ sfos_hostname }}"
-      port: "{{ sfos_port }}"
-      verify: "{{ sfos_verify }}"
-  no_log: true
-
 - name: ENSURE IGT_TESTNETWORK DOES NOT EXIST
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     state: absent
 
 - name: CREATE IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     network: 1.1.1.0
     mask: 255.255.255.0
@@ -36,7 +24,6 @@
 
 - name: QUERY IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     state: query
   register: query_testhost
@@ -52,7 +39,6 @@
 
 - name: CREATE EXISTING IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     network: 1.1.1.0
     mask: 255.255.255.0
@@ -68,7 +54,6 @@
 
 - name: UPDATE IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     network: 2.2.2.0
     mask: 255.255.255.0
@@ -85,7 +70,6 @@
 
 - name: UPDATE IGT_TESTNETWORK NO CHANGE
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     network: 2.2.2.0
     mask: 255.255.255.0
@@ -103,7 +87,6 @@
 
 - name: REMOVE IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     state: absent
   register: remove_testhost
@@ -117,7 +100,6 @@
 
 - name: REMOVE NONEXISTING IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     state: absent
   register: remove_nonexist
@@ -130,7 +112,6 @@
 
 - name: UPDATE NONEXISTING IGT_TESTNETWORK
   sophos.sophos_firewall.sfos_ip_host:
-    <<: *sfos_connection_params
     name: IGT_TESTNETWORK
     ip_address: 2.2.2.2
     state: updated

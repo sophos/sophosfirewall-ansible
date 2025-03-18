@@ -1,0 +1,15 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: ADD FQDN HOSTGROUP
+      sophos.sophos_firewall.sfos_fqdn_hostgroup:
+        name: TESTFQDNHOSTGROUP
+        fqdn_host_list:
+          - TESTFQDNHOST1
+        description: Test hostgroup
+        # action: remove        
+        state: present

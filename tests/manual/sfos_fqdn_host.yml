@@ -6,11 +6,6 @@
   tasks:
     - name: ADD FQDN HOST
       sophos.sophos_firewall.sfos_fqdn_host:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: "{{ item.name }}"
         fqdn: "{{ item.fqdn }}"
         # fqdn_group_list:
@@ -22,19 +17,3 @@
           fqdn: testsophos1.com
         - name: TESTFQDNHOST2
           fqdn: testsophos2.com
-      delegate_to: localhost
-
-    - name: ADD FQDN HOSTGROUP
-      sophos.sophos_firewall.sfos_fqdn_hostgroup:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        name: TESTFQDNHOSTGROUP
-        fqdn_host_list:
-          - TESTFQDNHOST1
-        description: Test hostgroup
-        # action: remove        
-        state: present
-      delegate_to: localhost

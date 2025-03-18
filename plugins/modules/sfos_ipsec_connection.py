@@ -173,11 +173,6 @@ author:
 EXAMPLES = r"""
 - name: Create IPSec Connection Site-to-Site
   sophos.sophos_firewall.sfos_ipsec_connection:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: Test_IPSec_Connection_S2S
     description: Testing IPSec Connection from Ansible
     connection_type: SiteToSite
@@ -194,15 +189,9 @@ EXAMPLES = r"""
     remote_subnet: 
         - TESTVPNSUB2
     state: present
-  delegate_to: localhost
 
 - name: Create IPSec Connection with Tunnel Interface
   sophos.sophos_firewall.sfos_ipsec_connection:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: Test_IPSec_Connection_Tunnel
     description: Testing IPSec Connection from Ansible
     connection_type: TunnelInterface
@@ -217,44 +206,25 @@ EXAMPLES = r"""
     remote_id_type: IP Address
     remote_id: 2.2.2.2
     state: present 
-  delegate_to: localhost
   tags: tunnel
 
 - name: Query IPSec Connection
   sophos.sophos_firewall.sfos_ipsec_connection:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: Test IPSec Connection
     state: query
-  delegate_to: localhost
 
 - name: Activate IPSec Connection
   sophos.sophos_firewall.sfos_ipsec_connection:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     enabled: true
     name: Test IPSec Connection
     active: true
     state: updated
-  delegate_to: localhost
 
 - name: Remove IPSec Connection
   sophos.sophos_firewall.sfos_ipsec_connection:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     enabled: true
     name: snmpv3user
     state: absent
-  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -287,6 +257,7 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
 def get_with_default(d, key, default):
@@ -294,11 +265,11 @@ def get_with_default(d, key, default):
     return default if value is None else value
 
 
-def get_ipsec_connection(fw_obj, module, result):
+def get_ipsec_connection(connection, module, result):
     """Get IPSec Connection from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -318,35 +289,37 @@ def get_ipsec_connection(fw_obj, module, result):
     </Get>
 """
     try:
-        resp = fw_obj.submit_xml(
-            template_data=payload,
-            set_operation=None,
-            template_vars={"name": module.params.get("name")},
+        resp = connection.invoke_sdk("submit_xml", module_args={
+            "template_data": payload,
+            "set_operation":None,
+            "template_vars": {"name": module.params.get("name")},
+            }
         )
 
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error, **result))
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+    
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
     if (
-        resp["Response"]["VPNIPSecConnection"]["Configuration"]["Status"]
+        resp["response"]["Response"]["VPNIPSecConnection"]["Configuration"]["Status"]
         == "No. of records Zero."
     ):
-        return {"exists": False, "api_response": resp}
+        return {"exists": False, "api_response": resp["response"]}
 
-    return {"exists": True, "api_response": resp}
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def create_ipsec_connection(fw_obj, module, result):
+def create_ipsec_connection(connection, module, result):
     """Create an IPSec VPN Connection on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -441,26 +414,30 @@ def create_ipsec_connection(fw_obj, module, result):
     """
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload, template_vars=module.params, debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload, 
+                "template_vars": module.params,
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+    
+    if not resp["success"]:
         output = output_buffer.getvalue() if module._verbosity >= 2 else ""
-        if "Entity having same parameter details" in error.__str__():
+        if "Entity having same parameter details" in resp["response"]:
             module.fail_json(
-                msg=f"ERROR: {error.__str__()},  INFO: Possible causes: 1. Gateway address already in use on another VPN connection 2. One or more specified local or remote subnets does not exist on the firewall.",
+                msg=f"ERROR: {resp['response']},  INFO: Possible causes: 1. Gateway address already in use on another VPN connection 2. One or more specified local or remote subnets does not exist on the firewall.",
                 **result,
             )
-        if "Configuration parameters validation failed" in error.__str__():
-            error_dict = ast.literal_eval(error.__str__())
+        if "Configuration parameters validation failed" in resp['response']:
+            error_dict = ast.literal_eval(resp['response'])
             if (
                 error_dict.get("InvalidParams").get("Params")
                 == "/VPNIPSecConnection/Configuration/RemoteNetwork/Network"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate one or more specified remote subnets does not exist on the firewall.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate one or more specified remote subnets does not exist on the firewall.",
                     **result,
                 )
             elif (
@@ -468,7 +445,7 @@ def create_ipsec_connection(fw_obj, module, result):
                 == "/VPNIPSecConnection/Configuration/LocalSubnet"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate one or more specified local subnets does not exist on the firewall.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate one or more specified local subnets does not exist on the firewall.",
                     **result,
                 )
             elif (
@@ -476,27 +453,23 @@ def create_ipsec_connection(fw_obj, module, result):
                 == "/VPNIPSecConnection/Configuration/AliasLocalWANPort"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate a missing or invalid value specified for listening_interface argument.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate a missing or invalid value specified for listening_interface argument.",
                     **result,
                 )
             else:
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate invalid values for arguments passed to the module. INVALID_ARGS: {error_dict.get('InvalidParams').get('Params')} {output}",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate invalid values for arguments passed to the module. INVALID_ARGS: {error_dict.get('InvalidParams').get('Params')} {output}",
                     **result,
                 )
 
-        module.fail_json(msg="API Error: {0},{1}".format(error, output), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-
-    return resp
+    return resp["response"]
 
 
-def update_ipsec_connection(fw_obj, exist_settings, module, result):
+def update_ipsec_connection(connection, exist_settings, module, result):
     """Update IPSec connection configuration on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         exist_settings (dict): API response containing existing IPSec connection configuration
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
@@ -579,34 +552,31 @@ def update_ipsec_connection(fw_obj, exist_settings, module, result):
 
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                set_operation="update",
-                template_vars=template_vars,
-                debug=True,
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "set_operation": "update",
+                "template_vars": template_vars,
+                "debug":True,
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+    
+    if not resp["success"]:
         output = output_buffer.getvalue() if module._verbosity >= 2 else ""
-        if (
-            module.params.get("connection")
-            and "Operation could not be performed on Entity." in error.__str__()
-        ):
-            module.fail_json(msg="VPN connection could not be established")
-        if "Entity having same parameter details" in error.__str__():
+        if "Entity having same parameter details" in resp["response"]:
             module.fail_json(
-                msg=f"ERROR: {error.__str__()}, INFO: Possible causes: 1. Gateway address already in use on another VPN connection 2. One or more specified local or remote subnets does not exist on the firewall.",
+                msg=f"ERROR: {resp['response']},  INFO: Possible causes: 1. Gateway address already in use on another VPN connection 2. One or more specified local or remote subnets does not exist on the firewall.",
                 **result,
             )
-        if "Configuration parameters validation failed" in error.__str__():
-            error_dict = ast.literal_eval(error.__str__())
+        if "Configuration parameters validation failed" in resp['response']:
+            error_dict = ast.literal_eval(resp['response'])
             if (
                 error_dict.get("InvalidParams").get("Params")
                 == "/VPNIPSecConnection/Configuration/RemoteNetwork/Network"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate one or more specified remote subnets does not exist on the firewall.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate one or more specified remote subnets does not exist on the firewall.",
                     **result,
                 )
             elif (
@@ -614,7 +584,7 @@ def update_ipsec_connection(fw_obj, exist_settings, module, result):
                 == "/VPNIPSecConnection/Configuration/LocalSubnet"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate one or more specified local subnets does not exist on the firewall.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate one or more specified local subnets does not exist on the firewall.",
                     **result,
                 )
             elif (
@@ -622,20 +592,16 @@ def update_ipsec_connection(fw_obj, exist_settings, module, result):
                 == "/VPNIPSecConnection/Configuration/AliasLocalWANPort"
             ):
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate a missing or invalid value specified for listening_interface argument.",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate a missing or invalid value specified for listening_interface argument.",
                     **result,
                 )
             else:
                 module.fail_json(
-                    msg=f"ERROR: {error.__str__()}, INFO: This error may indicate invalid values for arguments passed to the module. INVALID_ARGS: {error_dict.get('InvalidParams').get('Params')} {output}",
+                    msg=f"ERROR: {resp['response']}, INFO: This error may indicate invalid values for arguments passed to the module. INVALID_ARGS: {error_dict.get('InvalidParams').get('Params')} {output}",
                     **result,
                 )
-        else:
-            module.fail_json(msg="API Error: {0},{1}".format(error, output), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
 
-    return resp
+    return resp["response"]
 
 
 def eval_changed(module, exist_settings):
@@ -732,11 +698,11 @@ def eval_changed(module, exist_settings):
     return False
 
 
-def remove_ipsec_connection(fw_obj, module, result):
+def remove_ipsec_connection(connection, module, result):
     """Remove an IPSec Connection from Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -753,19 +719,19 @@ def remove_ipsec_connection(fw_obj, module, result):
     </Remove>
     """
     try:
-        resp = fw_obj.submit_xml(
-            template_data=payload,
-            set_operation=None,
-            template_vars={"name": module.params.get("name")},
+        resp = connection.invoke_sdk("submit_xml", module_args={
+            "template_data": payload,
+            "set_operation": None,
+            "template_vars": {"name": module.params.get("name")},
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def no_spaces(value):
@@ -777,11 +743,6 @@ def no_spaces(value):
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"type": "str", "required": True},
         "description": {"type": "str", "required": False},
         "ip_version": {
@@ -954,19 +915,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_settings = get_ipsec_connection(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_ipsec_connection(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -977,7 +938,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_settings["exists"]:
-        api_response = create_ipsec_connection(fw, module, result)
+        api_response = create_ipsec_connection(connection, module, result)
         if (
             "Configuration applied successfully"
             in api_response["Response"]["Configuration"]["Status"]["#text"]
@@ -989,7 +950,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_settings["exists"]:
-        api_response = remove_ipsec_connection(fw, module, result)
+        api_response = remove_ipsec_connection(connection, module, result)
         if (
             "Configuration applied successfully"
             in api_response["Response"]["VPNIPSecConnection"]["Configuration"][
@@ -1005,7 +966,7 @@ def main():
     elif state == "updated" and exist_settings["exists"]:
         if eval_changed(module, exist_settings):
             api_response = update_ipsec_connection(
-                fw, exist_settings["api_response"], module, result
+                connection, exist_settings["api_response"], module, result
             )
 
             if api_response:

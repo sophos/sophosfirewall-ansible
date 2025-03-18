@@ -67,26 +67,15 @@ EXAMPLES = r"""
 
 - name: Create FQDN Host Group
   sophos.sophos_firewall.sfos_fqdn_hostgroup:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTFQDNHOSTGROUP
     description: Test FQDN Host Group
     fqdn_host_list:
       - TESTHOST1
       - TESTHOST2
     state: present
-  delegate_to: localhost
 
 - name: Add Hosts to FQDN Host Group
   sophos.sophos_firewall.sfos_fqdn_hostgroup:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: myfirewallhostname.sophos.net
-    port: 4444
-    verify: false
     name: TESTHOSTGROUP
     description: Test Host Group
     fqdn_host_list:
@@ -94,7 +83,6 @@ EXAMPLES = r"""
       - TESTHOST4
     action: add
     state: updated
-  delegate_to: localhost
 """
 
 RETURN = r"""
@@ -121,13 +109,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_fqdn_hostgroup(fw_obj, module, result):
+def get_fqdn_hostgroup(connection, module, result):
     """Get FQDN Host Group from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (SophosFirewall): SophosFirewall object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -135,24 +124,23 @@ def get_fqdn_hostgroup(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_fqdn_hostgroup(name=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_fqdn_hostgroup", module_args={"name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def create_fqdn_hostgroup(fw_obj, module, result):
+    return {"exists": True, "api_response": resp["response"]}
+
+def create_fqdn_hostgroup(connection, module, result):
     """Create an FQDN Host Group on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (SophosFirewall): SophosFirewall object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -160,26 +148,26 @@ def create_fqdn_hostgroup(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.create_fqdn_hostgroup(
-            name=module.params.get("name"),
-            description=module.params.get("description"),
-            fqdn_host_list=module.params.get("fqdn_host_list"),
+        resp = connection.invoke_sdk("create_fqdn_hostgroup", module_args={
+            "name": module.params.get("name"),
+            "description": module.params.get("description"),
+            "fqdn_host_list": module.params.get("fqdn_host_list"),
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
-def remove_fqdn_hostgroup(fw_obj, module, result):
+def remove_fqdn_hostgroup(connection, module, result):
     """Remove an FQDN Host Group from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (SophosFirewall): SophosFirewall object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -187,22 +175,20 @@ def remove_fqdn_hostgroup(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="FQDNHostGroup", name=module.params.get("name"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "FQDNHostGroup", "name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def update_fqdn_hostgroup(fw_obj, module, result):
+    return resp["response"]
+
+def update_fqdn_hostgroup(connection, module, result):
     """Update an existing FQDN Host Group on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (SophosFirewall): SophosFirewall object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -210,30 +196,25 @@ def update_fqdn_hostgroup(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.update_fqdn_hostgroup(
-            name=module.params.get("name"),
-            fqdn_host_list=module.params.get("fqdn_host_list"),
-            description=module.params.get("description"),
-            action=module.params.get("action"),
+        resp = connection.invoke_sdk("update_fqdn_hostgroup", module_args={
+            "name": module.params.get("name"),
+            "fqdn_host_list": module.params.get("fqdn_host_list"),
+            "description": module.params.get("description"),
+            "action": module.params.get("action"),
+            }
         )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "name": {"required": True},
         "description": {"type": "str", "default": None},
         "fqdn_host_list": {"type": "list", "default": [], "elements": "str"},
@@ -259,18 +240,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
-    exist_check = get_fqdn_hostgroup(fw, module, result)
+
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_check = get_fqdn_hostgroup(connection, module, result)
     result["api_response"] = exist_check["api_response"]
 
     if state == "query":
@@ -281,7 +263,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_check["exists"]:
-        api_response = create_fqdn_hostgroup(fw, module, result)
+        api_response = create_fqdn_hostgroup(connection, module, result)
         if (
             api_response["Response"]["FQDNHostGroup"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -293,7 +275,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_check["exists"]:
-        api_response = remove_fqdn_hostgroup(fw, module, result)
+        api_response = remove_fqdn_hostgroup(connection, module, result)
         if (
             api_response["Response"]["FQDNHostGroup"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -310,7 +292,7 @@ def main():
                 "FQDNHost"
             ]
         ) != sorted(module.params.get("fqdn_host_list")):
-            api_response = update_fqdn_hostgroup(fw, module, result)
+            api_response = update_fqdn_hostgroup(connection, module, result)
             if (
                 api_response["Response"]["FQDNHostGroup"]["Status"]["#text"]
                 == "Configuration applied successfully."

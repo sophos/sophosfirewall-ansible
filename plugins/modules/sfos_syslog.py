@@ -379,11 +379,6 @@ author:
 EXAMPLES = r"""
 - name: Create syslog server, all logging enabled
   sophos.sophos_firewall.sfos_syslog:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: TestSyslog
     address: 10.10.1.100
     udp_port: 514
@@ -393,15 +388,9 @@ EXAMPLES = r"""
     format: Device standard
     default_logging: Enable
     state: present
-  delegate_to: localhost
 
 - name: Create syslog server, disable selected logs
   sophos.sophos_firewall.sfos_syslog:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: TestSyslog
     address: 10.10.1.100
     udp_port: 514
@@ -417,29 +406,18 @@ EXAMPLES = r"""
       content_filtering:
         ssl_tls: Disable
     state: present
-  delegate_to: localhost
+
 
 - name: Query syslog server
   sophos.sophos_firewall.sfos_syslog:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: TestSyslog
     state: query
-  delegate_to: localhost
 
 - name: Remove syslog server
   sophos.sophos_firewall.sfos_syslog:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     name: TestSyslog
     state: absent
-  delegate_to: localhost
+
 """
 
 RETURN = r"""
@@ -470,6 +448,7 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
 payload = """
@@ -564,11 +543,11 @@ def get_with_default(d, key, default):
     value = d.get(key)
     return default if value is None else value
 
-def get_syslog(fw_obj, module, result):
+def get_syslog(connection, module, result):
     """Get current syslog server settings from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -576,31 +555,31 @@ def get_syslog(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag_with_filter("SyslogServers", key="Name", value=module.params.get("name"))
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+        resp = connection.invoke_sdk("get_tag_with_filter", module_args={"xml_tag": "SyslogServers", "key": "Name", "value": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
     
-    if isinstance(resp["Response"]["SyslogServers"], dict):
-        return {"exists": False, "api_response": resp}
-    if isinstance(resp["Response"]["SyslogServers"], list):
-        for syslog_server in resp["Response"]["SyslogServers"]:
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]}
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))    
+
+    if isinstance(resp["response"]["Response"]["SyslogServers"], dict):
+        return {"exists": False, "api_response": resp["response"]}
+    if isinstance(resp["response"]["Response"]["SyslogServers"], list):
+        for syslog_server in resp["response"]["Response"]["SyslogServers"]:
             if syslog_server["Name"] == module.params.get("name"):
-                return {"exists": True, "api_response": resp}
+                return {"exists": True, "api_response": resp["response"]}
 
-    return {"exists": True, "api_response": resp}
+    return {"exists": True, "api_response": resp["response"]}
 
 
-def create_syslog(fw_obj, module, result):
+def create_syslog(connection, module, result):
     """Create an Syslog server configuration on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -612,8 +591,6 @@ def create_syslog(fw_obj, module, result):
 
     default_logging = module.params.get("default_logging")
     log_settings = get_with_default(module.params, "log_settings", {})
-
-    # module.fail_json(msg=f"log_settings: {log_settings}")
 
     security_policy = get_with_default(log_settings, "security_policy", {})
     ips = get_with_default(log_settings, "ips", {})
@@ -629,8 +606,6 @@ def create_syslog(fw_obj, module, result):
     zeroday_protection = get_with_default(log_settings, "zeroday_protection", {})
     sdwan = get_with_default(log_settings, "sdwan", {})
 
-    # test = ips.get("test", default_logging)
-    # module.exit_json(msg=security_policy.get("bridge_acls", "test") == None)
 
     template_vars = {
         "name": module.params.get("name"),
@@ -690,32 +665,27 @@ def create_syslog(fw_obj, module, result):
         "route": get_with_default(sdwan, "route", default_logging)
     }
 
-    # module.exit_json(msg=f"Template_vars: {template_vars}")
-
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-def update_syslog(fw_obj, exist_settings, module, result):
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
+
+def update_syslog(connection, exist_settings, module, result):
     """Update admin settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         exist_settings (dict): Existing settings for the syslog server
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
@@ -811,21 +781,20 @@ def update_syslog(fw_obj, exist_settings, module, result):
 
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation="update",
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "set_operation": "update",
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 
 def eval_changed(module, exist_settings):
@@ -1029,11 +998,11 @@ def eval_changed(module, exist_settings):
     
     return False
 
-def remove_syslog(fw_obj, module, result):
+def remove_syslog(connection, module, result):
     """Remove a Syslog server from Sophos Firewall.
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -1041,24 +1010,18 @@ def remove_syslog(fw_obj, module, result):
         dict: API response
     """
     try:
-        resp = fw_obj.remove(xml_tag="SyslogServers", name=module.params.get("name"))
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    else:
-        return resp
+        resp = connection.invoke_sdk("remove", module_args={"xml_tag": "SyslogServers", "name": module.params.get("name")})
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "enabled": {"type": "bool", "required": False},
         "name": {"type": "str", "required": True},
         "address": {"type": "str", "required": False},
@@ -1183,19 +1146,19 @@ def main():
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
 
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
-
     result = {"changed": False, "check_mode": False}
 
     state = module.params.get("state")
 
-    exist_settings = get_syslog(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_syslog(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -1206,7 +1169,7 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_settings["exists"]:
-        api_response = create_syslog(fw, module, result)
+        api_response = create_syslog(connection, module, result)
         if (
             api_response["Response"]["SyslogServers"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -1218,7 +1181,7 @@ def main():
         result["changed"] = False
 
     elif state == "absent" and exist_settings["exists"]:
-        api_response = remove_syslog(fw, module, result)
+        api_response = remove_syslog(connection, module, result)
         if (
             api_response["Response"]["SyslogServers"]["Status"]["#text"]
             == "Configuration applied successfully."
@@ -1231,7 +1194,7 @@ def main():
 
     elif state == "updated" and exist_settings["exists"]:
         if eval_changed(module, exist_settings):
-            api_response = update_syslog(fw, exist_settings, module, result)
+            api_response = update_syslog(connection, exist_settings, module, result)
 
             if api_response:
                 result["api_response"] = api_response

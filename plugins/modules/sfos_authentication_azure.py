@@ -89,11 +89,6 @@ author:
 EXAMPLES = r'''
 - name: Update Azure AD SSO
   sophos.sophos_firewall.sfos_authentication_azureadsso:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: 4444
-    verify: false
     servername: SophosFirewallSSO
     applicationid: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx'
     tenantid: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx'
@@ -117,7 +112,6 @@ EXAMPLES = r'''
             - ReadOnly
             - Audit Admin
     state: updated
-  delegate_to: localhost
 
 '''
 
@@ -147,13 +141,14 @@ except ImportError as errMsg:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.connection import Connection
 
 
-def get_azure_settings(fw_obj, module, result):
+def get_azure_settings(connection, module, result):
     """Get current settings from Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -161,24 +156,24 @@ def get_azure_settings(fw_obj, module, result):
         dict: Results of lookup
     """
     try:
-        resp = fw_obj.get_tag("azureadsso")['Response']['AzureADSSO']
+        resp = connection.invoke_sdk("get_tag", module_args={"xml_tag": "azureadsso"})
             
-    except SophosFirewallZeroRecords as error:
-        return {"exists": False, "api_response": str(error)}
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(msg="API Error: {0}".format(error), **result)
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-    return {"exists": True, "api_response": resp}
+    if resp["success"] and not resp["exists"]:
+        return {"exists": False, "api_response": resp["response"]['Response']['AzureADSSO']}
 
-def create_azure(fw_obj, module, result):
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return {"exists": True, "api_response": resp["response"]['Response']['AzureADSSO']}
+
+def create_azure(connection, module, result):
     """Create an Azure Server on Sophos Firewall when none exists
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -212,8 +207,6 @@ def create_azure(fw_obj, module, result):
         </AzureADSSO>
     
     """
-    
-    
     template_vars = {
         "name": module.params.get("servername", {}),
         "applicationid": module.params.get("applicationid", {}),
@@ -228,34 +221,29 @@ def create_azure(fw_obj, module, result):
         "identifiervalue": module.params.get("rolemapping").get("identifiertypeandprofile", {}).get("identifiervalue", {}),
         "profileid": module.params.get("rolemapping").get("identifiertypeandprofile", {}).get("profileid", {})
     }
-    
-  
-  
+
     try:
         
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
+
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
     
-    
-    return resp
-    
-def create_azure_user(fw_obj, module, result):
+def create_azure_user(connection, module, result):
         """Create an Azure Server on Sophos Firewall when none exists
 
         Args:
-            fw_obj (SophosFirewall): SophosFirewall object
+            connection (Connection): Ansible Connection object
             module (AnsibleModule): AnsibleModule object
             result (dict): Result output to be sent to the console
 
@@ -276,8 +264,6 @@ def create_azure_user(fw_obj, module, result):
             </AzureADSSO>
         
         """
-        
-        
         template_vars2 = {
             "name": module.params.get("servername", {}),
             "applicationid": module.params.get("applicationid", {}),
@@ -289,39 +275,28 @@ def create_azure_user(fw_obj, module, result):
             "fallbackusergroup": module.params.get("fallbackusergroup", {}),
             "usertype": module.params.get("usertype", {}),
         }
-        
-    
-    
         try:
             
             with contextlib.redirect_stdout(output_buffer):
-                resp = fw_obj.submit_xml(
-                    template_data=payload2,
-                    template_vars=template_vars2,
-                    debug=True
+                resp = connection.invoke_sdk("submit_xml", module_args={
+                    "template_data": payload2,
+                    "template_vars": template_vars2,
+                    "debug": True
+                    }
                 )
-        except SophosFirewallAuthFailure as error:
-            module.fail_json(msg="Authentication error: {0}".format(error), **result)
-        except SophosFirewallAPIError as error:
-            module.fail_json(
-                msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-            )
-        except RequestException as error:
-            module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-        
-        
-        return resp
-        
-    
-    
-    
-    
+        except Exception as error:
+            module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-def update_azure_add(fw_obj, module, result):
+        if not resp["success"]:
+            module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+        return resp["response"]
+
+def update_azure_add(connection, module, result):
     """Add additional Azure server on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -372,29 +347,26 @@ def update_azure_add(fw_obj, module, result):
     
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation="add",
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "set_operation": "add",
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    # module.fail_json(msg=f"{resp['Response']}, {output_buffer.getvalue()}")
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
-def update_azure_add_user(fw_obj, module, result):
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
+
+def update_azure_add_user(connection, module, result):
     """Add additional Azure server on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -429,32 +401,26 @@ def update_azure_add_user(fw_obj, module, result):
     
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload2,
-                template_vars=template_vars2,
-                set_operation="add",
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload2,
+                "template_vars": template_vars2,
+                "set_operation": "add",
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-   
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
+    return resp["response"]
 
-
-def update_azure_update(fw_obj, module, result):
+def update_azure_update(connection, module, result):
     """Update existing azure settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -505,30 +471,26 @@ def update_azure_update(fw_obj, module, result):
     
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation="update",
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "set_operation": "update",
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-def update_azure_update_user(fw_obj, module, result):
+    return resp["response"]
+
+def update_azure_update_user(connection, module, result):
     """Update existing Azure settings on Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -563,26 +525,20 @@ def update_azure_update_user(fw_obj, module, result):
     
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload2,
-                template_vars=template_vars2,
-                set_operation="update",
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload2,
+                "template_vars": template_vars2,
+                "set_operation": "update",
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-   
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
 
-
+    return resp["response"]
 
 def eval_changed(module, exist_settings):
     """Evaluate the provided arguments against existing settings. 
@@ -790,11 +746,11 @@ def eval_list_update_server_user(module, exist_settings):
 
 
 
-def remove_azure(fw_obj, module, result):
+def remove_azure(connection, module, result):
     """Remove a Azure Server on a Sophos Firewall
 
     Args:
-        fw_obj (SophosFirewall): SophosFirewall object
+        connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
 
@@ -814,33 +770,24 @@ def remove_azure(fw_obj, module, result):
     
     try:
         with contextlib.redirect_stdout(output_buffer):
-            resp = fw_obj.submit_xml(
-                template_data=payload,
-                template_vars=template_vars,
-                set_operation=None,
-                debug=True
+            resp = connection.invoke_sdk("submit_xml", module_args={
+                "template_data": payload,
+                "template_vars": template_vars,
+                "set_operation": None,
+                "debug": True
+                }
             )
-    except SophosFirewallAuthFailure as error:
-        module.fail_json(msg="Authentication error: {0}".format(error), **result)
-    except SophosFirewallAPIError as error:
-        module.fail_json(
-            msg="API Error: {0},{1}".format(error, output_buffer.getvalue()), **result
-        )
-    except RequestException as error:
-        module.fail_json(msg="Error communicating to API: {0}".format(error), **result)
-    
-    
-    return resp
+    except Exception as error:
+        module.fail_json("An unexpected error occurred: {0}".format(error), **result)
 
+    if not resp["success"]:
+        module.fail_json(msg="An error occurred: {0}".format(resp["response"]))
+
+    return resp["response"]
 
 def main():
     """Code executed at run time."""
     argument_spec = {
-        "username": {"required": True},
-        "password": {"required": True, "no_log": True},
-        "hostname": {"required": True},
-        "port": {"type": "int", "default": 4444},
-        "verify": {"type": "bool", "default": True},
         "servername": {"type": "str", "required": False},
         "applicationid": {"type": "str", "required": False},
         "tenantid": {"type": "str", "required": False},
@@ -866,14 +813,6 @@ def main():
 
     if not PREREQ_MET["result"]:
         module.fail_json(msg=missing_required_lib(PREREQ_MET["missing_module"]))
-        
-    fw = SophosFirewall(
-        username=module.params.get("username"),
-        password=module.params.get("password"),
-        hostname=module.params.get("hostname"),
-        port=module.params.get("port"),
-        verify=module.params.get("verify"),
-    )
 
     result = {
         "changed": False,
@@ -883,13 +822,21 @@ def main():
     state = module.params.get("state")
     usertype = module.params.get("usertype")
 
-    exist_settings = get_azure_settings(fw, module, result)
+    try:
+        connection = Connection(module._socket_path)
+    except AssertionError as e:
+        module.fail_json(msg="Connection error: Ensure you are targeting a remote host and not using 'delegate_to: localhost'.")
+
+    if not hasattr(connection, "httpapi"):
+        module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
+
+    exist_settings = get_azure_settings(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
     
     
     if state == "absent":
                 
-                api_response = remove_azure(fw, module, result)
+                api_response = remove_azure(connection, module, result)
                
                 if api_response:
                     if api_response['Response']['AzureADSSO']["Status"]["#text"] == "Configuration applied successfully.":
@@ -912,7 +859,7 @@ def main():
         
             if usertype == "Administrator":
                 
-                api_response = create_azure(fw, module, result)
+                api_response = create_azure(connection, module, result)
                 
                 if api_response:
                     if api_response['Response']['AzureADSSO']["Status"]["#text"] == "Configuration applied successfully.":
@@ -923,7 +870,7 @@ def main():
             else:
                 
                 if usertype == "User":
-                    api_response = create_azure_user(fw, module, result)
+                    api_response = create_azure_user(connection, module, result)
                     
                     if api_response:
                         if api_response['Response']['AzureADSSO']["Status"]["#text"] == "Configuration applied successfully.":
@@ -940,7 +887,7 @@ def main():
                 if eval_servername(module, exist_settings):
                     if eval_changed(module, exist_settings):
                        
-                        api_response = update_azure_add(fw, module, result)
+                        api_response = update_azure_add(connection, module, result)
                     
                 
                         if api_response:
@@ -955,7 +902,7 @@ def main():
                 if not eval_servername(module, exist_settings):
                     if eval_changed(module, exist_settings):
                         
-                        api_response = update_azure_update(fw, module, result)
+                        api_response = update_azure_update(connection, module, result)
                         
                 
                         if api_response:
@@ -972,7 +919,7 @@ def main():
                     if eval_servername(module, exist_settings):
                         if eval_changed(module, exist_settings):
                             
-                            api_response = update_azure_add_user(fw, module, result)
+                            api_response = update_azure_add_user(connection, module, result)
                             
                     
                             if api_response:
@@ -987,7 +934,7 @@ def main():
                     if not eval_servername(module, exist_settings):
                         if eval_changed(module, exist_settings):
                             
-                            api_response = update_azure_update_user(fw, module, result)
+                            api_response = update_azure_update_user(connection, module, result)
                             
                     
                             if api_response:
@@ -1008,7 +955,7 @@ def main():
         
             if eval_list_new_servername(module, exist_settings):
                         module.exit_json(msg=f"eval=true44")
-                        api_response = update_azure_add(fw, module, result)
+                        api_response = update_azure_add(connection, module, result)
                         
                 
                         if api_response:
@@ -1023,7 +970,7 @@ def main():
         
                 if eval_list_update_server(module, exist_settings):
                     
-                    api_response = update_azure_update(fw, module, result)
+                    api_response = update_azure_update(connection, module, result)
                         
                     if api_response:
                         if (api_response['Response']['AzureADSSO']["Status"]["#text"] == "Configuration applied successfully."):
@@ -1036,7 +983,7 @@ def main():
                 
                 if eval_list_new_servername(module, exist_settings):
                             
-                            api_response = update_azure_add_user(fw, module, result)
+                            api_response = update_azure_add_user(connection, module, result)
                             
                     
                             if api_response:
@@ -1051,7 +998,7 @@ def main():
             
                     if eval_list_update_server_user(module, exist_settings):
                         
-                        api_response = update_azure_update_user(fw, module, result)
+                        api_response = update_azure_update_user(connection, module, result)
                             
                         if api_response:
                             if (api_response['Response']['AzureADSSO']["Status"]["#text"] == "Configuration applied successfully."):

@@ -6,11 +6,6 @@
   tasks:
     - name: Update eDirectory Auth
       sophos.sophos_firewall.sfos_authentication_edirectory:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         servername: Test54
         serveripdomain: '192.168.0.89'
         port_edir: '1812'
@@ -21,4 +16,3 @@
         clientcertificate: Webadmin
         basedn: o=sophos.com
         state: updated
-      delegate_to: localhost

@@ -6,11 +6,6 @@
   tasks:
     - name: Manage SNMPv3 User
       sophos.sophos_firewall.sfos_snmp_user:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
         name: snmpv3user1
         accept_queries: Disable
         send_traps: Enable
@@ -22,4 +17,3 @@
         authentication_algorithm: MD5
         authentication_password: sup3rs3cr3tp@ssw0rd
         state: present
-      delegate_to: localhost

@@ -6,11 +6,6 @@
   tasks:
       - name: ADD LOCAL ACL EXCEPTION RULE
         sophos.sophos_firewall.sfos_service_acl_exception:
-          username: "{{ username }}"
-          password: "{{ password }}"
-          hostname: "{{ inventory_hostname }}"
-          port: 4444
-          verify: false
           name: TestExceptionRule
           # description: Test Exception Rule 3
           source_zone: Any
@@ -24,4 +19,3 @@
           action: drop
           update_action: replace
           state: absent
-        delegate_to: localhost

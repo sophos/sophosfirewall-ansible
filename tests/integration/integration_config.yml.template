@@ -1,6 +1,8 @@
 ---
-sfos_username: ${SFOS_USERNAME}
-sfos_password: ${SFOS_PASSWORD}
-sfos_hostname: ${SFOS_HOSTNAME}
-sfos_port: ${SFOS_PORT}
-sfos_verify: ${SFOS_VERIFY}
+ansible_user: ${SFOS_USERNAME}
+ansible_host: ${SFOS_HOSTNAME}
+ansible_password: ${SFOS_PASSWORD}
+ansible_httpapi_validate_certs: false
+ansible_httpapi_port: 4444
+ansible_connection: ansible.netcommon.httpapi
+ansible_network_os: sophos.sophos_firewall.sfos

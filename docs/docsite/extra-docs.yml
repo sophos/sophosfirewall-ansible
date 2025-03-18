@@ -1,4 +1,7 @@
 sections:
+  - title: Breaking Changes
+    toctree:
+      - httpapi_example
   - title: Getting Started
     toctree:
       - installation

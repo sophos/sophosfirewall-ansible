@@ -6,13 +6,9 @@
   tasks:
     - name: UPDATE ADVANCED THREAT PROTECTION
       sophos.sophos_firewall.sfos_atp:
-        username: "{{ username }}"
-        password: "{{ password }}"
-        hostname: "{{ inventory_hostname }}"
-        port: 4444
-        verify: false
-        enabled: True
+        enabled: False
         log_policy: Log Only
         inspect_content: untrusted
         state: updated
-      delegate_to: localhost
+      vars:
+        ansible_command_timeout: 90
