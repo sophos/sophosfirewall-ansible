@@ -5,7 +5,7 @@ For installation and usage details, please see the [Documentation](https://sopho
 
 
 ## Contributing
-This is an open source project and we welcome contributions from the community. Please see the [CONTRIBUTING.md](http://github.com/sophos/sophosfirewall-ansible/CONTRIBUTING.md) for details.
+This is an open source project, and we welcome contributions from the community. Please see the [CONTRIBUTING.md](https://github.com/sophos/sophosfirewall-ansible/blob/main//CONTRIBUTING.md) for details.
 
 
 
