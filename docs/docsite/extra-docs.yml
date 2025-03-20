@@ -6,4 +6,5 @@ sections:
     toctree:
       - installation
       - setup
-      - tutorial
+      - tutorial2.x
+      - tutorial1.x
