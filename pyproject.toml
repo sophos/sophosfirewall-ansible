@@ -8,17 +8,18 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-sophosfirewall-python = "^0.1.56"
-ansible-base = "^2.10.17"
+sophosfirewall-python = "^0.1.62"
+ansible = "^11.3.0"
+ansible-core = "^2.18.3"
 
 [tool.poetry.group.dev.dependencies]
-antsibull = "^0.67.0"
-antsibull-docs = "^2.15.0"
-black = "24.10.0"
-pylint = "^3.3.1"
-sphinx-rtd-theme = "^3.0.1"
+antsibull-core = "^3.4.0"
+antsibull-docs = "^2.16.3"
+black = "25.1.0"
+pylint = "^3.3.6"
+sphinx-rtd-theme = "^3.0.2"
 sphinx-ansible-theme = "^0.10.3"
-Sphinx = "^8.1.3"
+Sphinx = "^8.2.3"
 
 [build-system]
 requires = ["poetry-core"]
