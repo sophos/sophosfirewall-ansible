@@ -216,3 +216,10 @@ releases:
         name: sfos
         namespace: null
     release_date: '2025-03-17'
+  2.0.1:
+    changes:
+      release_summary: This release updates Python dependencies for the project to
+        address security vulnerabilities.
+    fragments:
+    - 2.0.1.yaml
+    release_date: '2025-03-20'

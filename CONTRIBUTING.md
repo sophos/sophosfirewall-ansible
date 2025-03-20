@@ -100,10 +100,7 @@ The changes needed to the `main()` section of code should be minimal:
 - Implement any argument requirements such as `required_if`, `mutually_exclusive` etc. See the Ansible [documentation](https://docs.ansible.com/ansible/latest/dev_guide/developing_program_flow_modules.html#dependencies-between-module-options) for details.
 - Update the calls to the correct GET, CREATE, UPDATE, and REMOVE functions
 
-## Preparing for release
-Create a Pull Request against the `main` branch. The maintainers will review the PR, and run the included tests. If changes are needed, they will be requested in the PR review comments. When the review is complete, the PR will be merged and the CI/CD pipeline will publish a new version of the collection to Ansible Galaxy.
-
-## Tips
+## Dev Environment Setup
 - Create the folder structure `~/collections/ansible_collections/sophos/sophos_firewall` and then clone this project inside the `sophos_firewall` folder. Then set the `ANSIBLE_COLLECTIONS_PATH` environment variable to `~/collections`. This will allow the `ansible-playbook` command to see your code changes automatically without having to reinstall the collection.
 
 ```bash
@@ -112,3 +109,29 @@ cd ~/collections/ansible_collections/sophos/sophos_firewall
 git clone https://github.com/sophos/sophosfirewall-ansible.git .
 export ANSIBLE_COLLECTIONS_PATH=~/collections
 ```
+  
+> Once the `ANSIBLE_COLLECTIONS_PATH` environment variable is set, DO NOT run `ansible-galaxy collection install sophos.sophos_firewall --force`, as this will overwrite the `~/collections/ansible_collections/sophos/sophos_firewall` directory with the contents of the package from Ansible Galaxy. In other words, it will overwrite your work! 
+  
+- If not already installed, install [Poetry](https://python-poetry.org) using `pip install poetry`
+- Create a Python virtual environment, activate it, and then use Poetry to install dependencies
+  
+```
+python -m venv ~/sophosfirewall-ansible
+source ~/sophosfirewall-ansible/bin/activate
+poetry install
+```
+  
+Once it is complete, you should see the `sophosfirewall-ansible` module at the top of the `ansible-galaxy collection list` output. 
+  
+```
+ansible-galaxy collection list
+
+Collection                               Version
+---------------------------------------- -------
+sophos.sophos_firewall                   2.0.0
+```
+  
+To test if your system is able to find the modules, run the command `ansible-doc -t module sophos.sophos_firewall.sfos_ip_host`. If all is working properly, this should display a text version of the module documentation. 
+
+## Preparing for release
+Create a Pull Request against the `main` branch. The maintainers will review the PR, and run the included tests. If changes are needed, they will be requested in the PR review comments. When the review is complete, the PR will be merged and the CI/CD pipeline will publish a new version of the collection to Ansible Galaxy.
