@@ -120,6 +120,12 @@ When prompted, enter the encryption password created when executing the ``ansibl
     PLAY RECAP ********************************************************************************************************************************************
     testfirewall.sophos.com              : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
+.. note::
+
+  The modules in this collection are idempotent; they will not take any action if the configuration is already in the intended state. 
+  Due to this, if you run the above task a second time, the response should indicate ``changed=0``.
+
+
 To check that the host was created, you can check in the firewall dashboard under System > Hosts and services > IP host. To check using an Ansible task,
 change the ``state`` argument to ``query``.
 
