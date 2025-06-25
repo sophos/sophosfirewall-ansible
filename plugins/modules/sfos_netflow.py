@@ -10,14 +10,16 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 ---
 module: sfos_netflow
-short_description: Manage NetFlow server configurations on Sophos Firewall.
-version_added: "1.3.0" # Version for this refactored module
-description:
-  - Allows adding, updating, removing, and querying NetFlow server configurations on a Sophos Firewall device.
-  - Each NetFlow server is identified by a unique server_name.
-  - Operations are performed by targeting individual server entries.
+
+short_description: Manage NetFlow configuration (System > Administration > NetFlow)
+
+version_added: "2.1.0"
+
+description: Manage Netflow Collectors (System > Administration > NetFlow) on Sophos Firewall)
+
 extends_documentation_fragment:
   - sophos.sophos_firewall.fragments.base
+
 options:
   state:
     description:
@@ -47,7 +49,7 @@ options:
     type: int
     required: false
 author:
-  - @mamullen13316
+  - Matt Mullen (@mamullen13316)
 """
 
 EXAMPLES = r"""
