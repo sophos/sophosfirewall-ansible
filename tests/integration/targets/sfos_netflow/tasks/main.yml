@@ -1,0 +1,205 @@
+# Copyright 2023 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+
+- name: ENSURE TEST NETFLOW COLLECTORS DO NOT EXIST
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: "{{ item }}"
+    state: absent
+  loop:
+    - IGT-TESTCOLLECTOR1
+    - IGT-TESTCOLLECTOR2
+
+- name: CREATE NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR1
+    netflow_server: 192.168.10.100
+    netflow_server_port: 2055
+    state: present
+  register: netflow_collector_add
+
+- name: ASSERTION CHECK FOR CREATE NETFLOW COLLECTOR
+  assert:
+    that: 
+      - netflow_collector_add is changed
+      - netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['#text']"
+
+- name: QUERY NETFLOW COLLECTORS
+  sophos.sophos_firewall.sfos_netflow:
+    state: query
+  register: query_netflow
+
+- name: ASSERTION CHECK FOR QUERY NETFLOW COLLECTOR
+  assert:
+    that: 
+      - query_netflow is not changed
+      - "'IGT-TESTCOLLECTOR1' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['ServerName']"
+      - "'192.168.10.100' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServer']"
+      - "'2055' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServerPort']"
+
+- name: UPDATE NETFLOW COLLECTOR - SINGLE COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR1
+    netflow_server: 192.168.20.200
+    netflow_server_port: 2055
+    state: updated
+  register: update_netflow_collector
+
+- name: ASSERTION CHECK FOR UPDATE NETFLOW COLLECTOR - SINGLE COLLECTOR
+  assert:
+    that: 
+      - netflow_collector_add is changed
+      - netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['#text']"
+
+- name: QUERY NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    state: query
+  register: query_netflow
+
+- name: ASSERTION CHECK FOR QUERY NETFLOW COLLECTOR - UPDATED SINGLE COLLECTOR
+  assert:
+    that: 
+      - query_netflow is not changed
+      - "'IGT-TESTCOLLECTOR1' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['ServerName']"
+      - "'192.168.20.200' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServer']"
+      - "'2055' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServerPort']"
+
+- name: UPDATE NETFLOW COLLECTOR NOCHG
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR1
+    netflow_server: 192.168.20.200
+    netflow_server_port: 2055
+    state: updated
+  register: update_netflow_collector
+
+- name: ASSERTION CHECK FOR UPDATE NETFLOW COLLECTOR NOCHG
+  assert:
+    that: 
+      - update_netflow_collector is not changed
+
+- name: ADD 2ND NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR2
+    netflow_server: 192.168.20.101
+    netflow_server_port: 2056
+    state: present
+  register: netflow_collector_add
+
+- name: ASSERTION CHECK FOR ADD 2ND NETFLOW COLLECTOR
+  assert:
+    that: 
+      - netflow_collector_add is changed
+      - netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['#text']"
+
+- name: QUERY NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    state: query
+  register: query_netflow
+
+- name: ASSERTION CHECK FOR QUERY NETFLOW COLLECTOR - 2ND COLLECTOR
+  assert:
+    that: 
+      - query_netflow is not changed
+      - "'IGT-TESTCOLLECTOR2' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['ServerName']"
+      - "'192.168.20.101' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServer']"
+      - "'2056' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServerPort']"
+
+- name: UPDATE NETFLOW COLLECTOR - 2ND COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR2
+    netflow_server: 192.168.30.200
+    netflow_server_port: 2055
+    state: updated
+  register: update_netflow_collector
+
+- name: ASSERTION CHECK FOR UPDATE NETFLOW COLLECTOR - 2ND COLLECTOR
+  assert:
+    that: 
+      - netflow_collector_add is changed
+      - netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in netflow_collector_add['api_response']['Response']['NetFlowConfiguration']['Status']['#text']"
+
+- name: QUERY NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    state: query
+  register: query_netflow
+
+- name: ASSERTION CHECK FOR QUERY NETFLOW COLLECTOR - UPDATED 2ND COLLECTOR
+  assert:
+    that: 
+      - query_netflow is not changed
+      - "'IGT-TESTCOLLECTOR2' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['ServerName']"
+      - "'192.168.30.200' in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServer']"
+      - "'192.168.20.101' not in query_netflow['api_response']['Response']['NetFlowConfiguration']['Server']['NetflowServer']"
+
+- name: REMOVE NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: "{{ item }}"
+    state: absent
+  register: remove_netflow_collector
+  loop:
+    - IGT-TESTCOLLECTOR1
+    - IGT-TESTCOLLECTOR2
+
+- name: ASSERTION CHECK FOR REMOVE NETFLOW COLLECTOR
+  assert:
+    that: 
+      - remove_netflow_collector is changed
+      - remove_netflow_collector.results[0]['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == "200"
+      - remove_netflow_collector.results[0]['api_response']['Response']['NetFlowConfiguration']['Status']['#text'] == "Configuration applied successfully."
+      - remove_netflow_collector.results[1]['api_response']['Response']['NetFlowConfiguration']['Status']['@code'] == "200"
+      - remove_netflow_collector.results[1]['api_response']['Response']['NetFlowConfiguration']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING NETFLOW COLLECTOR
+  sophos.sophos_firewall.sfos_netflow:
+    server_name: IGT-TESTCOLLECTOR1
+    state: absent
+  register: remove_netflow_collector
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING IGT_TESTHOST
+  assert:
+    that: 
+      - remove_netflow_collector is not changed
+
+
+
+
+
