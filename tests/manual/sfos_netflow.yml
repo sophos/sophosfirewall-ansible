@@ -1,0 +1,39 @@
+---
+- name: SOPHOS FIREWALL ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: QUERY NETFLOW COLLECTOR CONFIGURATION
+      sophos.sophos_firewall.sfos_netflow:
+        state: query
+        server_name: "collector2"
+      register: netflow_config
+      tags: query
+
+    - name: DISPLAY NETFLOW COLLECTOR CONFIGURATION
+      ansible.builtin.debug:
+        var: netflow_config
+      tags: query
+
+    - name: ADD NETFLOW COLLECTOR CONFIGURATION
+      sophos.sophos_firewall.sfos_netflow:
+        state: present
+        server_name: "collector1"
+        netflow_server: "192.168.1.100"
+        netflow_server_port: 2055
+      tags: add
+
+    - name: UPDATE NETFLOW COLLECTOR CONFIGURATION
+      sophos.sophos_firewall.sfos_netflow:
+        state: updated
+        server_name: "IGT-TESTCOLLECTOR1"
+        netflow_server: "192.168.1.101"
+        netflow_server_port: 2055
+      tags: update
+
+    - name: REMOVE NETFLOW COLLECTOR CONFIGURATION
+      sophos.sophos_firewall.sfos_netflow:
+        state: absent
+        server_name: "collector2"
+      tags: remove

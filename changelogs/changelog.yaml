@@ -223,3 +223,14 @@ releases:
     fragments:
     - 2.0.1.yaml
     release_date: '2025-03-20'
+  2.1.0:
+    changes:
+      release_summary: This release introduces a new module for working with Netflow
+        collector configuration on Sophos Firewall
+    fragments:
+    - 2.1.0.yaml
+    modules:
+    - description: Manage NetFlow configuration (System > Administration > NetFlow).
+      name: sfos_netflow
+      namespace: ''
+    release_date: '2025-06-25'
