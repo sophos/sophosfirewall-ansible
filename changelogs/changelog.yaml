@@ -234,3 +234,14 @@ releases:
       name: sfos_netflow
       namespace: ''
     release_date: '2025-06-25'
+  2.2.0:
+    changes:
+      release_summary: This release introduces new modules for working with URL Groups
+        on Sophos Firewall
+    fragments:
+    - 2.2.0.yaml
+    modules:
+    - description: Manage URL Groups on Sophos Firewall.
+      name: sfos_urlgroup
+      namespace: ''
+    release_date: '2025-07-03'

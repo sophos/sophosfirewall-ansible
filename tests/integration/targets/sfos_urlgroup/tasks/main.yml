@@ -1,0 +1,346 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+# Tests for URL Group module
+
+# Setup - Delete URL group if exists
+- name: ENSURE IGT_URL_GROUP_TEST DOES NOT EXIST
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: absent
+
+# Test 1 - Get all URL groups
+- name: GET ALL URL GROUPS
+  sophos.sophos_firewall.sfos_urlgroup:
+    state: query
+  register: get_all_result
+
+- name: DEBUG - GET ALL URL GROUPS
+  debug:
+    var: get_all_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR GET ALL URL GROUPS
+  assert:
+    that: 
+      - get_all_result is defined
+      - get_all_result is not changed
+      - get_all_result.api_response is defined
+
+# Test 2 - Create URL group
+- name: CREATE IGT_URL_GROUP_TEST
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    domain_list:
+      - "example.com"
+      - "example.org"
+    state: present
+  register: create_result
+
+- name: DEBUG - CREATE URL GROUP
+  debug:
+    var: create_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR CREATE URL GROUP
+  assert:
+    that: 
+      - create_result is changed
+      - create_result.api_response is defined
+      - create_result.api_response.Response is defined
+      - create_result.api_response.Response.WebFilterURLGroup is defined
+      - create_result.api_response.Response.WebFilterURLGroup.Status['@code'] == "200"
+      - create_result.api_response.Response.WebFilterURLGroup.Status['#text'] == "Configuration applied successfully."
+
+# Test 3 - Create URL group (idempotency check)
+- name: CREATE EXISTING URL GROUP (IDEMPOTENCY CHECK)
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    domain_list:
+      - "example.com"
+      - "example.org"
+    state: present
+  register: create_idempotent_result
+
+- name: DEBUG - CREATE EXISTING URL GROUP (IDEMPOTENCY CHECK)
+  debug:
+    var: create_idempotent_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR CREATE EXISTING URL GROUP
+  assert:
+    that: 
+      - create_idempotent_result is not changed
+      - create_idempotent_result.api_response is defined
+
+# Test 4 - Query after create to verify domains
+- name: QUERY AFTER CREATE
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: query
+  register: query_after_create
+
+- name: DEBUG - QUERY AFTER CREATE
+  debug:
+    var: query_after_create
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR QUERY AFTER CREATE
+  assert:
+    that: 
+      - query_after_create is not changed
+      - query_after_create.api_response is defined
+      - query_after_create.api_response.Response is defined
+      - query_after_create.api_response.Response.WebFilterURLGroup is defined
+      - query_after_create.api_response.Response.WebFilterURLGroup.Name == "IGT_URL_GROUP_TEST"
+      - query_after_create.api_response.Response.WebFilterURLGroup.URLlist.URL | length == 2
+      - "'example.com' in query_after_create.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.org' in query_after_create.api_response.Response.WebFilterURLGroup.URLlist.URL"
+
+# Test 5 - Get specific URL group
+- name: GET IGT_URL_GROUP_TEST
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: query
+  register: get_specific_result
+
+- name: DEBUG - GET SPECIFIC URL GROUP
+  debug:
+    var: get_specific_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR GET SPECIFIC URL GROUP
+  assert:
+    that: 
+      - get_specific_result is not changed
+      - get_specific_result.api_response is defined
+      - get_specific_result.api_response.Response is defined
+      - get_specific_result.api_response.Response.WebFilterURLGroup is defined
+      - get_specific_result.api_response.Response.WebFilterURLGroup.Name == "IGT_URL_GROUP_TEST"
+
+# Test 5 - Update URL group (add domains)
+- name: UPDATE URL GROUP (ADD DOMAINS)
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    domain_list:
+      - "example.net"
+      - "example.io"
+    action: add
+    state: update
+  register: update_add_result
+
+- name: DEBUG - UPDATE URL GROUP (ADD DOMAINS)
+  debug:
+    var: update_add_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR UPDATE URL GROUP (ADD DOMAINS)
+  assert:
+    that: 
+      - update_add_result is changed
+      - update_add_result.api_response is defined
+      - update_add_result.api_response.Response is defined
+      - update_add_result.api_response.Response.WebFilterURLGroup is defined
+      - update_add_result.api_response.Response.WebFilterURLGroup.Status['@code'] == "200"
+
+# Test 6 - Get URL group after adding domains
+- name: GET URL GROUP AFTER ADDING DOMAINS
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: query
+  register: get_after_add_result
+
+- name: DEBUG - GET URL GROUP AFTER ADDING DOMAINS
+  debug:
+    var: get_after_add_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR GET URL GROUP AFTER ADDING DOMAINS
+  assert:
+    that: 
+      - get_after_add_result is not changed
+      - get_after_add_result.api_response is defined
+      - get_after_add_result.api_response.Response is defined
+      - get_after_add_result.api_response.Response.WebFilterURLGroup is defined
+      - get_after_add_result.api_response.Response.WebFilterURLGroup.Name == "IGT_URL_GROUP_TEST"
+      - get_after_add_result.api_response.Response.WebFilterURLGroup.URLlist.URL | length == 4
+      - "'example.com' in get_after_add_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.org' in get_after_add_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.net' in get_after_add_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.io' in get_after_add_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+
+# Test 7 - Update URL group (remove domains)
+- name: UPDATE URL GROUP (REMOVE DOMAINS)
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    domain_list:
+      - "example.org"
+      - "example.net"
+    action: remove
+    state: update
+  register: update_remove_result
+
+- name: DEBUG - UPDATE URL GROUP (REMOVE DOMAINS)
+  debug:
+    var: update_remove_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR UPDATE URL GROUP (REMOVE DOMAINS)
+  assert:
+    that: 
+      - update_remove_result is changed
+      - update_remove_result.api_response is defined
+      - update_remove_result.api_response.Response is defined
+      - update_remove_result.api_response.Response.WebFilterURLGroup is defined
+      - update_remove_result.api_response.Response.WebFilterURLGroup.Status['@code'] == "200"
+
+# Test 8 - Get URL group after removing domains
+- name: GET URL GROUP AFTER REMOVING DOMAINS
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: query
+  register: get_after_remove_result
+
+- name: DEBUG - GET URL GROUP AFTER REMOVING DOMAINS
+  debug:
+    var: get_after_remove_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR GET URL GROUP AFTER REMOVING DOMAINS
+  assert:
+    that: 
+      - get_after_remove_result is not changed
+      - get_after_remove_result.api_response is defined
+      - get_after_remove_result.api_response.Response is defined
+      - get_after_remove_result.api_response.Response.WebFilterURLGroup is defined
+      - get_after_remove_result.api_response.Response.WebFilterURLGroup.Name == "IGT_URL_GROUP_TEST"
+      - get_after_remove_result.api_response.Response.WebFilterURLGroup.URLlist.URL | length == 2
+      - "'example.com' in get_after_remove_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.io' in get_after_remove_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.org' not in get_after_remove_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.net' not in get_after_remove_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+
+# Test 9 - Update URL group (replace domains)
+- name: UPDATE URL GROUP (REPLACE DOMAINS)
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    domain_list:
+      - "sophos.com"
+      - "ansible.com"
+    action: replace
+    state: update
+  register: update_replace_result
+
+- name: DEBUG - UPDATE URL GROUP (REPLACE DOMAINS)
+  debug:
+    var: update_replace_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR UPDATE URL GROUP (REPLACE DOMAINS)
+  assert:
+    that: 
+      - update_replace_result is changed
+      - update_replace_result.api_response is defined
+      - update_replace_result.api_response.Response is defined
+      - update_replace_result.api_response.Response.WebFilterURLGroup is defined
+      - update_replace_result.api_response.Response.WebFilterURLGroup.Status['@code'] == "200"
+
+# Test 10 - Get URL group after replacing domains
+- name: GET URL GROUP AFTER REPLACING DOMAINS
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: query
+  register: get_after_replace_result
+
+- name: DEBUG - GET URL GROUP AFTER REPLACING DOMAINS
+  debug:
+    var: get_after_replace_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR GET URL GROUP AFTER REPLACING DOMAINS
+  assert:
+    that: 
+      - get_after_replace_result is not changed
+      - get_after_replace_result.api_response is defined
+      - get_after_replace_result.api_response.Response is defined
+      - get_after_replace_result.api_response.Response.WebFilterURLGroup is defined
+      - get_after_replace_result.api_response.Response.WebFilterURLGroup.Name == "IGT_URL_GROUP_TEST"
+      - get_after_replace_result.api_response.Response.WebFilterURLGroup.URLlist.URL | length == 2
+      - "'sophos.com' in get_after_replace_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'ansible.com' in get_after_replace_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.com' not in get_after_replace_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+      - "'example.io' not in get_after_replace_result.api_response.Response.WebFilterURLGroup.URLlist.URL"
+
+# Test 11 - Delete URL group
+- name: DELETE URL GROUP
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: absent
+  register: delete_result
+
+- name: DEBUG - DELETE URL GROUP
+  debug:
+    var: delete_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR DELETE URL GROUP
+  assert:
+    that: 
+      - delete_result is changed
+      - delete_result.api_response is defined
+      - delete_result.api_response.Response is defined
+      - delete_result.api_response.Response.WebFilterURLGroup is defined
+      - delete_result.api_response.Response.WebFilterURLGroup.Status['@code'] == "200"
+
+# Test 12 - Delete URL group (idempotency check)
+- name: DELETE URL GROUP (IDEMPOTENCY CHECK)
+  sophos.sophos_firewall.sfos_urlgroup:
+    name: IGT_URL_GROUP_TEST
+    state: absent
+  register: delete_idempotent_result
+
+- name: DEBUG - DELETE URL GROUP (IDEMPOTENCY CHECK)
+  debug:
+    var: delete_idempotent_result
+    verbosity: 1
+
+- name: ASSERTION CHECK FOR DELETE URL GROUP (IDEMPOTENCY CHECK)
+  assert:
+    that: 
+      - delete_idempotent_result is not changed
+      - delete_idempotent_result.api_response is defined
