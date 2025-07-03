@@ -1,0 +1,182 @@
+---
+- name: SOPHOS FIREWALL URL GROUP ANSIBLE MODULE TESTING
+  hosts: all
+  gather_facts: false
+  
+  tasks:
+    # Query all URL groups first to check current state
+    - name: QUERY ALL URL GROUPS
+      sophos.sophos_firewall.sfos_urlgroup:
+        state: query
+      register: all_url_groups
+      tags:
+        - query_all
+
+    - name: SHOW ALL URL GROUPS
+      ansible.builtin.debug:
+        var: all_url_groups
+      tags:
+        - query_all
+
+    # Create a URL group
+    - name: CREATE URL GROUP
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        domain_list:
+          - "example.com"
+          - "example.org"
+        state: present
+      register: create_result
+      tags:
+        - create
+
+    - name: SHOW CREATE RESULT
+      ansible.builtin.debug:
+        var: create_result
+      tags:
+        - create
+
+    # Query the specific URL group we created
+    - name: QUERY SPECIFIC URL GROUP
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: query
+      register: query_result
+      tags:
+        - query
+
+    - name: SHOW URL GROUP DETAILS
+      ansible.builtin.debug:
+        var: query_result.api_response.Response.WebFilterURLGroup
+      tags:
+        - query
+
+    # Update: Add domains to the URL group
+    - name: UPDATE URL GROUP (ADD DOMAINS)
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        domain_list:
+          - "example.net"
+          - "sophos.com"
+        action: add
+        state: update
+      register: add_result
+      tags:
+        - update_add
+
+    - name: SHOW ADD RESULT
+      ansible.builtin.debug:
+        var: add_result
+      tags:
+        - update_add
+
+    - name: QUERY URL GROUP AFTER ADDING DOMAINS
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: query
+      register: query_after_add
+      tags:
+        - update_add
+
+    - name: SHOW URL GROUP AFTER ADDING DOMAINS
+      ansible.builtin.debug:
+        var: query_after_add.api_response.Response.WebFilterURLGroup.URLlist
+      tags:
+        - update_add
+
+    # Update: Remove domains from the URL group
+    - name: UPDATE URL GROUP (REMOVE DOMAINS)
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        domain_list:
+          - "example.org"
+          - "sophos.com"
+        action: remove
+        state: update
+      register: remove_result
+      tags:
+        - update_remove
+
+    - name: SHOW REMOVE RESULT
+      ansible.builtin.debug:
+        var: remove_result
+      tags:
+        - update_remove
+
+    - name: QUERY URL GROUP AFTER REMOVING DOMAINS
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: query
+      register: query_after_remove
+      tags:
+        - update_remove
+
+    - name: SHOW URL GROUP AFTER REMOVING DOMAINS
+      ansible.builtin.debug:
+        var: query_after_remove.api_response.Response.WebFilterURLGroup.URLlist
+      tags:
+        - update_remove
+
+    # Update: Replace all domains in the URL group
+    - name: UPDATE URL GROUP (REPLACE DOMAINS)
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        domain_list:
+          - "ansible.com"
+          - "github.com"
+          - "python.org"
+        action: replace
+        state: update
+      register: replace_result
+      tags:
+        - update_replace
+
+    - name: SHOW REPLACE RESULT
+      ansible.builtin.debug:
+        var: replace_result
+      tags:
+        - update_replace
+
+    - name: QUERY URL GROUP AFTER REPLACING DOMAINS
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: query
+      register: query_after_replace
+      tags:
+        - update_replace
+
+    - name: SHOW URL GROUP AFTER REPLACING DOMAINS
+      ansible.builtin.debug:
+        var: query_after_replace.api_response.Response.WebFilterURLGroup.URLlist
+      tags:
+        - update_replace
+
+    # Remove the URL group
+    - name: REMOVE URL GROUP
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: absent
+      register: remove_group_result
+      tags:
+        - remove
+
+    - name: SHOW REMOVAL RESULT
+      ansible.builtin.debug:
+        var: remove_group_result
+      tags:
+        - remove
+
+    # Check idempotency - try to remove again
+    - name: CHECK REMOVAL IDEMPOTENCY
+      sophos.sophos_firewall.sfos_urlgroup:
+        name: TEST_URL_GROUP
+        state: absent
+      register: idempotent_remove
+      tags:
+        - idempotency
+
+    - name: SHOW IDEMPOTENCY RESULT
+      ansible.builtin.debug:
+        var: idempotent_remove
+      tags:
+        - idempotency
