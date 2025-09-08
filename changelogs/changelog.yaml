@@ -245,3 +245,38 @@ releases:
       name: sfos_urlgroup
       namespace: ''
     release_date: '2025-07-03'
+  2.3.0:
+    changes:
+      major_changes:
+      - new module ``sfos_qos_policy`` for managing QoS Traffic Shaping policies
+      - new module ``sfos_web_category`` for managing Web categories
+      - new module ``sfos_web_filetype`` for managing Web file types
+      - new module ``sfos_web_policy`` for managing Web policies
+      - new module ``sfos_web_useractivity`` for managing Web user activities
+      - updated module ``sfos_firewall_rule`` to support additional configuration
+        parameters
+      - updated module ``sfos_firewall_rule`` to support attachment of web and qos
+        policies to firewall rules
+      release_summary: 'This release introduces new modules and updates for working
+        with firewall rules on Sophos Firewall.
+
+        '
+    fragments:
+    - 2.3.0.yaml
+    modules:
+    - description: Manage QoS Policies (Configure > System Services > Traffic Shaping).
+      name: sfos_qos_policy
+      namespace: ''
+    - description: Manage Web Categories (Protect > Web > Web Categories).
+      name: sfos_web_category
+      namespace: ''
+    - description: Manage Web File Types (Protect > Web > File Types).
+      name: sfos_web_filetype
+      namespace: ''
+    - description: Manage Web Filter Policies (Protect > Web > Policies).
+      name: sfos_web_policy
+      namespace: ''
+    - description: Manage Web User Activities (Protect > Web > User Activities).
+      name: sfos_web_useractivity
+      namespace: ''
+    release_date: '2025-09-08'

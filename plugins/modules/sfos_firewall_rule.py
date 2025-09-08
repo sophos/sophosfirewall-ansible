@@ -91,6 +91,125 @@ options:
             - Name of service(s).
         type: list
         elements: str
+    web_filter:
+        description:
+            - Name of the web filter policy to apply.
+        type: str
+        required: false
+    web_category_traffic_shaping:
+        description:
+            - Name of the web category traffic shaping policy to apply.
+        type: str
+        required: false
+    block_quic:
+        description:
+            - Enable/Disable QUIC blocking.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_virus:
+        description:
+            - Enable/Disable virus scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    proxy_mode:
+        description:
+            - Enable/Disable proxy mode.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    decrypt_https:
+        description:
+            - Enable/Disable HTTPS decryption.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    source_security_heartbeat:
+        description:
+            - Enable/Disable source security heartbeat.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    minimum_source_hb_permitted:
+        description:
+            - Minimum source heartbeat permitted.
+        type: str
+        required: false
+    dest_security_heartbeat:
+        description:
+            - Enable/Disable destination security heartbeat.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    minimum_dest_hb_permitted:
+        description:
+            - Minimum destination heartbeat permitted.
+        type: str
+        required: false
+    application_control:
+        description:
+            - Enable/Disable application control.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    application_base_qos_policy:
+        description:
+            - Name of the application base QoS policy to apply.
+        type: str
+        required: false
+    intrusion_prevention:
+        description:
+            - Enable/Disable intrusion prevention.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    qos_policy:
+        description:
+            - Name of the QoS traffic shaping policy to apply.
+        type: str
+        required: false
+    dscp_marking:
+        description:
+            - DSCP marking value.
+        type: str
+        required: false
+    scan_smtp:
+        description:
+            - Enable/Disable SMTP scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_smtps:
+        description:
+            - Enable/Disable SMTPS scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_imap:
+        description:
+            - Enable/Disable IMAP scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_imaps:
+        description:
+            - Enable/Disable IMAPS scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_pop3:
+        description:
+            - Enable/Disable POP3 scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
+    scan_pop3s:
+        description:
+            - Enable/Disable POP3S scanning.
+        choices: ["Enable", "Disable"]
+        type: str
+        required: false
     state:
         description:
             - Use C(query) to retrieve, C(present) to create, C(absent) to remove, or C(updated) to modify
@@ -125,6 +244,48 @@ EXAMPLES = r"""
     service_list:
       - HTTPS
       - SSH
+    state: present
+
+- name: Create Enhanced Firewall Rule with Security Features
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: SECURE RULE 200
+    action: accept
+    description: Enhanced security rule with scanning and filtering
+    log: enable
+    status: enable
+    position: bottom
+    src_zones:
+      - LAN
+    dst_zones:
+      - WAN
+    src_networks:
+      - Any
+    dst_networks:
+      - Any
+    service_list:
+      - HTTP
+      - HTTPS
+    web_filter: WebFilterPolicy1
+    web_category_traffic_shaping: WebCategoryPolicy1
+    block_quic: Enable
+    scan_virus: Enable
+    proxy_mode: Enable
+    decrypt_https: Enable
+    application_control: Enable
+    application_base_qos_policy: AppQoSPolicy1
+    intrusion_prevention: Enable
+    qos_policy: TrafficShapingPolicy1
+    dscp_marking: "46"
+    scan_smtp: Enable
+    scan_smtps: Enable
+    scan_imap: Enable
+    scan_imaps: Enable
+    scan_pop3: Enable
+    scan_pop3s: Enable
+    source_security_heartbeat: Enable
+    minimum_source_hb_permitted: "Green"
+    dest_security_heartbeat: Enable
+    minimum_dest_hb_permitted: "Green"
     state: present
 """
 
@@ -233,8 +394,29 @@ def create_firewallrule(connection, module, result):
         "src_networks": src_networks,
         "dst_networks": dst_networks,
         "service_list": service_list,
+        "web_filter": module.params.get("web_filter"),
+        "web_category_traffic_shaping": module.params.get("web_category_traffic_shaping"),
+        "block_quic": module.params.get("block_quic"),
+        "scan_virus": module.params.get("scan_virus"),
+        "proxy_mode": module.params.get("proxy_mode"),
+        "decrypt_https": module.params.get("decrypt_https"),
+        "source_security_heartbeat": module.params.get("source_security_heartbeat"),
+        "minimum_source_hb_permitted": module.params.get("minimum_source_hb_permitted"),
+        "dest_security_heartbeat": module.params.get("dest_security_heartbeat"),
+        "minimum_dest_hb_permitted": module.params.get("minimum_dest_hb_permitted"),
+        "application_control": module.params.get("application_control"),
+        "application_base_qos_policy": module.params.get("application_base_qos_policy"),
+        "intrusion_prevention": module.params.get("intrusion_prevention"),
+        "qos_policy": module.params.get("qos_policy"),
+        "dscp_marking": module.params.get("dscp_marking"),
+        "scan_smtp": module.params.get("scan_smtp"),
+        "scan_smtps": module.params.get("scan_smtps"),
+        "scan_imap": module.params.get("scan_imap"),
+        "scan_imaps": module.params.get("scan_imaps"),
+        "scan_pop3": module.params.get("scan_pop3"),
+        "scan_pop3s": module.params.get("scan_pop3s"),
     }
-
+    
     try:
         resp = connection.invoke_sdk("create_rule", module_args={"rule_params":rule_params})
     except Exception as error:
@@ -299,6 +481,27 @@ def update_firewallrule(connection, module, result):
         "src_networks": module.params.get("src_networks"),
         "dst_networks": module.params.get("dst_networks"),
         "service_list": module.params.get("service_list"),
+        "web_filter": module.params.get("web_filter"),
+        "web_category_traffic_shaping": module.params.get("web_category_traffic_shaping"),
+        "block_quic": module.params.get("block_quic"),
+        "scan_virus": module.params.get("scan_virus"),
+        "proxy_mode": module.params.get("proxy_mode"),
+        "decrypt_https": module.params.get("decrypt_https"),
+        "source_security_heartbeat": module.params.get("source_security_heartbeat"),
+        "minimum_source_hb_permitted": module.params.get("minimum_source_hb_permitted"),
+        "dest_security_heartbeat": module.params.get("dest_security_heartbeat"),
+        "minimum_dest_hb_permitted": module.params.get("minimum_dest_hb_permitted"),
+        "application_control": module.params.get("application_control"),
+        "application_base_qos_policy": module.params.get("application_base_qos_policy"),
+        "intrusion_prevention": module.params.get("intrusion_prevention"),
+        "qos_policy": module.params.get("qos_policy"),
+        "dscp_marking": module.params.get("dscp_marking"),
+        "scan_smtp": module.params.get("scan_smtp"),
+        "scan_smtps": module.params.get("scan_smtps"),
+        "scan_imap": module.params.get("scan_imap"),
+        "scan_imaps": module.params.get("scan_imaps"),
+        "scan_pop3": module.params.get("scan_pop3"),
+        "scan_pop3s": module.params.get("scan_pop3s"),
     }
     try:
         resp = connection.invoke_sdk("update_rule", module_args={
@@ -333,6 +536,27 @@ def main():
         "src_networks": {"type": "list", "elements": "str"},
         "dst_networks": {"type": "list", "elements": "str"},
         "service_list": {"type": "list", "elements": "str"},
+        "web_filter": {"type": "str"},
+        "web_category_traffic_shaping": {"type": "str"},
+        "block_quic": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_virus": {"type": "str", "choices": ["Enable", "Disable"]},
+        "proxy_mode": {"type": "str", "choices": ["Enable", "Disable"]},
+        "decrypt_https": {"type": "str", "choices": ["Enable", "Disable"]},
+        "source_security_heartbeat": {"type": "str", "choices": ["Enable", "Disable"]},
+        "minimum_source_hb_permitted": {"type": "str"},
+        "dest_security_heartbeat": {"type": "str", "choices": ["Enable", "Disable"]},
+        "minimum_dest_hb_permitted": {"type": "str"},
+        "application_control": {"type": "str", "choices": ["Enable", "Disable"]},
+        "application_base_qos_policy": {"type": "str"},
+        "intrusion_prevention": {"type": "str", "choices": ["Enable", "Disable"]},
+        "qos_policy": {"type": "str"},
+        "dscp_marking": {"type": "str"},
+        "scan_smtp": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_smtps": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_imap": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_imaps": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_pop3": {"type": "str", "choices": ["Enable", "Disable"]},
+        "scan_pop3s": {"type": "str", "choices": ["Enable", "Disable"]},
         "state": {
             "required": True,
             "choices": ["present", "absent", "updated", "query"],
