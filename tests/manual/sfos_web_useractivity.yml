@@ -1,0 +1,207 @@
+---
+# File: tests/manual/sfos_web_useractivity.yml
+# Purpose: Manual test for sfos_web_useractivity module
+# Usage: ansible-playbook tests/manual/sfos_web_useractivity.yml -i inventory.yml
+
+- name: Test sfos_web_useractivity module
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    # 1. Query an existing user activity (if any)
+    - name: Query user activity
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        state: query
+      register: query_result
+      ignore_errors: yes
+      tags: query
+    
+    - name: Display query result
+      debug:
+        var: query_result
+      tags: query
+    
+    # 2. Create a user activity with web categories only
+    - name: Create user activity with web categories
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        description: "Test user activity created by Ansible"
+        category_list:
+          - id: "Advertisements"
+            type: "web category"
+          - id: "Spam URLs"
+            type: "web category"
+        state: present
+      register: create_result
+      tags: create
+    
+    - name: Display create result
+      debug:
+        var: create_result
+      tags: create
+    
+    # 3. Query the created user activity
+    - name: Query created user activity
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        state: query
+      register: query_after_create
+      tags: create
+    
+    - name: Display query after create result
+      debug:
+        var: query_after_create
+      tags: query
+    
+    # 4. Update the user activity with additional categories
+    - name: Update user activity with additional categories
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        description: "Updated test user activity"
+        category_list:
+          - id: "Advertisements"
+            type: "web category"
+          - id: "Spam URLs"
+            type: "web category"
+          - id: "Extreme"
+            type: "web category"
+        state: updated
+      register: update_result
+      tags: update
+    
+    - name: Display update result
+      debug:
+        var: update_result
+      tags: update
+    
+    # 5. Query the updated user activity
+    - name: Query updated user activity
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        state: query
+      register: query_after_update
+      tags: update
+    
+    - name: Display query after update result
+      debug:
+        var: query_after_update
+      tags: update
+    
+    # 6. Create a user activity with mixed category types
+    - name: Create user activity with mixed categories
+      sfos_web_useractivity:
+        name: "Mixed Category Activity"
+        description: "User activity with mixed category types"
+        category_list:
+          - id: "Social Networking"
+            type: "web category"
+          - id: "Document Files"
+            type: "file type"
+        state: present
+      register: create_mixed_result
+      tags: create_mixed
+    
+    - name: Display create mixed result
+      debug:
+        var: create_mixed_result
+      tags: create_mixed
+    
+    # 7. Query the mixed category user activity
+    - name: Query mixed category user activity
+      sfos_web_useractivity:
+        name: "Mixed Category Activity"
+        state: query
+      register: query_mixed
+      tags: create_mixed
+    
+    - name: Display query mixed result
+      debug:
+        var: query_mixed
+      tags: create_mixed
+       
+    # 11. Update mixed category activity with additional file types
+    - name: Update mixed category activity with more categories
+      sfos_web_useractivity:
+        name: "Mixed Category Activity"
+        description: "Updated mixed category activity"
+        category_list:
+          - id: "Social Networking"
+            type: "web category"
+          - id: "Document Files"
+            type: "file type"
+          - id: "Audio Files"
+            type: "file type"
+        state: updated
+      register: update_mixed_result
+      tags: update_mixed
+    
+    - name: Display update mixed result
+      debug:
+        var: update_mixed_result
+      tags: update_mixed
+
+    - name: Display updated mixed category user activity
+      sfos_web_useractivity:
+        name: "Mixed Category Activity"
+        state: query
+      register: query_mixed
+      tags: update_mixed
+    
+    # 12. Create a user activity with file types only
+    - name: Create user activity with file types only
+      sfos_web_useractivity:
+        name: "File Type Activity"
+        description: "User activity focused on file types"
+        category_list:
+          - id: "Audio Files"
+            type: "file type"
+          - id: "Backup Files"
+            type: "file type"
+          - id: "Document Files"
+            type: "file type"
+        state: present
+      register: create_filetype_result
+      tags: create_filetype
+    
+    - name: Display create filetype result
+      debug:
+        var: create_filetype_result
+      tags: create_filetype
+    
+    # 13. Remove the user activities (cleanup)
+    - name: Remove basic user activity
+      sfos_web_useractivity:
+        name: "Test User Activity"
+        state: absent
+      register: remove_result
+      tags: remove
+    
+    - name: Display remove result
+      debug:
+        var: remove_result
+      tags: remove
+    
+    - name: Remove mixed category user activity
+      sfos_web_useractivity:
+        name: "Mixed Category Activity"
+        state: absent
+      register: remove_mixed_result
+      tags: remove_mixed
+    
+    - name: Display remove mixed result
+      debug:
+        var: remove_mixed_result
+      tags: remove_mixed
+    
+    - name: Remove file type user activity
+      sfos_web_useractivity:
+        name: "File Type Activity"
+        state: absent
+      register: remove_filetype_result
+      tags: remove_filetype
+    
+    - name: Display remove filetype result
+      debug:
+        var: remove_filetype_result
+      tags: remove_filetype

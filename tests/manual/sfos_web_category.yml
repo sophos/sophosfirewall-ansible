@@ -1,0 +1,153 @@
+---
+# File: tests/manual/sfos_web_category.yml
+# Purpose: Manual test for sfos_web_category module
+# Usage: ansible-playbook tests/manual/sfos_web_category.yml -i inventory.yml
+
+- name: Test sfos_web_category module
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    # 1. Query an existing web category (if any)
+    - name: Query web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Activex"
+        state: query
+      register: query_result
+      tags: query
+    
+    - name: Display query result
+      debug:
+        var: query_result
+      tags: query
+    
+    # 2. Create a new web category with Local configuration
+    - name: Create web category with Local configuration
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Test Web Category"
+        classification: "Productive"
+        qospolicy: "None"
+        description: "Test web category created by Ansible"
+        configurecategory: "Local"
+        domain_url:
+          - "example.com"
+          - "test.example.org"
+        keyword:
+          - "test"
+          - "example"
+        state: present
+      register: create_result
+      tags: create
+    
+    - name: Display create result
+      debug:
+        var: create_result
+      tags: create
+    
+    # 3. Query the created web category
+    - name: Query created web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Test Web Category"
+        state: query
+      register: query_after_create
+      tags: create
+    
+    - name: Display query after create result
+      debug:
+        var: query_after_create
+      tags: create
+    
+    # 4. Update the web category
+    - name: Update web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Test Web Category"
+        classification: "Acceptable"
+        description: "Updated test web category"
+        domain_url:
+          - "example.com"
+          - "test.example.org"
+          - "updated.example.com"
+        keyword:
+          - "test"
+          - "example"
+          - "updated"
+        defaultdeniedmessage: "<html><body><h1>Access Denied</h1><p>Custom access denied message.</p></body></html>"
+        state: updated
+      register: update_result
+      tags: update
+    
+    - name: Display update result
+      debug:
+        var: update_result
+      tags: update
+    
+    # 5. Query the updated web category
+    - name: Query updated web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Test Web Category"
+        state: query
+      register: query_after_update
+      tags: update
+    
+    - name: Display query after update result
+      debug:
+        var: query_after_update
+      tags: update
+    
+    # 6. Create a web category with External configuration
+    - name: Create web category with External configuration
+      sophos.sophos_firewall.sfos_web_category:
+        name: "External Test Category"
+        classification: "Unproductive"
+        qospolicy: "None"
+        description: "External test web category created by Ansible"
+        configurecategory: "External"
+        domain_url:
+          - "http://external-example.com"
+          - "ftp://external-test.example.org"
+        state: present
+      register: create_external_result
+      tags: create_external
+    
+    - name: Display create external result
+      debug:
+        var: create_external_result
+      tags: create_external
+    
+    # 7. Query the external web category
+    - name: Query external web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "External Test Category"
+        state: query
+      register: query_external
+      tags: create_external
+
+    - name: Display query external result
+      debug:
+        var: query_external
+      tags: create_external
+    
+    # 8. Remove the web categories (cleanup)
+    - name: Remove local web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "Test Web Category"
+        state: absent
+      register: remove_result
+      tags: remove
+    
+    - name: Display remove result
+      debug:
+        var: remove_result
+      tags: remove
+    
+    - name: Remove external web category
+      sophos.sophos_firewall.sfos_web_category:
+        name: "External Test Category"
+        state: absent
+      register: remove_external_result
+      tags: remove
+    
+    - name: Display remove external result
+      debug:
+        var: remove_external_result
+      tags: remove

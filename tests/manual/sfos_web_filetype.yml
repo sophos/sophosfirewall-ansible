@@ -1,0 +1,224 @@
+---
+# File: tests/manual/sfos_web_filetype.yml
+# Purpose: Manual test for sfos_web_filetype module
+# Usage: ansible-playbook tests/manual/sfos_web_filetype.yml -i inventory.yml
+
+- name: Test sfos_web_filetype module
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    # 1. Query an existing file type (if any)
+    - name: Query file type
+      sfos_web_filetype:
+        name: "Test File Type"
+        state: query
+      register: query_result
+      tags: query
+    
+    - name: Display query result
+      debug:
+        var: query_result
+      tags: query
+    
+    # 2. Create a new file type with extensions only
+    - name: Create file type with extensions only
+      sfos_web_filetype:
+        name: "Test File Type"
+        description: "Test file type created by Ansible"
+        file_extension:
+          - "pdf"
+          - "doc"
+          - "txt"
+        state: present
+      register: create_result
+      tags: create
+    
+    - name: Display create result
+      debug:
+        var: create_result
+      tags: create
+    
+    # 3. Query the created file type
+    - name: Query created file type
+      sfos_web_filetype:
+        name: "Test File Type"
+        state: query
+      register: query_after_create
+      tags: query
+    
+    - name: Display query after create result
+      debug:
+        var: query_after_create
+      tags: query
+    
+    # 4. Update the file type with additional extensions
+    - name: Update file type with additional extensions
+      sfos_web_filetype:
+        name: "Test File Type"
+        description: "Updated test file type"
+        file_extension:
+          - "pdf"
+          - "doc"
+          - "txt"
+          - "rtf"
+          - "odt"
+        state: updated
+      register: update_result
+      tags: update
+    
+    - name: Display update result
+      debug:
+        var: update_result
+      tags: update
+    
+    # 5. Query the updated file type
+    - name: Query updated file type
+      sfos_web_filetype:
+        name: "Test File Type"
+        state: query
+      register: query_after_update
+      tags: query
+    
+    - name: Display query after update result
+      debug:
+        var: query_after_update
+      tags: query
+    
+    # 6. Create a file type with extensions and MIME headers
+    - name: Create file type with extensions and MIME headers
+      sfos_web_filetype:
+        name: "Advanced File Type"
+        description: "Advanced file type with extensions and MIME headers"
+        file_extension:
+          - "jpg"
+          - "png"
+          - "gif"
+        mime_header:
+          - "image/jpeg"
+          - "image/png"
+          - "image/gif"
+        state: present
+      register: create_advanced_result
+      tags: create
+    
+    - name: Display create advanced result
+      debug:
+        var: create_advanced_result
+      tags: create
+    
+    # 7. Query the advanced file type
+    - name: Query advanced file type
+      sfos_web_filetype:
+        name: "Advanced File Type"
+        state: query
+      register: query_advanced
+      tags: query
+    
+    - name: Display query advanced result
+      debug:
+        var: query_advanced
+      tags: query
+    
+    # 8. Update advanced file type with additional MIME headers
+    - name: Update advanced file type with additional MIME headers
+      sfos_web_filetype:
+        name: "Advanced File Type"
+        description: "Updated advanced file type with more MIME headers"
+        mime_header:
+          - "image/jpeg"
+          - "image/png"
+          - "image/gif"
+          - "image/bmp"
+          - "image/webp"
+        state: updated
+      register: update_advanced_result
+      tags: update
+    
+    - name: Display update advanced result
+      debug:
+        var: update_advanced_result
+      tags: update
+    
+    # 9. Create a file type with only description
+    - name: Create file type with description only
+      sfos_web_filetype:
+        name: "Simple File Type"
+        description: "File type with only description for testing"
+        state: present
+      register: create_simple_result
+      tags: create
+    
+    - name: Display create simple result
+      debug:
+        var: create_simple_result
+      tags: create
+    
+    # 10. Query the simple file type
+    - name: Query simple file type
+      sfos_web_filetype:
+        name: "Simple File Type"
+        state: query
+      register: query_simple
+      tags: query
+    
+    - name: Display query simple result
+      debug:
+        var: query_simple
+      tags: query
+    
+    # 11. Update simple file type with extensions
+    - name: Update simple file type with extensions
+      sfos_web_filetype:
+        name: "Simple File Type"
+        description: "Updated simple file type with extensions"
+        file_extension:
+          - "xml"
+          - "json"
+          - "yaml"
+        state: updated
+      register: update_simple_result
+      tags: update
+    
+    - name: Display update simple result
+      debug:
+        var: update_simple_result
+      tags: update
+    
+    # Removal does not work in 21.5, returns 500: Operation could not be performed on entity
+    # 12. Remove the file types (cleanup)
+    - name: Remove basic file type
+      sfos_web_filetype:
+        name: "Test File Type"
+        state: absent
+      register: remove_result
+      tags: remove
+    
+    - name: Display remove result
+      debug:
+        var: remove_result
+      tags: remove
+    
+    - name: Remove advanced file type
+      sfos_web_filetype:
+        name: "Advanced File Type"
+        state: absent
+      register: remove_advanced_result
+      tags: remove
+    
+    - name: Display remove advanced result
+      debug:
+        var: remove_advanced_result
+      tags: remove
+    
+    - name: Remove simple file type
+      sfos_web_filetype:
+        name: "Simple File Type"
+        state: absent
+      register: remove_simple_result
+      tags: remove
+    
+    - name: Display remove simple result
+      debug:
+        var: remove_simple_result
+      tags: remove

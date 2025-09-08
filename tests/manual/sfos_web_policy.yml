@@ -1,0 +1,406 @@
+---
+# File: tests/manual/sfos_web_policy.yml
+# Purpose: Manual test for sfos_web_policy module
+# Usage: ansible-playbook tests/manual/sfos_web_policy.yml -i inventory.yml
+
+- name: Test sfos_web_policy module
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    # 1. Query an existing web filter policy (if any)
+    - name: Query web filter policy
+      sfos_web_policy:
+        name: "Test Policy"
+        state: query
+      register: query_result
+      ignore_errors: yes
+      tags: query
+    
+    - name: Display query result
+      debug:
+        var: query_result
+      tags: query
+    
+    # 2. Create a basic web filter policy
+    - name: Create basic web filter policy
+      sfos_web_policy:
+        name: "Test Policy"
+        default_action: "Allow"
+        description: "Basic test policy created by Ansible"
+        state: present
+      register: create_basic_result
+      tags: create
+    
+    - name: Display create basic result
+      debug:
+        var: create_basic_result
+      tags: create
+    
+    # 3. Query the created basic policy
+    - name: Query created basic policy
+      sfos_web_policy:
+        name: "Test Policy"
+        state: query
+      register: query_after_create_basic
+      tags: create
+    
+    - name: Display query after create basic result
+      debug:
+        var: query_after_create_basic
+      tags: create
+    
+    # 4. Create an advanced web filter policy
+    - name: Create advanced web filter policy
+      sfos_web_policy:
+        name: "Advanced Test Policy"
+        default_action: "Deny"
+        download_file_size_restriction: 100
+        download_file_size_restriction_enabled: true
+        enable_reporting: "Enable"
+        youtube_filter_enabled: true
+        youtube_filter_is_strict: true
+        enforce_safe_search: true
+        enforce_image_licensing: true
+        quota_limit: 30
+        description: "Advanced test policy with content restrictions"
+        state: present
+      register: create_advanced_result
+      tags: create_advanced
+    
+    - name: Display create advanced result
+      debug:
+        var: create_advanced_result
+      tags: create_advanced
+    
+    # 5. Create a web filter policy with rules
+    - name: Create web filter policy with rules
+      sfos_web_policy:
+        name: "Policy with Rules"
+        default_action: "Allow"
+        download_file_size_restriction: 200
+        enable_reporting: "Enable"
+        description: "Test policy with category rules"
+        rules:
+          - categories:
+              - id: "Social Networking"
+                type: "WebCategory"
+              - id: "Criminal Activity"
+                type: "WebCategory"
+            http_action: "Deny"
+            https_action: "Deny"
+            schedule: "All The Time"
+            policy_rule_enabled: true
+            ccl_rule_enabled: false
+          - categories:
+              - id: "Document Files"
+                type: "FileType"
+            http_action: "Allow"
+            https_action: "Allow"
+            policy_rule_enabled: true
+            ccl_rule_enabled: false
+        state: present
+      register: create_rules_result
+      tags: create_rules
+    
+    - name: Display create rules result
+      debug:
+        var: create_rules_result
+      tags: create_rules
+    
+    # 6. Create a web filter policy with cloud services
+    - name: Create web filter policy with cloud services
+      sfos_web_policy:
+        name: "Cloud Services Policy"
+        default_action: "Allow"
+        download_file_size_restriction: 500
+        enable_reporting: "Enable"
+        goog_app_domain_list: "example.com,test.org"
+        goog_app_domain_list_enabled: true
+        office_365_tenants_list: "tenant1.onmicrosoft.com,tenant2.onmicrosoft.com"
+        office_365_enabled: true
+        xff_enabled: true
+        description: "Policy for cloud services access"
+        state: present
+      register: create_cloud_result
+      tags: create_cloud
+    
+    - name: Display create cloud result
+      debug:
+        var: create_cloud_result
+      tags: create_cloud
+    
+    # 7. Update the basic policy
+    - name: Update basic web filter policy
+      sfos_web_policy:
+        name: "Test Policy"
+        default_action: "Deny"
+        download_file_size_restriction: 75
+        description: "Updated basic test policy"
+        state: updated
+      register: update_basic_result
+      tags: update
+    
+    - name: Display update basic result
+      debug:
+        var: update_basic_result
+      tags: update
+    
+    # 8. Update policy with rule replacement
+    - name: Update policy with rule replacement
+      sfos_web_policy:
+        name: "Policy with Rules"
+        description: "Updated policy with replaced rules"
+        rules:
+          - categories:
+              - id: "Advertisements"
+                type: "WebCategory"
+            http_action: "Deny"
+            https_action: "Deny"
+            policy_rule_enabled: true
+            ccl_rule_enabled: false
+        rule_action: "replace"
+        state: updated
+      register: update_replace_rules_result
+      tags: update_rules
+    
+    - name: Display update replace rules result
+      debug:
+        var: update_replace_rules_result
+      tags: update_rules
+    
+    # 9. Update policy with rule addition
+    - name: Update policy with rule addition
+      sfos_web_policy:
+        name: "Policy with Rules"
+        description: "Updated policy with additional rules"
+        rules:
+          - categories:
+              - id: "Spam URLs"
+                type: "WebCategory"
+            http_action: "Deny"
+            https_action: "Deny"
+            policy_rule_enabled: true
+            ccl_rule_enabled: false
+        rule_action: "add"
+        state: updated
+      register: update_add_rules_result
+      tags: update_rules
+    
+    - name: Display update add rules result
+      debug:
+        var: update_add_rules_result
+      tags: update_rules
+    
+    # 10. Update advanced policy with all options
+    - name: Update advanced policy with modified settings
+      sfos_web_policy:
+        name: "Advanced Test Policy"
+        default_action: "Allow"
+        download_file_size_restriction: 150
+        download_file_size_restriction_enabled: false
+        youtube_filter_enabled: false
+        youtube_filter_is_strict: false
+        enforce_safe_search: false
+        enforce_image_licensing: false
+        quota_limit: 60
+        description: "Updated advanced policy with modified settings"
+        state: updated
+      register: update_advanced_result
+      tags: update_advanced
+    
+    - name: Display update advanced result
+      debug:
+        var: update_advanced_result
+      tags: update_advanced
+    
+    # 11. Update cloud services policy
+    - name: Update cloud services policy
+      sfos_web_policy:
+        name: "Cloud Services Policy"
+        goog_app_domain_list: "newdomain.com,updated.org"
+        goog_app_domain_list_enabled: false
+        office_365_tenants_list: "newtenant.onmicrosoft.com"
+        office_365_enabled: false
+        xff_enabled: false
+        description: "Updated cloud services policy"
+        state: updated
+      register: update_cloud_result
+      tags: update_cloud
+
+    - name: Display update cloud result
+      debug:
+        var: update_cloud_result
+      tags: update_cloud
+
+    # 12. Create a policy with mixed rule types
+    - name: Create policy with mixed rule types
+      sfos_web_policy:
+        name: "Mixed Rules Policy"
+        default_action: "Deny"
+        download_file_size_restriction: 250
+        enable_reporting: "Enable"
+        description: "Policy with mixed rule category types"
+        rules:
+          - categories:
+              - id: "Social Networking"
+                type: "WebCategory"
+              - id: "Audio Files"
+                type: "FileType"
+            http_action: "Deny"
+            https_action: "Deny"
+            follow_http_action: true
+            schedule: "All The Time"
+            policy_rule_enabled: true
+            ccl_rule_enabled: false
+        state: present
+      register: create_mixed_result
+      tags: create_mixed
+    
+    - name: Display create mixed result
+      debug:
+        var: create_mixed_result
+      tags: create_mixed
+    
+    # 13. Create a policy with default file size restriction
+    - name: Create policy with default file size restriction
+      sfos_web_policy:
+        name: "Default Size Policy"
+        default_action: "Allow"
+        enable_reporting: "Enable"
+        description: "Policy using default file size restriction (0 MB)"
+        state: present
+      register: create_default_size_result
+      tags: create_default
+
+    - name: Display create default size result
+      debug:
+        var: create_default_size_result
+      tags: create_default
+    
+    # 14. Query all created policies
+    - name: Query basic policy
+      sfos_web_policy:
+        name: "Test Policy"
+        state: query
+      register: query_basic_final
+      tags: query
+    
+    - name: Query advanced policy
+      sfos_web_policy:
+        name: "Advanced Test Policy"
+        state: query
+      register: query_advanced_final
+      tags: query
+    
+    - name: Query rules policy
+      sfos_web_policy:
+        name: "Policy with Rules"
+        state: query
+      register: query_rules_final
+      tags: query
+    
+    - name: Query cloud policy
+      sfos_web_policy:
+        name: "Cloud Services Policy"
+        state: query
+      register: query_cloud_final
+      tags: query
+    
+    - name: Query mixed policy
+      sfos_web_policy:
+        name: "Mixed Rules Policy"
+        state: query
+      register: query_mixed_final
+      tags: query
+    
+    - name: Query default size policy
+      sfos_web_policy:
+        name: "Default Size Policy"
+        state: query
+      register: query_default_size_final
+      tags: query
+    
+    - name: Display all final query results
+      debug:
+        msg:
+          - "Basic Policy: {{ query_basic_final.api_response.Response.WebFilterPolicy.Name if query_basic_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+          - "Advanced Policy: {{ query_advanced_final.api_response.Response.WebFilterPolicy.Name if query_advanced_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+          - "Rules Policy: {{ query_rules_final.api_response.Response.WebFilterPolicy.Name if query_rules_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+          - "Cloud Policy: {{ query_cloud_final.api_response.Response.WebFilterPolicy.Name if query_cloud_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+          - "Mixed Policy: {{ query_mixed_final.api_response.Response.WebFilterPolicy.Name if query_mixed_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+          - "Default Size Policy: {{ query_default_size_final.api_response.Response.WebFilterPolicy.Name if query_default_size_final.api_response.Response.WebFilterPolicy is defined else 'Not Found' }}"
+      tags: query
+    
+    # 15. Remove all test policies (cleanup)
+    - name: Remove basic web filter policy
+      sfos_web_policy:
+        name: "Test Policy"
+        state: absent
+      register: remove_basic_result
+      tags: remove
+    
+    - name: Display remove basic result
+      debug:
+        var: remove_basic_result
+      tags: remove
+    
+    - name: Remove advanced web filter policy
+      sfos_web_policy:
+        name: "Advanced Test Policy"
+        state: absent
+      register: remove_advanced_result
+      tags: remove
+    
+    - name: Display remove advanced result
+      debug:
+        var: remove_advanced_result
+      tags: remove
+    
+    - name: Remove rules web filter policy
+      sfos_web_policy:
+        name: "Policy with Rules"
+        state: absent
+      register: remove_rules_result
+      tags: remove
+    
+    - name: Display remove rules result
+      debug:
+        var: remove_rules_result
+      tags: remove
+    
+    - name: Remove cloud services web filter policy
+      sfos_web_policy:
+        name: "Cloud Services Policy"
+        state: absent
+      register: remove_cloud_result
+      tags: remove
+    
+    - name: Display remove cloud result
+      debug:
+        var: remove_cloud_result
+      tags: remove
+    
+    - name: Remove mixed rules web filter policy
+      sfos_web_policy:
+        name: "Mixed Rules Policy"
+        state: absent
+      register: remove_mixed_result
+      tags: remove
+    
+    - name: Display remove mixed result
+      debug:
+        var: remove_mixed_result
+      tags: remove
+    
+    - name: Remove default size web filter policy
+      sfos_web_policy:
+        name: "Default Size Policy"
+        state: absent
+      register: remove_default_size_result
+      tags: remove
+    
+    - name: Display remove default size result
+      debug:
+        var: remove_default_size_result
+      tags: remove

@@ -1,0 +1,287 @@
+---
+# Manual tests for sfos_qos_policy module
+# Usage: ansible-playbook -i inventory sfos_qos_policy.yml --tags=<tag>
+# Available tags: query, create, update, remove, advanced, all
+
+- name: Manual QoS Policy Tests
+  hosts: sophos_firewall
+  connection: httpapi
+  gather_facts: false
+
+  tasks:
+    # Query Operations
+    - name: Query all QoS policies
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: ""
+        state: query
+      register: result
+      tags: [query, all]
+
+    - name: Display all QoS policies
+      debug:
+        var: result
+      tags: [query, all]
+
+    - name: Query specific QoS policy
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test QoS Policy"
+        state: query
+      register: result
+      tags: [query, all]
+
+    - name: Display specific QoS policy
+      debug:
+        var: result
+      tags: [query, all]
+
+    # Create Operations
+    - name: Create QoS Policy - Strict Total type
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test Strict Total"
+        policy_type: "Strict"
+        implementation_on: "Total"
+        priority: "BusinessCritical"
+        policy_based_on: "User"
+        bandwidth_usage_type: "Shared"
+        total_bandwidth: 1000
+        description: "Manual test - Strict policy with total bandwidth control"
+        state: present
+      register: result
+      tags: [create, all]
+
+    - name: Display Strict Total creation result
+      debug:
+        var: result
+      tags: [create, all]
+
+    - name: Create QoS Policy - Committed Individual type
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test Committed Individual"
+        policy_type: "Committed"
+        implementation_on: "Individual"
+        priority: "Normal2"
+        policy_based_on: "Application"
+        bandwidth_usage_type: "Individual"
+        guaranteed_upload_bandwidth: 500
+        burstable_upload_bandwidth: 1000
+        guaranteed_download_bandwidth: 1000
+        burstable_download_bandwidth: 2000
+        description: "Manual test - Committed policy with individual bandwidth limits"
+        state: present
+      register: result
+      tags: [create, all]
+
+    - name: Display Committed Individual creation result
+      debug:
+        var: result
+      tags: [create, all]
+
+    - name: Create QoS Policy - RealTime priority
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test RealTime"
+        policy_type: "Strict"
+        implementation_on: "Individual"
+        priority: "RealTime"
+        policy_based_on: "Firewall"
+        bandwidth_usage_type: "Individual"
+        upload_bandwidth: 2000
+        download_bandwidth: 4000
+        description: "Manual test - Policy with RealTime priority"
+        state: present
+      register: result
+      tags: [create, all]
+
+    - name: Display RealTime creation result
+      debug:
+        var: result
+      tags: [create, all]
+
+    - name: Create QoS Policy - BestEffort priority
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test BestEffort"
+        policy_type: "Strict"
+        implementation_on: "Individual"
+        priority: "BestEffort"
+        policy_based_on: "User"
+        bandwidth_usage_type: "Individual"
+        upload_bandwidth: 100
+        download_bandwidth: 200
+        description: "Manual test - Best effort QoS policy"
+        state: present
+      register: result
+      tags: [create, all]
+
+    - name: Display BestEffort creation result
+      debug:
+        var: result
+      tags: [create, all]
+
+    - name: Create QoS Policy - WebCategory based
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test WebCategory"
+        policy_type: "Committed"
+        implementation_on: "Individual"
+        priority: "Normal4"
+        policy_based_on: "WebCategory"
+        bandwidth_usage_type: "Individual"
+        guaranteed_upload_bandwidth: 200
+        burstable_upload_bandwidth: 500
+        guaranteed_download_bandwidth: 500
+        burstable_download_bandwidth: 1000
+        description: "Manual test - QoS policy for web categories"
+        state: present
+      register: result
+      tags: [create, all]
+
+    - name: Display WebCategory creation result
+      debug:
+        var: result
+      tags: [create, all]
+
+    # Update Operations
+    - name: Update QoS Policy - Change total bandwidth
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test Strict Total"
+        total_bandwidth: 1500
+        description: "Manual test - Updated strict policy with increased bandwidth"
+        state: updated
+      register: result
+      tags: [update, all]
+
+    - name: Display bandwidth update result
+      debug:
+        var: result
+      tags: [update, all]
+
+    - name: Update QoS Policy - Change priority
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test RealTime"
+        priority: "Normal3"
+        description: "Manual test - Updated policy with changed priority"
+        state: updated
+      register: result
+      tags: [update, all]
+
+    - name: Display priority update result
+      debug:
+        var: result
+      tags: [update, all]
+
+    - name: Update QoS Policy - Change Individual bandwidth limits
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test Committed Individual"
+        guaranteed_upload_bandwidth: 750
+        burstable_upload_bandwidth: 1500
+        guaranteed_download_bandwidth: 1500
+        burstable_download_bandwidth: 3000
+        description: "Manual test - Updated committed policy with increased limits"
+        state: updated
+      register: result
+      tags: [update, all]
+
+    - name: Display individual bandwidth update result
+      debug:
+        var: result
+      tags: [update, all]
+
+    # Advanced Features
+    - name: Create QoS Policy with Schedule-based Rules
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Manual Test Schedule Based"
+        policy_type: "Strict"
+        implementation_on: "Total"
+        priority: "Normal3"
+        policy_based_on: "Firewall"
+        bandwidth_usage_type: "Shared"
+        total_bandwidth: 2000
+        description: "Manual test - Policy with schedule-based bandwidth rules"
+        schedule_based_rules:
+          - detail_id: "BusinessHours"
+            policy_type: "Strict"
+            total_bandwidth: 1500
+            schedule: "AllTime"
+          - detail_id: "OffHours"
+            policy_type: "Committed"
+            guaranteed_bandwidth: 500
+            burstable_bandwidth: 1000
+            schedule: "AllTime"
+        state: present
+      register: result
+      tags: [advanced, all]
+
+    - name: Display Schedule-based creation result
+      debug:
+        var: result
+      tags: [advanced, all]
+
+    # Verification Queries
+    - name: Query created QoS policies for verification
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "{{ item }}"
+        state: query
+      register: verify_results
+      loop:
+        - "Manual Test Strict Total"
+        - "Manual Test Committed Individual"
+        - "Manual Test RealTime"
+        - "Manual Test BestEffort"
+        - "Manual Test WebCategory"
+        - "Manual Test Schedule Based"
+      tags: [verify, all]
+
+    - name: Display verification results
+      debug:
+        var: verify_results
+      tags: [verify, all]
+
+    # Remove Operations
+    - name: Remove test QoS policies
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "{{ item }}"
+        state: absent
+      register: result
+      loop:
+        - "Manual Test Strict Total"
+        - "Manual Test Committed Individual"
+        - "Manual Test RealTime"
+        - "Manual Test BestEffort"
+        - "Manual Test WebCategory"
+        - "Manual Test Schedule Based"
+      tags: [remove, cleanup, all]
+
+    - name: Display removal results
+      debug:
+        var: result
+      tags: [remove, cleanup, all]
+
+    # Error Testing
+    - name: Test invalid bandwidth range (should fail)
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Test Invalid Bandwidth"
+        priority: "Normal2"
+        total_bandwidth: 1
+        state: present
+      register: result
+      ignore_errors: true
+      tags: [error_test, all]
+
+    - name: Display invalid bandwidth test result
+      debug:
+        var: result
+      tags: [error_test, all]
+
+    - name: Test burstable less than guaranteed (should fail)
+      sophos.sophos_firewall.sfos_qos_policy:
+        name: "Test Invalid Burstable"
+        priority: "Normal2"
+        guaranteed_bandwidth: 1000
+        burstable_bandwidth: 500
+        state: present
+      register: result
+      ignore_errors: true
+      tags: [error_test, all]
+
+    - name: Display burstable bandwidth test result
+      debug:
+        var: result
+      tags: [error_test, all]
