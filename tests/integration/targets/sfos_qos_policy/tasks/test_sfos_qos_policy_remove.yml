@@ -1,0 +1,69 @@
+---
+# Test QoS Policy Removal
+- name: Remove QoS Policy - Strict Total
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Strict Total"
+    state: absent
+  register: result
+
+- name: Assert QoS Policy removed successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "QoS Policy removal failed"
+    success_msg: "QoS Policy removed successfully"
+
+- name: Verify QoS Policy removal
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Strict Total"
+    state: query
+  register: result
+
+- name: Assert QoS Policy no longer exists
+  assert:
+    that:
+      - result.api_response.Response.QoSPolicy.Name is not defined or result.api_response.Response.QoSPolicy.Name == ""
+    fail_msg: "QoS Policy should not exist after removal"
+    success_msg: "QoS Policy correctly removed"
+
+- name: Remove QoS Policy - Committed Individual
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Committed Individual"
+    state: absent
+  register: result
+
+- name: Assert Committed QoS Policy removed successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Committed QoS Policy removal failed"
+    success_msg: "Committed QoS Policy removed successfully"
+
+- name: Remove QoS Policy - Business Critical
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Business Critical"
+    state: absent
+  register: result
+
+- name: Assert Business Critical QoS Policy removed successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Business Critical QoS Policy removal failed"
+    success_msg: "Business Critical QoS Policy removed successfully"
+
+- name: Remove non-existent QoS Policy
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "NonExistent QoS Policy"
+    state: absent
+  register: result
+
+- name: Assert non-existent QoS Policy removal is idempotent
+  assert:
+    that:
+      - result.changed == false
+    fail_msg: "Non-existent QoS Policy removal should be idempotent"
+    success_msg: "Non-existent QoS Policy removal correctly idempotent"

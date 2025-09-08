@@ -1,0 +1,161 @@
+---
+# Test Advanced QoS Policy Features
+- name: Pre-test cleanup - Remove advanced test QoS policies
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "Test QoS Schedule Based - Single Rule"
+    - "Test QoS Schedule Based"
+    - "Test QoS WebCategory"
+    - "Test QoS BestEffort"
+  ignore_errors: true
+
+- name: Create QoS Policy with single Schedule-based Rule
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Schedule Based - Single Rule"
+    policy_type: "Strict"
+    implementation_on: "Total"
+    priority: "Normal3"
+    policy_based_on: "Firewall"
+    bandwidth_usage_type: "Shared"
+    total_bandwidth: 2000
+    description: "Policy with schedule-based bandwidth rules"
+    schedule_based_rules:
+      - detail_id: "BusinessHours"
+        policy_type: "Strict"
+        total_bandwidth: 1500
+        schedule: "AllTime"
+    state: present
+  register: result
+
+- name: Assert Schedule-based QoS Policy with single rule created successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Schedule-based QoS Policy creation failed"
+    success_msg: "Schedule-based QoS Policy with single rule created successfully"
+
+- name: Create QoS Policy with Schedule-based Rules
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Schedule Based"
+    policy_type: "Strict"
+    implementation_on: "Total"
+    priority: "Normal3"
+    policy_based_on: "Firewall"
+    bandwidth_usage_type: "Shared"
+    total_bandwidth: 2000
+    description: "Policy with schedule-based bandwidth rules"
+    schedule_based_rules:
+      - detail_id: "BusinessHours"
+        policy_type: "Strict"
+        total_bandwidth: 1500
+        schedule: "AllTime"
+      - detail_id: "OffHours"
+        policy_type: "Committed"
+        guaranteed_bandwidth: 500
+        burstable_bandwidth: 1000
+        schedule: "AllTime"
+    state: present
+  register: result
+
+- name: Assert Schedule-based QoS Policy created successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Schedule-based QoS Policy creation failed"
+    success_msg: "Schedule-based QoS Policy created successfully"
+
+- name: Create QoS Policy for WebCategory
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS WebCategory"
+    policy_type: "Committed"
+    implementation_on: "Individual"
+    priority: "Normal4"
+    policy_based_on: "WebCategory"
+    bandwidth_usage_type: "Individual"
+    guaranteed_upload_bandwidth: 200
+    burstable_upload_bandwidth: 500
+    guaranteed_download_bandwidth: 500
+    burstable_download_bandwidth: 1000
+    description: "QoS policy for web categories"
+    state: present
+  register: result
+
+- name: Assert WebCategory QoS Policy created successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "WebCategory QoS Policy creation failed"
+    success_msg: "WebCategory QoS Policy created successfully"
+
+- name: Create QoS Policy with BestEffort priority
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS BestEffort"
+    policy_type: "Strict"
+    implementation_on: "Individual"
+    priority: "BestEffort"
+    policy_based_on: "User"
+    bandwidth_usage_type: "Individual"
+    upload_bandwidth: 100
+    download_bandwidth: 200
+    description: "Best effort QoS policy"
+    state: present
+  register: result
+
+- name: Assert BestEffort QoS Policy created successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "BestEffort QoS Policy creation failed"
+    success_msg: "BestEffort QoS Policy created successfully"
+
+- name: Test parameter validation - Invalid bandwidth range
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test Invalid Bandwidth"
+    priority: "Normal2"
+    total_bandwidth: 1
+    state: present
+  register: result
+  ignore_errors: true
+
+- name: Assert invalid bandwidth validation
+  assert:
+    that:
+      - result.failed == true
+      - "'must be between 2 and 10240000' in result.msg"
+    fail_msg: "Bandwidth validation should fail for values outside range"
+    success_msg: "Bandwidth validation correctly failed"
+
+- name: Test parameter validation - Burstable less than guaranteed
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test Invalid Burstable"
+    priority: "Normal2"
+    guaranteed_bandwidth: 1000
+    burstable_bandwidth: 500
+    state: present
+  register: result
+  ignore_errors: true
+
+- name: Assert burstable bandwidth validation
+  assert:
+    that:
+      - result.failed == true
+      - "'Burstable bandwidth must be greater than guaranteed bandwidth' in result.msg"
+    fail_msg: "Burstable bandwidth validation should fail"
+    success_msg: "Burstable bandwidth validation correctly failed"
+
+- name: Clean up advanced test QoS policies
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "Test QoS Schedule Based - Single Rule"
+    - "Test QoS Schedule Based"
+    - "Test QoS WebCategory"
+    - "Test QoS BestEffort"
+  ignore_errors: true

@@ -1,0 +1,46 @@
+---
+# Test QoS Policy Queries
+- name: Query existing QoS Policy - Strict Total
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Strict Total"
+    state: query
+  register: result
+
+- name: Assert QoS Policy query successful
+  assert:
+    that:
+      - result.api_response.Response.QoSPolicy.Name == "Test QoS Strict Total"
+      - result.api_response.Response.QoSPolicy.PolicyType == "Strict"
+      - result.api_response.Response.QoSPolicy.ImplementationOn == "Total"
+      - result.api_response.Response.QoSPolicy.Priority == "BusinessCritical"
+    fail_msg: "QoS Policy query failed or returned incorrect data"
+    success_msg: "QoS Policy query successful"
+
+- name: Query existing QoS Policy - Committed Individual
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Committed Individual"
+    state: query
+  register: result
+
+- name: Assert Committed QoS Policy query successful
+  assert:
+    that:
+      - result.api_response.Response.QoSPolicy.Name == "Test QoS Committed Individual"
+      - result.api_response.Response.QoSPolicy.PolicyType == "Committed"
+      - result.api_response.Response.QoSPolicy.ImplementationOn == "Individual"
+      - result.api_response.Response.QoSPolicy.Priority == "Normal2"
+    fail_msg: "Committed QoS Policy query failed or returned incorrect data"
+    success_msg: "Committed QoS Policy query successful"
+
+- name: Query non-existent QoS Policy
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "NonExistent QoS Policy"
+    state: query
+  register: result
+
+- name: Assert non-existent QoS Policy query returns empty
+  assert:
+    that:
+      - result.api_response.Response.QoSPolicy.Name is not defined or result.api_response.Response.QoSPolicy.Name == ""
+    fail_msg: "Non-existent QoS Policy query should return empty result"
+    success_msg: "Non-existent QoS Policy query correctly returned empty"

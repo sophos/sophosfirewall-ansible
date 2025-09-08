@@ -1,0 +1,15 @@
+---
+- name: Import sfos_qos_policy create tests
+  import_tasks: test_sfos_qos_policy_create.yml
+
+- name: Import sfos_qos_policy query tests
+  import_tasks: test_sfos_qos_policy_query.yml
+
+- name: Import sfos_qos_policy update tests
+  import_tasks: test_sfos_qos_policy_update.yml
+
+- name: Import sfos_qos_policy remove tests
+  import_tasks: test_sfos_qos_policy_remove.yml
+
+- name: Import sfos_qos_policy advanced tests
+  import_tasks: test_sfos_qos_policy_advanced.yml

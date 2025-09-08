@@ -1,0 +1,219 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+# PRE-TEST CLEANUP - Remove any objects that might be left from previous test runs
+- name: CLEANUP - REMOVE USER ACTIVITY BASIC
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-BASIC
+    state: absent
+  register: cleanup_basic
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE USER ACTIVITY MIXED
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-MIXED
+    state: absent
+  register: cleanup_mixed
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE USER ACTIVITY SIMPLE
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-SIMPLE
+    state: absent
+  register: cleanup_simple
+  ignore_errors: true
+
+- name: PAUSE AFTER CLEANUP
+  pause:
+    seconds: 3
+  when: cleanup_basic.changed or cleanup_mixed.changed or cleanup_simple.changed
+
+- name: CREATE USER ACTIVITY WITH WEB CATEGORIES
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-BASIC
+    description: "Basic user activity for integration testing"
+    category_list:
+      - id: "Advertisements"
+        type: "web category"
+      - id: "Criminal Activity"
+        type: "web category"
+    state: present
+  register: useractivity_add_basic
+
+- name: ASSERTION CHECK FOR CREATE USER ACTIVITY BASIC
+  assert:
+    that: 
+      - useractivity_add_basic is changed
+      - useractivity_add_basic['api_response']['Response']['UserActivity']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in useractivity_add_basic['api_response']['Response']['UserActivity']['Status']['#text']"
+
+- name: QUERY USER ACTIVITY BASIC
+  sophos.sophos_firewall.sfos_web_useractivity:
+    state: query
+    name: IGT-TEST-USERACTIVITY-BASIC
+  register: query_useractivity_basic
+
+- name: ASSERTION CHECK FOR QUERY USER ACTIVITY BASIC
+  assert:
+    that: 
+      - query_useractivity_basic is not changed
+      - query_useractivity_basic['api_response']['Response']['UserActivity']['Name'] == 'IGT-TEST-USERACTIVITY-BASIC'
+      - query_useractivity_basic['api_response']['Response']['UserActivity']['Desc'] == 'Basic user activity for integration testing'
+
+- name: CREATE USER ACTIVITY WITH MIXED CATEGORIES
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-MIXED
+    description: "Mixed category user activity for integration testing"
+    category_list:
+      - id: "Social Networking"
+        type: "web category"
+      - id: "Document Files"
+        type: "file type"
+    state: present
+  register: useractivity_add_mixed
+
+- name: ASSERTION CHECK FOR CREATE USER ACTIVITY MIXED
+  assert:
+    that: 
+      - useractivity_add_mixed is changed
+      - useractivity_add_mixed['api_response']['Response']['UserActivity']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in useractivity_add_mixed['api_response']['Response']['UserActivity']['Status']['#text']"
+
+- name: QUERY USER ACTIVITY MIXED
+  sophos.sophos_firewall.sfos_web_useractivity:
+    state: query
+    name: IGT-TEST-USERACTIVITY-MIXED
+  register: query_useractivity_mixed
+
+- name: ASSERTION CHECK FOR QUERY USER ACTIVITY MIXED
+  assert:
+    that: 
+      - query_useractivity_mixed is not changed
+      - query_useractivity_mixed['api_response']['Response']['UserActivity']['Name'] == 'IGT-TEST-USERACTIVITY-MIXED'
+      - query_useractivity_mixed['api_response']['Response']['UserActivity']['Desc'] == 'Mixed category user activity for integration testing'
+
+- name: UPDATE USER ACTIVITY BASIC
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-BASIC
+    description: "Updated basic user activity description"
+    category_list:
+      - id: "Advertisements"
+        type: "web category"
+      - id: "Criminal Activity"
+        type: "web category"
+      - id: "Spam URLs"
+        type: "web category"
+    state: updated
+  register: update_useractivity_basic
+
+- name: ASSERTION CHECK FOR UPDATE USER ACTIVITY BASIC
+  assert:
+    that: 
+      - update_useractivity_basic is changed
+      - update_useractivity_basic['api_response']['Response']['UserActivity']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_useractivity_basic['api_response']['Response']['UserActivity']['Status']['#text']"
+
+- name: QUERY UPDATED USER ACTIVITY BASIC
+  sophos.sophos_firewall.sfos_web_useractivity:
+    state: query
+    name: IGT-TEST-USERACTIVITY-BASIC
+  register: query_updated_useractivity_basic
+
+- name: ASSERTION CHECK FOR QUERY UPDATED USER ACTIVITY BASIC
+  assert:
+    that: 
+      - query_updated_useractivity_basic is not changed
+      - query_updated_useractivity_basic['api_response']['Response']['UserActivity']['Name'] == 'IGT-TEST-USERACTIVITY-BASIC'
+      - query_updated_useractivity_basic['api_response']['Response']['UserActivity']['Desc'] == 'Updated basic user activity description'
+
+- name: UPDATE USER ACTIVITY BASIC NO CHANGE
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-BASIC
+    description: "Updated basic user activity description"
+    category_list:
+      - id: "Advertisements"
+        type: "web category"
+      - id: "Criminal Activity"
+        type: "web category"
+      - id: "Spam URLs"
+        type: "web category"
+    state: updated
+  register: update_useractivity_nochange
+
+- name: ASSERTION CHECK FOR UPDATE USER ACTIVITY BASIC NO CHANGE
+  assert:
+    that: 
+      - update_useractivity_nochange is not changed
+
+- name: REMOVE USER ACTIVITY BASIC
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-BASIC
+    state: absent
+  register: remove_useractivity_basic
+
+- name: ASSERTION CHECK FOR REMOVE USER ACTIVITY BASIC
+  assert:
+    that: 
+      - remove_useractivity_basic is changed
+      - remove_useractivity_basic['api_response']['Response']['UserActivity']['Status']['@code'] == "200"
+      - remove_useractivity_basic['api_response']['Response']['UserActivity']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE USER ACTIVITY MIXED
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-MIXED
+    state: absent
+  register: remove_useractivity_mixed
+
+- name: ASSERTION CHECK FOR REMOVE USER ACTIVITY MIXED
+  assert:
+    that: 
+      - remove_useractivity_mixed is changed
+      - remove_useractivity_mixed['api_response']['Response']['UserActivity']['Status']['@code'] == "200"
+      - remove_useractivity_mixed['api_response']['Response']['UserActivity']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING USER ACTIVITY
+  sophos.sophos_firewall.sfos_web_useractivity:
+    name: IGT-TEST-USERACTIVITY-NONEXISTENT
+    state: absent
+  register: remove_useractivity_nonexistent
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING USER ACTIVITY
+  assert:
+    that: 
+      - remove_useractivity_nonexistent is not changed
+      - remove_useractivity_nonexistent['api_response'] == "No. of records Zero."

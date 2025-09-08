@@ -1,0 +1,469 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+# PRE-TEST CLEANUP - Remove any objects that might be left from previous test runs
+- name: CLEANUP - REMOVE WEB POLICY BASIC
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-BASIC
+    state: absent
+  register: cleanup_basic
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB POLICY ADVANCED
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-ADVANCED
+    state: absent
+  register: cleanup_advanced
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB POLICY RULES
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    state: absent
+  register: cleanup_rules
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB POLICY CLOUD
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-CLOUD
+    state: absent
+  register: cleanup_cloud
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE USER ASSIGNED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-USER-ASSIGN
+    state: absent
+  ignore_errors: true
+
+# TEST 1: CREATE BASIC WEB FILTER POLICY
+- name: CREATE BASIC WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-BASIC
+    default_action: "Allow"
+    description: "Basic web filter policy for integration testing"
+    state: present
+  register: policy_add_basic
+
+- name: ASSERTION CHECK FOR CREATE BASIC POLICY
+  assert:
+    that: 
+      - policy_add_basic is changed
+      - policy_add_basic['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_basic['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+- name: QUERY BASIC WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-BASIC
+    state: query
+  register: query_policy_basic
+
+- name: ASSERTION CHECK FOR QUERY BASIC POLICY
+  assert:
+    that: 
+      - query_policy_basic is not changed
+      - query_policy_basic['api_response']['Response']['WebFilterPolicy']['Name'] == 'IGT-TEST-POLICY-BASIC'
+      - query_policy_basic['api_response']['Response']['WebFilterPolicy']['DefaultAction'] == 'Allow'
+
+# TEST 2: CREATE ADVANCED WEB FILTER POLICY
+- name: CREATE ADVANCED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-ADVANCED
+    default_action: "Deny"
+    download_file_size_restriction: 100
+    download_file_size_restriction_enabled: true
+    enable_reporting: "Enable"
+    youtube_filter_enabled: true
+    youtube_filter_is_strict: true
+    enforce_safe_search: true
+    enforce_image_licensing: true
+    quota_limit: 30
+    description: "Advanced web filter policy with content restrictions"
+    state: present
+  register: policy_add_advanced
+
+- name: ASSERTION CHECK FOR CREATE ADVANCED POLICY
+  assert:
+    that: 
+      - policy_add_advanced is changed
+      - policy_add_advanced['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_advanced['api_response']['Response']['WebFilterPolicy']['Status']['#text'] or 'Unable to get status message' in policy_add_advanced['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+- name: QUERY ADVANCED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-ADVANCED
+    state: query
+  register: query_policy_advanced
+
+- name: ASSERTION CHECK FOR QUERY ADVANCED POLICY
+  assert:
+    that: 
+      - query_policy_advanced is not changed
+      - query_policy_advanced['api_response']['Response']['WebFilterPolicy']['Name'] == 'IGT-TEST-POLICY-ADVANCED'
+      - query_policy_advanced['api_response']['Response']['WebFilterPolicy']['DefaultAction'] == 'Deny'
+
+# TEST 3: CREATE WEB FILTER POLICY WITH RULES
+- name: CREATE WEB FILTER POLICY WITH RULES
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    default_action: "Allow"
+    download_file_size_restriction: 200
+    enable_reporting: "Enable"
+    description: "Web filter policy with category rules"
+    rules:
+      - categories:
+          - id: "Social Networking"
+            type: "WebCategory"
+          - id: "Criminal Activity"
+            type: "WebCategory"
+        http_action: "Deny"
+        https_action: "Deny"
+        schedule: "All The Time"
+        policy_rule_enabled: true
+        ccl_rule_enabled: false
+      - categories:
+          - id: "Document Files"
+            type: "FileType"
+        http_action: "Allow"
+        https_action: "Allow"
+        policy_rule_enabled: true
+        ccl_rule_enabled: false
+    state: present
+  register: policy_add_rules
+
+- name: ASSERTION CHECK FOR CREATE POLICY WITH RULES
+  assert:
+    that: 
+      - policy_add_rules is changed
+      - policy_add_rules['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_rules['api_response']['Response']['WebFilterPolicy']['Status']['#text'] or 'Unable to get status message' in policy_add_rules['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+- name: QUERY WEB FILTER POLICY WITH RULES
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    state: query
+  register: query_policy_rules
+
+- name: ASSERTION CHECK FOR QUERY POLICY WITH RULES
+  assert:
+    that: 
+      - query_policy_rules is not changed
+      - query_policy_rules['api_response']['Response']['WebFilterPolicy']['Name'] == 'IGT-TEST-POLICY-RULES'
+      - query_policy_rules['api_response']['Response']['WebFilterPolicy']['DefaultAction'] == 'Allow'
+
+# TEST 4: CREATE WEB FILTER POLICY WITH CLOUD SERVICES
+- name: CREATE WEB FILTER POLICY WITH CLOUD SERVICES
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-CLOUD
+    default_action: "Allow"
+    download_file_size_restriction: 500
+    enable_reporting: "Enable"
+    goog_app_domain_list: "example.com,test.org"
+    goog_app_domain_list_enabled: true
+    office_365_tenants_list: "tenant1.onmicrosoft.com"
+    office_365_enabled: true
+    xff_enabled: true
+    description: "Policy for cloud services access"
+    state: present
+  register: policy_add_cloud
+
+- name: ASSERTION CHECK FOR CREATE CLOUD POLICY
+  assert:
+    that: 
+      - policy_add_cloud is changed
+      - policy_add_cloud['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_cloud['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+- name: QUERY CLOUD WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-CLOUD
+    state: query
+  register: query_policy_cloud
+
+- name: ASSERTION CHECK FOR QUERY CLOUD POLICY
+  assert:
+    that: 
+      - query_policy_cloud is not changed
+      - query_policy_cloud['api_response']['Response']['WebFilterPolicy']['Name'] == 'IGT-TEST-POLICY-CLOUD'
+      - query_policy_cloud['api_response']['Response']['WebFilterPolicy']['DefaultAction'] == 'Allow'
+
+# TEST 5: UPDATE BASIC WEB FILTER POLICY
+- name: UPDATE BASIC WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-BASIC
+    default_action: "Deny"
+    download_file_size_restriction: 75
+    description: "Updated basic web filter policy"
+    state: updated
+  register: update_policy_basic
+
+- name: ASSERTION CHECK FOR UPDATE BASIC POLICY
+  assert:
+    that: 
+      - update_policy_basic is changed
+      - update_policy_basic['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_policy_basic['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 6: UPDATE POLICY WITH RULE REPLACEMENT
+- name: UPDATE POLICY WITH RULE REPLACEMENT
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    description: "Updated policy with replaced rules"
+    rules:
+      - categories:
+          - id: "Advertisements"
+            type: "WebCategory"
+        http_action: "Deny"
+        https_action: "Deny"
+        policy_rule_enabled: true
+        ccl_rule_enabled: false
+    rule_action: "replace"
+    state: updated
+  register: update_policy_replace_rules
+
+- name: ASSERTION CHECK FOR UPDATE POLICY WITH RULE REPLACEMENT
+  assert:
+    that: 
+      - update_policy_replace_rules is changed
+      - update_policy_replace_rules['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_policy_replace_rules['api_response']['Response']['WebFilterPolicy']['Status']['#text'] or 'Unable to get status message' in update_policy_replace_rules['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 7: UPDATE POLICY WITH RULE ADDITION
+- name: UPDATE POLICY WITH RULE ADDITION
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    description: "Updated policy with additional rules"
+    rules:
+      - categories:
+          - id: "Spam URLs"
+            type: "WebCategory"
+        http_action: "Deny"
+        https_action: "Deny"
+        policy_rule_enabled: true
+        ccl_rule_enabled: false
+    rule_action: "add"
+    state: updated
+  register: update_policy_add_rules
+
+- name: ASSERTION CHECK FOR UPDATE POLICY WITH RULE ADDITION
+  assert:
+    that: 
+      - update_policy_add_rules is changed
+      - update_policy_add_rules['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_policy_add_rules['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 8: UPDATE ADVANCED POLICY WITH ALL OPTIONS
+- name: UPDATE ADVANCED POLICY WITH ALL OPTIONS
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-ADVANCED
+    default_action: "Allow"
+    download_file_size_restriction: 150
+    download_file_size_restriction_enabled: false
+    youtube_filter_enabled: false
+    youtube_filter_is_strict: false
+    enforce_safe_search: false
+    enforce_image_licensing: false
+    quota_limit: 60
+    description: "Updated advanced policy with modified settings"
+    state: updated
+  register: update_policy_advanced_all
+
+- name: ASSERTION CHECK FOR UPDATE ADVANCED POLICY ALL OPTIONS
+  assert:
+    that: 
+      - update_policy_advanced_all is changed
+      - update_policy_advanced_all['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_policy_advanced_all['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 9: UPDATE CLOUD POLICY
+- name: UPDATE CLOUD POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-CLOUD
+    goog_app_domain_list: "newdomain.com,updated.org"
+    goog_app_domain_list_enabled: false
+    office_365_tenants_list: "newtenant.onmicrosoft.com,updated-tenant.onmicrosoft.com"
+    office_365_enabled: false
+    xff_enabled: false
+    description: "Updated cloud services policy"
+    state: updated
+  register: update_policy_cloud
+
+- name: ASSERTION CHECK FOR UPDATE CLOUD POLICY
+  assert:
+    that: 
+      - update_policy_cloud is changed
+      - update_policy_cloud['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_policy_cloud['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 10: CREATE POLICY WITH MIXED RULE TYPES
+- name: CREATE POLICY WITH MIXED RULE TYPES
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-MIXED
+    default_action: "Deny"
+    download_file_size_restriction: 250
+    enable_reporting: "Enable"
+    description: "Policy with mixed rule category types"
+    rules:
+      - categories:
+          - id: "Social Networking"
+            type: "WebCategory"
+          - id: "Audio Files"
+            type: "FileType"
+        http_action: "Deny"
+        https_action: "Deny"
+        follow_http_action: true
+        schedule: "All The Time"
+        policy_rule_enabled: true
+        ccl_rule_enabled: false
+    state: present
+  register: policy_add_mixed
+
+
+- name: ASSERTION CHECK FOR CREATE MIXED POLICY
+  assert:
+    that: 
+      - policy_add_mixed is changed
+      - policy_add_mixed['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_mixed['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# TEST 11: CREATE POLICY ASSIGNED TO DIFFERENT USERS
+- name: CREATE POLICY ASSIGNED TO DIFFERENT USERS
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-USER-ASSIGN
+    default_action: "Deny"
+    download_file_size_restriction: 250
+    enable_reporting: "Enable"
+    description: "Policy with mixed rule category types"
+    rules:
+      - categories:
+          - id: "Extreme"
+            type: "WebCategory"
+          - id: "Video Files"
+            type: "FileType"
+        http_action: "Deny"
+        https_action: "Deny"
+        follow_http_action: true
+        schedule: "All The Time"
+        policy_rule_enabled: true
+        user_list:
+          - "Guest Group"
+          - "Unknown Users"
+        ccl_rule_enabled: false
+    state: present
+  register: policy_add_user_assign
+
+
+- name: ASSERTION CHECK FOR CREATE USER ASSIGN POLICY
+  assert:
+    that: 
+      - policy_add_user_assign is changed
+      - policy_add_user_assign['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in policy_add_user_assign['api_response']['Response']['WebFilterPolicy']['Status']['#text']"
+
+# FINAL CLEANUP - Remove all test objects
+- name: REMOVE BASIC WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-BASIC
+    state: absent
+  register: remove_policy_basic
+
+- name: ASSERTION CHECK FOR REMOVE BASIC POLICY
+  assert:
+    that: 
+      - remove_policy_basic is changed
+      - remove_policy_basic['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+
+- name: REMOVE ADVANCED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-ADVANCED
+    state: absent
+  register: remove_policy_advanced
+
+- name: ASSERTION CHECK FOR REMOVE ADVANCED POLICY
+  assert:
+    that: 
+      - remove_policy_advanced is changed
+      - remove_policy_advanced['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+
+- name: REMOVE RULES WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-RULES
+    state: absent
+  register: remove_policy_rules
+
+- name: ASSERTION CHECK FOR REMOVE RULES POLICY
+  assert:
+    that: 
+      - remove_policy_rules is changed
+      - remove_policy_rules['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+
+- name: REMOVE CLOUD WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-CLOUD
+    state: absent
+  register: remove_policy_cloud
+
+- name: ASSERTION CHECK FOR REMOVE CLOUD POLICY
+  assert:
+    that: 
+      - remove_policy_cloud is changed
+      - remove_policy_cloud['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+
+- name: REMOVE MIXED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-MIXED
+    state: absent
+  register: remove_policy_mixed
+
+- name: ASSERTION CHECK FOR REMOVE MIXED POLICY
+  assert:
+    that: 
+      - remove_policy_mixed is changed
+      - remove_policy_mixed['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'
+
+- name: REMOVE USER ASSIGNED WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT-TEST-POLICY-USER-ASSIGN
+    state: absent
+  register: remove_user_assigned
+
+- name: ASSERTION CHECK FOR REMOVE USER ASSIGNED POLICY
+  assert:
+    that: 
+      - remove_user_assigned is changed
+      - remove_user_assigned['api_response']['Response']['WebFilterPolicy']['Status']['@code'] == '200'

@@ -1,0 +1,277 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+# PRE-TEST CLEANUP - Remove any objects that might be left from previous test runs
+- name: CLEANUP - REMOVE WEB CATEGORY LOCAL
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-LOCAL
+    state: absent
+  register: cleanup_local
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB CATEGORY EXTERNAL
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-EXTERNAL
+    state: absent
+  register: cleanup_external
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB CATEGORY WITH MESSAGE
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-MESSAGE
+    state: absent
+  register: cleanup_message
+  ignore_errors: true
+
+- name: PAUSE AFTER CLEANUP
+  pause:
+    seconds: 3
+  when: cleanup_local.changed or cleanup_external.changed or cleanup_message.changed
+
+- name: CREATE WEB CATEGORY WITH LOCAL CONFIGURATION
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-LOCAL
+    classification: Productive
+    description: "Test web category for integration testing"
+    configurecategory: Local
+    domain_url:
+      - example.com
+      - test.org
+    keyword:
+      - productivity
+      - business
+    state: present
+  register: web_category_add_local
+
+- name: ASSERTION CHECK FOR CREATE WEB CATEGORY LOCAL
+  assert:
+    that: 
+      - web_category_add_local is changed
+      - web_category_add_local['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in web_category_add_local['api_response']['Response']['WebFilterCategory']['Status']['#text']"
+
+- name: QUERY WEB CATEGORY LOCAL
+  sophos.sophos_firewall.sfos_web_category:
+    state: query
+    name: IGT-TEST-CATEGORY-LOCAL
+  register: query_web_category_local
+
+- name: ASSERTION CHECK FOR QUERY WEB CATEGORY LOCAL
+  assert:
+    that: 
+      - query_web_category_local is not changed
+      - query_web_category_local['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-LOCAL'
+      - query_web_category_local['api_response']['Response']['WebFilterCategory']['Classification'] == 'Productive'
+      - query_web_category_local['api_response']['Response']['WebFilterCategory']['QoSPolicy'] == 'None'
+      - query_web_category_local['api_response']['Response']['WebFilterCategory']['ConfigureCategory'] == 'Local'
+      - query_web_category_local['api_response']['Response']['WebFilterCategory']['Description'] == 'Test web category for integration testing'
+
+- name: CREATE WEB CATEGORY WITH EXTERNAL CONFIGURATION
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-EXTERNAL
+    classification: Unproductive
+    qospolicy: None
+    description: "Test external web category"
+    configurecategory: External
+    domain_url:
+      - http://custom.com
+      - ftp://custom1.com
+    state: present
+  register: web_category_add_external
+  vars:
+    ansible_command_timeout: 90
+
+- name: ASSERTION CHECK FOR CREATE WEB CATEGORY EXTERNAL
+  assert:
+    that: 
+      - web_category_add_external is changed
+      - (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200' and 
+         'Configuration applied successfully' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text']) or
+        (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '217' and 
+         'Unable to get status message' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
+
+- name: QUERY WEB CATEGORY EXTERNAL
+  sophos.sophos_firewall.sfos_web_category:
+    state: query
+    name: IGT-TEST-CATEGORY-EXTERNAL
+  register: query_web_category_external
+
+- name: ASSERTION CHECK FOR QUERY WEB CATEGORY EXTERNAL
+  assert:
+    that: 
+      - query_web_category_external is not changed
+      - query_web_category_external['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-EXTERNAL'
+      - query_web_category_external['api_response']['Response']['WebFilterCategory']['Classification'] == 'Unproductive'
+      - query_web_category_external['api_response']['Response']['WebFilterCategory']['ConfigureCategory'] == 'External'
+
+- name: UPDATE WEB CATEGORY LOCAL
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-LOCAL
+    classification: Acceptable
+    description: "Updated test web category description"
+    domain_url:
+      - example.com
+      - test.org
+      - newdomain.com
+    keyword:
+      - productivity
+      - business
+      - efficiency
+    state: updated
+  register: update_web_category_local
+
+
+- name: ASSERTION CHECK FOR UPDATE WEB CATEGORY LOCAL
+  assert:
+    that: 
+      - update_web_category_local is changed
+      - update_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in update_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['#text']"
+
+- name: QUERY UPDATED WEB CATEGORY LOCAL
+  sophos.sophos_firewall.sfos_web_category:
+    state: query
+    name: IGT-TEST-CATEGORY-LOCAL
+  register: query_updated_web_category
+
+
+- name: ASSERTION CHECK FOR QUERY UPDATED WEB CATEGORY
+  assert:
+    that: 
+      - query_updated_web_category is not changed
+      - query_updated_web_category['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-LOCAL'
+      - query_updated_web_category['api_response']['Response']['WebFilterCategory']['Classification'] == 'Acceptable'
+      - query_updated_web_category['api_response']['Response']['WebFilterCategory']['Description'] == 'Updated test web category description'
+
+- name: UPDATE WEB CATEGORY LOCAL NO CHANGE
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-LOCAL
+    classification: Acceptable
+    description: "Updated test web category description"
+    state: updated
+  register: update_web_category_nochange
+
+- name: ASSERTION CHECK FOR UPDATE WEB CATEGORY LOCAL NO CHANGE
+  assert:
+    that: 
+      - update_web_category_nochange is not changed
+
+- name: CREATE WEB CATEGORY WITH CUSTOM DENIED MESSAGE
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-MESSAGE
+    classification: Objectionable
+    qospolicy: None
+    configurecategory: Local
+    defaultdeniedmessage: "<h1>Access Denied</h1><p>This content is blocked by company policy.</p>"
+    state: present
+  register: web_category_add_message
+
+- name: ASSERTION CHECK FOR CREATE WEB CATEGORY WITH MESSAGE
+  assert:
+    that: 
+      - web_category_add_message is changed
+      - web_category_add_message['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in web_category_add_message['api_response']['Response']['WebFilterCategory']['Status']['#text']"
+
+- name: QUERY WEB CATEGORY WITH MESSAGE
+  sophos.sophos_firewall.sfos_web_category:
+    state: query
+    name: IGT-TEST-CATEGORY-MESSAGE
+  register: query_web_category_message
+
+- name: ASSERTION CHECK FOR QUERY WEB CATEGORY WITH MESSAGE
+  assert:
+    that: 
+      - query_web_category_message is not changed
+      - query_web_category_message['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-MESSAGE'
+      - query_web_category_message['api_response']['Response']['WebFilterCategory']['OverrideDefaultDeniedMessage'] == 'Enable'
+      - "'Access Denied' in query_web_category_message['api_response']['Response']['WebFilterCategory']['DefaultDeniedMessage']"
+
+- name: REMOVE WEB CATEGORY LOCAL
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-LOCAL
+    state: absent
+  register: remove_web_category_local
+
+- name: ASSERTION CHECK FOR REMOVE WEB CATEGORY LOCAL
+  assert:
+    that: 
+      - remove_web_category_local is changed
+      - remove_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200"
+      - remove_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE WEB CATEGORY EXTERNAL
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-EXTERNAL
+    state: absent
+  register: remove_web_category_external
+
+
+- name: ASSERTION CHECK FOR REMOVE WEB CATEGORY EXTERNAL
+  assert:
+    that: 
+      - remove_web_category_external is changed
+      - (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200" and
+         remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully.") or
+        (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "217" and
+         "Unable to get status message" in remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
+
+- name: REMOVE WEB CATEGORY WITH MESSAGE
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-MESSAGE
+    state: absent
+  register: remove_web_category_message
+
+- name: ASSERTION CHECK FOR REMOVE WEB CATEGORY WITH MESSAGE
+  assert:
+    that: 
+      - remove_web_category_message is changed
+      - remove_web_category_message['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200"
+      - remove_web_category_message['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE NONEXISTING WEB CATEGORY
+  sophos.sophos_firewall.sfos_web_category:
+    name: IGT-TEST-CATEGORY-NONEXISTENT
+    state: absent
+  register: remove_web_category_nonexistent
+
+- name: ASSERTION CHECK FOR REMOVE NONEXISTING WEB CATEGORY
+  assert:
+    that: 
+      - remove_web_category_nonexistent is not changed
+      - remove_web_category_nonexistent['api_response'] == "No. of records Zero."

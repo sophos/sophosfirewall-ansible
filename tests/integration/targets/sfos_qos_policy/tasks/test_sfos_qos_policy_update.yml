@@ -1,0 +1,82 @@
+---
+# Test QoS Policy Updates
+- name: Update QoS Policy - Change total bandwidth
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Strict Total"
+    total_bandwidth: 1500
+    description: "Updated strict policy with increased bandwidth"
+    state: updated
+  register: result
+
+- name: Assert QoS Policy updated successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "QoS Policy update failed"
+    success_msg: "QoS Policy updated successfully"
+
+- name: Verify QoS Policy update
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Strict Total"
+    state: query
+  register: result
+
+- name: Assert QoS Policy changes applied
+  assert:
+    that:
+      - result.api_response.Response.QoSPolicy.TotalBandwidth == "1500"
+      - result.api_response.Response.QoSPolicy.Description == "Updated strict policy with increased bandwidth"
+    fail_msg: "QoS Policy changes were not applied correctly"
+    success_msg: "QoS Policy changes applied successfully"
+
+- name: Update QoS Policy - Change bandwidth limits for Individual type
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Committed Individual"
+    guaranteed_upload_bandwidth: 750
+    burstable_upload_bandwidth: 1500
+    guaranteed_download_bandwidth: 1500
+    burstable_download_bandwidth: 3000
+    description: "Updated committed policy with increased bandwidth limits"
+    state: updated
+  register: result
+
+- name: Assert Individual QoS Policy updated successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Individual QoS Policy update failed"
+    success_msg: "Individual QoS Policy updated successfully"
+
+- name: Update QoS Policy - Change priority level
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "Test QoS Business Critical"
+    priority: "Normal3"
+    description: "Updated policy with changed priority"
+    state: updated
+  register: result
+
+- name: Assert Priority QoS Policy updated successfully
+  assert:
+    that:
+      - result.changed == true
+      - result.api_response.Response.QoSPolicy.Status['@code'] in ['200', '217'] or "successfully" in result.api_response.Response.QoSPolicy.Status['#text']
+    fail_msg: "Priority QoS Policy update failed"
+    success_msg: "Priority QoS Policy updated successfully"
+
+- name: Update non-existent QoS Policy
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: "NonExistent QoS Policy"
+    total_bandwidth: 2000
+    state: updated
+  register: result
+  ignore_errors: true
+
+- name: Assert non-existent QoS Policy update fails
+  assert:
+    that:
+      - result.changed == false
+      - result.failed == true
+    fail_msg: "Non-existent QoS Policy update should fail"
+    success_msg: "Non-existent QoS Policy update correctly failed"
