@@ -25,8 +25,6 @@ options:
         description: Specify a name for the User Activity.
         type: str
         required: true
-        constraints:
-            - Maximum 50 characters
     description:
         description: Specify a description for the User Activity.
         type: str
