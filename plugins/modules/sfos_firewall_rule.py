@@ -149,8 +149,7 @@ options:
         required: false
     application_control:
         description:
-            - Enable/Disable application control.
-        choices: ["Enable", "Disable"]
+            - Specify application control policy.
         type: str
         required: false
     application_base_qos_policy:
@@ -160,8 +159,7 @@ options:
         required: false
     intrusion_prevention:
         description:
-            - Enable/Disable intrusion prevention.
-        choices: ["Enable", "Disable"]
+            - Specify intrusion prevention policy.
         type: str
         required: false
     qos_policy:
@@ -271,9 +269,9 @@ EXAMPLES = r"""
     scan_virus: Enable
     proxy_mode: Enable
     decrypt_https: Enable
-    application_control: Enable
+    application_control: Allow All
     application_base_qos_policy: AppQoSPolicy1
-    intrusion_prevention: Enable
+    intrusion_prevention: generalpolicy
     qos_policy: TrafficShapingPolicy1
     dscp_marking: "46"
     scan_smtp: Enable
@@ -546,9 +544,9 @@ def main():
         "minimum_source_hb_permitted": {"type": "str"},
         "dest_security_heartbeat": {"type": "str", "choices": ["Enable", "Disable"]},
         "minimum_dest_hb_permitted": {"type": "str"},
-        "application_control": {"type": "str", "choices": ["Enable", "Disable"]},
+        "application_control": {"type": "str"},
         "application_base_qos_policy": {"type": "str"},
-        "intrusion_prevention": {"type": "str", "choices": ["Enable", "Disable"]},
+        "intrusion_prevention": {"type": "str"},
         "qos_policy": {"type": "str"},
         "dscp_marking": {"type": "str"},
         "scan_smtp": {"type": "str", "choices": ["Enable", "Disable"]},
