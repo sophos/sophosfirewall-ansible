@@ -25,9 +25,6 @@ options:
         description: Specify a name to identify the File Type Category.
         type: str
         required: true
-        constraints:
-            - No commas allowed
-            - Maximum 50 characters
     file_extension:
         description: Enter File Extensions to be included in the Category.
         type: list
@@ -42,8 +39,6 @@ options:
         description: Specify File Type Category description.
         type: str
         required: false
-        constraints:
-            - Maximum 1000 characters
     state:
         description:
             - Use C(query) to retrieve, C(present) to create, C(updated) to modify, or C(absent) to remove
