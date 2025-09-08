@@ -1,0 +1,301 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+# PRE-TEST CLEANUP - Remove any objects that might be left from previous test runs
+- name: CLEANUP - REMOVE WEB FILE TYPE BASIC
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-BASIC
+    state: absent
+  register: cleanup_basic
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB FILE TYPE ADVANCED
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-ADVANCED
+    state: absent
+  register: cleanup_advanced
+  ignore_errors: true
+
+- name: CLEANUP - REMOVE WEB FILE TYPE DESCRIPTION
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-DESC
+    state: absent
+  register: cleanup_description
+  ignore_errors: true
+
+- name: PAUSE AFTER CLEANUP
+  pause:
+    seconds: 3
+  when: cleanup_basic.changed or cleanup_advanced.changed or cleanup_description.changed
+
+- name: CREATE WEB FILE TYPE WITH BASIC CONFIGURATION
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-BASIC
+    description: "Basic file type for integration testing"
+    file_extension:
+      - pdf
+      - doc
+      - txt
+    state: present
+  register: web_filetype_add_basic
+
+- name: ASSERTION CHECK FOR CREATE WEB FILE TYPE BASIC
+  assert:
+    that: 
+      - web_filetype_add_basic is changed
+      - web_filetype_add_basic['api_response']['Response']['FileType']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in web_filetype_add_basic['api_response']['Response']['FileType']['Status']['#text']"
+
+- name: QUERY WEB FILE TYPE BASIC
+  sophos.sophos_firewall.sfos_web_filetype:
+    state: query
+    name: IGT-TEST-FILETYPE-BASIC
+  register: query_web_filetype_basic
+
+- name: ASSERTION CHECK FOR QUERY WEB FILE TYPE BASIC
+  assert:
+    that: 
+      - query_web_filetype_basic is not changed
+      - query_web_filetype_basic['api_response']['Response']['FileType']['Name'] == 'IGT-TEST-FILETYPE-BASIC'
+      - query_web_filetype_basic['api_response']['Response']['FileType']['Description'] == 'Basic file type for integration testing'
+      - "'pdf' in query_web_filetype_basic['api_response']['Response']['FileType']['FileExtensionList']['FileExtension']"
+
+- name: CREATE WEB FILE TYPE WITH ADVANCED CONFIGURATION
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-ADVANCED
+    description: "Advanced file type with extensions and MIME headers"
+    file_extension:
+      - jpg
+      - png
+      - gif
+    mime_header:
+      - image/jpeg
+      - image/png
+      - image/gif
+    state: present
+  register: web_filetype_add_advanced
+
+- name: ASSERTION CHECK FOR CREATE WEB FILE TYPE ADVANCED
+  assert:
+    that: 
+      - web_filetype_add_advanced is changed
+      - web_filetype_add_advanced['api_response']['Response']['FileType']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in web_filetype_add_advanced['api_response']['Response']['FileType']['Status']['#text']"
+
+- name: QUERY WEB FILE TYPE ADVANCED
+  sophos.sophos_firewall.sfos_web_filetype:
+    state: query
+    name: IGT-TEST-FILETYPE-ADVANCED
+  register: query_web_filetype_advanced
+
+- name: ASSERTION CHECK FOR QUERY WEB FILE TYPE ADVANCED
+  assert:
+    that: 
+      - query_web_filetype_advanced is not changed
+      - query_web_filetype_advanced['api_response']['Response']['FileType']['Name'] == 'IGT-TEST-FILETYPE-ADVANCED'
+      - query_web_filetype_advanced['api_response']['Response']['FileType']['Description'] == 'Advanced file type with extensions and MIME headers'
+      - "'jpg' in query_web_filetype_advanced['api_response']['Response']['FileType']['FileExtensionList']['FileExtension']"
+      - "'image/jpeg' in query_web_filetype_advanced['api_response']['Response']['FileType']['MIMEHeaderList']['MIMEHeader']"
+
+- name: UPDATE WEB FILE TYPE BASIC
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-BASIC
+    description: "Updated basic file type description"
+    file_extension:
+      - pdf
+      - doc
+      - txt
+      - rtf
+      - odt
+    state: updated
+  register: update_web_filetype_basic
+
+- name: ASSERTION CHECK FOR UPDATE WEB FILE TYPE BASIC
+  assert:
+    that: 
+      - update_web_filetype_basic is changed
+      - update_web_filetype_basic['api_response']['Response']['FileType']['Status']['@code'] == '200'
+      - "'Operation Successful' in update_web_filetype_basic['api_response']['Response']['FileType']['Status']['#text']"
+
+- name: QUERY UPDATED WEB FILE TYPE BASIC
+  sophos.sophos_firewall.sfos_web_filetype:
+    state: query
+    name: IGT-TEST-FILETYPE-BASIC
+  register: query_updated_web_filetype_basic
+
+- name: ASSERTION CHECK FOR QUERY UPDATED WEB FILE TYPE BASIC
+  assert:
+    that: 
+      - query_updated_web_filetype_basic is not changed
+      - query_updated_web_filetype_basic['api_response']['Response']['FileType']['Name'] == 'IGT-TEST-FILETYPE-BASIC'
+      - query_updated_web_filetype_basic['api_response']['Response']['FileType']['Description'] == 'Updated basic file type description'
+      - "'rtf' in query_updated_web_filetype_basic['api_response']['Response']['FileType']['FileExtensionList']['FileExtension']"
+      - "'odt' in query_updated_web_filetype_basic['api_response']['Response']['FileType']['FileExtensionList']['FileExtension']"
+
+- name: UPDATE WEB FILE TYPE BASIC NO CHANGE
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-BASIC
+    description: "Updated basic file type description"
+    file_extension:
+      - pdf
+      - doc
+      - txt
+      - rtf
+      - odt
+    state: updated
+  register: update_web_filetype_nochange
+
+- name: ASSERTION CHECK FOR UPDATE WEB FILE TYPE BASIC NO CHANGE
+  assert:
+    that: 
+      - update_web_filetype_nochange is not changed
+
+- name: CREATE WEB FILE TYPE WITH ONLY DESCRIPTION
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-DESC
+    description: "File type with only description for testing"
+    state: present
+  register: web_filetype_add_desc
+
+- name: ASSERTION CHECK FOR CREATE WEB FILE TYPE WITH DESCRIPTION ONLY
+  assert:
+    that: 
+      - web_filetype_add_desc is changed
+      - web_filetype_add_desc['api_response']['Response']['FileType']['Status']['@code'] == '200'
+      - "'Configuration applied successfully' in web_filetype_add_desc['api_response']['Response']['FileType']['Status']['#text']"
+
+- name: QUERY WEB FILE TYPE WITH DESCRIPTION ONLY
+  sophos.sophos_firewall.sfos_web_filetype:
+    state: query
+    name: IGT-TEST-FILETYPE-DESC
+  register: query_web_filetype_desc
+
+- name: ASSERTION CHECK FOR QUERY WEB FILE TYPE WITH DESCRIPTION ONLY
+  assert:
+    that: 
+      - query_web_filetype_desc is not changed
+      - query_web_filetype_desc['api_response']['Response']['FileType']['Name'] == 'IGT-TEST-FILETYPE-DESC'
+      - query_web_filetype_desc['api_response']['Response']['FileType']['Description'] == 'File type with only description for testing'
+
+- name: UPDATE WEB FILE TYPE ADVANCED WITH MIME HEADERS
+  sophos.sophos_firewall.sfos_web_filetype:
+    name: IGT-TEST-FILETYPE-ADVANCED
+    description: "Updated advanced file type with more MIME headers"
+    mime_header:
+      - image/jpeg
+      - image/png
+      - image/gif
+      - image/bmp
+      - image/webp
+    state: updated
+  register: update_web_filetype_advanced
+
+- name: ASSERTION CHECK FOR UPDATE WEB FILE TYPE ADVANCED
+  assert:
+    that: 
+      - update_web_filetype_advanced is changed
+      - update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['@code'] == '200'
+      - "'Operation Successful' in update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['#text']"
+
+- name: QUERY UPDATED WEB FILE TYPE ADVANCED
+  sophos.sophos_firewall.sfos_web_filetype:
+    state: query
+    name: IGT-TEST-FILETYPE-ADVANCED
+  register: query_updated_web_filetype_advanced
+
+- name: ASSERTION CHECK FOR QUERY UPDATED WEB FILE TYPE ADVANCED
+  assert:
+    that: 
+      - query_updated_web_filetype_advanced is not changed
+      - query_updated_web_filetype_advanced['api_response']['Response']['FileType']['Name'] == 'IGT-TEST-FILETYPE-ADVANCED'
+      - "'image/bmp' in query_updated_web_filetype_advanced['api_response']['Response']['FileType']['MIMEHeaderList']['MIMEHeader']"
+      - "'image/webp' in query_updated_web_filetype_advanced['api_response']['Response']['FileType']['MIMEHeaderList']['MIMEHeader']"
+
+# Removal is not possible at this time, the firewall returns 500: Operation could not be performed on Entity. 
+# This is a bug, once it is fixed we can reenable these tests. 
+
+# - name: REMOVE WEB FILE TYPE BASIC
+#   sophos.sophos_firewall.sfos_web_filetype:
+#     name: IGT-TEST-FILETYPE-BASIC
+#     state: absent
+#   register: remove_web_filetype_basic
+
+# - name: ASSERTION CHECK FOR REMOVE WEB FILE TYPE BASIC
+#   assert:
+#     that: 
+#       - remove_web_filetype_basic is changed
+#       - remove_web_filetype_basic['api_response']['Response']['FileType']['Status']['@code'] == "200"
+#       - remove_web_filetype_basic['api_response']['Response']['FileType']['Status']['#text'] == "Configuration applied successfully."
+
+# - name: REMOVE WEB FILE TYPE ADVANCED
+#   sophos.sophos_firewall.sfos_web_filetype:
+#     name: IGT-TEST-FILETYPE-ADVANCED
+#     state: absent
+#   register: remove_web_filetype_advanced
+
+# - name: ASSERTION CHECK FOR REMOVE WEB FILE TYPE ADVANCED
+#   assert:
+#     that: 
+#       - remove_web_filetype_advanced is changed
+#       - remove_web_filetype_advanced['api_response']['Response']['FileType']['Status']['@code'] == "200"
+#       - remove_web_filetype_advanced['api_response']['Response']['FileType']['Status']['#text'] == "Configuration applied successfully."
+
+# - name: REMOVE WEB FILE TYPE WITH DESCRIPTION ONLY
+#   sophos.sophos_firewall.sfos_web_filetype:
+#     name: IGT-TEST-FILETYPE-DESC
+#     state: absent
+#   register: remove_web_filetype_desc
+
+# - name: ASSERTION CHECK FOR REMOVE WEB FILE TYPE WITH DESCRIPTION ONLY
+#   assert:
+#     that: 
+#       - remove_web_filetype_desc is changed
+#       - remove_web_filetype_desc['api_response']['Response']['FileType']['Status']['@code'] == "200"
+#       - remove_web_filetype_desc['api_response']['Response']['FileType']['Status']['#text'] == "Configuration applied successfully."
+
+# - name: REMOVE NONEXISTING WEB FILE TYPE
+#   sophos.sophos_firewall.sfos_web_filetype:
+#     name: IGT-TEST-FILETYPE-NONEXISTENT
+#     state: absent
+#   register: remove_web_filetype_nonexistent
+
+# - name: ASSERTION CHECK FOR REMOVE NONEXISTING WEB FILE TYPE
+#   assert:
+#     that: 
+#       - remove_web_filetype_nonexistent is not changed
+#       - remove_web_filetype_nonexistent['api_response'] == "No. of records Zero."

@@ -43,6 +43,8 @@
   loop:
     - IGT_TESTRULE
     - IGT_TESTRULE_ANY
+    - IGT_TESTRULE_WEBFILTER
+    - IGT_TESTRULE_QOS
 
 - name: CREATE NETWORKS
   sophos.sophos_firewall.sfos_ip_host:
@@ -61,7 +63,26 @@
     - name: IGT_TESTNETWORK3
       ip_address: 3.3.3.0
       mask: 255.255.255.0
-    
+
+- name: CREATE WEB FILTER POLICY
+  sfos_web_policy:
+    name: "IGT_TEST_POLICY"
+    default_action: "Allow"
+    description: "Basic test policy created by Ansible integration testing"
+    state: present
+
+- name: CREATE QOS POLICY
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: IGT_TEST_QOS_POLICY
+    policy_type: "Strict"
+    implementation_on: "Total"
+    priority: "BusinessCritical"
+    policy_based_on: "Firewall"
+    bandwidth_usage_type: "Shared"
+    total_bandwidth: 1000
+    description: "Test policy for integration testing"
+    state: present
+
 - name: CREATE FIREWALL RULE
   sophos.sophos_firewall.sfos_firewall_rule:
     name: IGT_TESTRULE
@@ -139,6 +160,89 @@
       - "'SourceNetworks' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
       - "'DestinationNetworks' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
       - "'Services' not in query_rule_any['api_response']['Response']['FirewallRule']['NetworkPolicy']"
+
+- name: CREATE FIREWALL RULE WITH WEB FILTER
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_WEBFILTER
+    position: bottom
+    status: enable
+    src_networks:
+      - IGT_TESTNETWORK1
+    dst_networks:
+      - IGT_TESTNETWORK2
+    service_list:
+      - HTTPS
+    web_filter: IGT_TEST_POLICY
+    action: accept
+    state: present
+  register: create_rule
+
+- name: ASSERTION CHECK FOR CREATE FIREWALL RULE WITH WEB FILTER
+  assert:
+    that: 
+      - create_rule is changed
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE WITH WEB FILTER
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_WEBFILTER
+    state: query
+  register: query_rule
+
+- name: ASSERTION CHECK FOR QUERY FIREWALL RULE WITH WEB FILTER
+  assert:
+    that: 
+      - query_rule is not changed
+      - query_rule['api_response']['Response']['FirewallRule']['Name'] == "IGT_TESTRULE_WEBFILTER"
+      - query_rule['api_response']['Response']['FirewallRule']['Status'] == "Enable"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Action'] == "Accept"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['SourceNetworks']['Network'] == "IGT_TESTNETWORK1"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['DestinationNetworks']['Network'] == "IGT_TESTNETWORK2"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Services']['Service'] == "HTTPS"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['WebFilter'] == "IGT_TEST_POLICY"
+
+- name: CREATE FIREWALL RULE WITH QOS POLICY
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_QOS
+    position: bottom
+    status: enable
+    src_networks:
+      - IGT_TESTNETWORK1
+    dst_networks:
+      - IGT_TESTNETWORK2
+    service_list:
+      - HTTPS
+    qos_policy: IGT_TEST_QOS_POLICY
+    action: accept
+    state: present
+  register: create_rule
+
+- name: ASSERTION CHECK FOR CREATE FIREWALL RULE WITH QOS POLICY
+  assert:
+    that: 
+      - create_rule is changed
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['@code'] == "200"
+      - create_rule['api_response']['Response']['FirewallRule']['Status']['#text'] == "Configuration applied successfully."
+
+- name: QUERY FIREWALL RULE WITH QOS POLICY
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_QOS
+    state: query
+  register: query_rule
+
+- name: ASSERTION CHECK FOR QUERY FIREWALL RULE WITH QOS POLICY
+  assert:
+    that: 
+      - query_rule is not changed
+      - query_rule['api_response']['Response']['FirewallRule']['Name'] == "IGT_TESTRULE_QOS"
+      - query_rule['api_response']['Response']['FirewallRule']['Status'] == "Enable"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Action'] == "Accept"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['SourceNetworks']['Network'] == "IGT_TESTNETWORK1"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['DestinationNetworks']['Network'] == "IGT_TESTNETWORK2"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['Services']['Service'] == "HTTPS"
+      - query_rule['api_response']['Response']['FirewallRule']['NetworkPolicy']['TrafficShappingPolicy'] == "IGT_TEST_QOS_POLICY"
+
 
 
 - name: CREATE EXISTING FIREWALL RULE
@@ -240,6 +344,16 @@
     state: absent
   register: remove_rule
 
+- name: REMOVE IGT_TESTRULE_WEBFILTER
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_WEBFILTER
+    state: absent
+
+- name: REMOVE IGT_TESTRULE_QOS
+  sophos.sophos_firewall.sfos_firewall_rule:
+    name: IGT_TESTRULE_QOS
+    state: absent
+
 - name: REMOVE TEST NETWORKS
   sophos.sophos_firewall.sfos_ip_host:
     name: "{{ item.name }}"
@@ -257,3 +371,13 @@
     - name: IGT_TESTNETWORK3
       ip_address: 3.3.3.0
       mask: 255.255.255.0
+
+- name: REMOVE WEB FILTER POLICY
+  sophos.sophos_firewall.sfos_web_policy:
+    name: IGT_TEST_POLICY
+    state: absent
+
+- name: REMOVE QOS POLICY
+  sophos.sophos_firewall.sfos_qos_policy:
+    name: IGT_TEST_QOS_POLICY
+    state: absent
