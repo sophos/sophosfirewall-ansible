@@ -280,3 +280,14 @@ releases:
       name: sfos_web_useractivity
       namespace: ''
     release_date: '2025-09-08'
+  2.3.1:
+    changes:
+      bugfixes:
+      - sfos_firewall_rule - app_control and intrusion_prevention parameters now accept
+        string values instead of just "Enable" or "Disable".
+      - sfos_qos_policy - added validation rules for qos policy arguments to prevent
+        invalid configuration from being sent to the API.
+      release_summary: This release includes bug fixes.
+    fragments:
+    - 2.3.1.yaml
+    release_date: '2025-09-09'
