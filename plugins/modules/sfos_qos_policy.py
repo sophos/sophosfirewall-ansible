@@ -706,6 +706,59 @@ def validate_parameters(module, result):
                 **result
             )
     
+    # Policy-specific parameter requirements
+    policy_type = module.params.get("policy_type")
+    implementation_on = module.params.get("implementation_on")
+    
+    # Only validate these requirements for 'present' state
+    if module.params.get("state") == "present":
+        # Strict + Total: total_bandwidth is required
+        if policy_type == "Strict" and implementation_on == "Total":
+            if module.params.get("total_bandwidth") is None:
+                module.fail_json(
+                    msg="total_bandwidth is required when policy_type=Strict and implementation_on=Total",
+                    **result
+                )
+        
+        # Strict + Individual: upload_bandwidth and download_bandwidth are required
+        if policy_type == "Strict" and implementation_on == "Individual":
+            if module.params.get("upload_bandwidth") is None:
+                module.fail_json(
+                    msg="upload_bandwidth is required when policy_type=Strict and implementation_on=Individual",
+                    **result
+                )
+            if module.params.get("download_bandwidth") is None:
+                module.fail_json(
+                    msg="download_bandwidth is required when policy_type=Strict and implementation_on=Individual",
+                    **result
+                )
+        
+        # Committed + Total: guaranteed_bandwidth and burstable_bandwidth are required
+        if policy_type == "Committed" and implementation_on == "Total":
+            if module.params.get("guaranteed_bandwidth") is None:
+                module.fail_json(
+                    msg="guaranteed_bandwidth is required when policy_type=Committed and implementation_on=Total",
+                    **result
+                )
+            if module.params.get("burstable_bandwidth") is None:
+                module.fail_json(
+                    msg="burstable_bandwidth is required when policy_type=Committed and implementation_on=Total",
+                    **result
+                )
+        
+        # Committed + Individual: all four individual committed parameters are required
+        if policy_type == "Committed" and implementation_on == "Individual":
+            required_params = [
+                ("guaranteed_upload_bandwidth", "guaranteed_upload_bandwidth is required when policy_type=Committed and implementation_on=Individual"),
+                ("burstable_upload_bandwidth", "burstable_upload_bandwidth is required when policy_type=Committed and implementation_on=Individual"),
+                ("guaranteed_download_bandwidth", "guaranteed_download_bandwidth is required when policy_type=Committed and implementation_on=Individual"),
+                ("burstable_download_bandwidth", "burstable_download_bandwidth is required when policy_type=Committed and implementation_on=Individual")
+            ]
+            
+            for param_name, error_msg in required_params:
+                if module.params.get(param_name) is None:
+                    module.fail_json(msg=error_msg, **result)
+    
     return True
 
 

@@ -2,62 +2,79 @@
 
 **Topics**
 
-- <a href="#v2-3-0">v2\.3\.0</a>
+- <a href="#v2-3-1">v2\.3\.1</a>
     - <a href="#release-summary">Release Summary</a>
+    - <a href="#bugfixes">Bugfixes</a>
+- <a href="#v2-3-0">v2\.3\.0</a>
+    - <a href="#release-summary-1">Release Summary</a>
     - <a href="#major-changes">Major Changes</a>
     - <a href="#new-modules">New Modules</a>
 - <a href="#v2-2-0">v2\.2\.0</a>
-    - <a href="#release-summary-1">Release Summary</a>
+    - <a href="#release-summary-2">Release Summary</a>
     - <a href="#new-modules-1">New Modules</a>
 - <a href="#v2-1-0">v2\.1\.0</a>
-    - <a href="#release-summary-2">Release Summary</a>
+    - <a href="#release-summary-3">Release Summary</a>
     - <a href="#new-modules-2">New Modules</a>
 - <a href="#v2-0-1">v2\.0\.1</a>
-    - <a href="#release-summary-3">Release Summary</a>
-- <a href="#v2-0-0">v2\.0\.0</a>
     - <a href="#release-summary-4">Release Summary</a>
+- <a href="#v2-0-0">v2\.0\.0</a>
+    - <a href="#release-summary-5">Release Summary</a>
     - <a href="#breaking-changes--porting-guide">Breaking Changes / Porting Guide</a>
     - <a href="#new-plugins">New Plugins</a>
         - <a href="#httpapi">Httpapi</a>
 - <a href="#v1-5-0">v1\.5\.0</a>
-    - <a href="#release-summary-5">Release Summary</a>
+    - <a href="#release-summary-6">Release Summary</a>
     - <a href="#new-modules-3">New Modules</a>
 - <a href="#v1-4-5">v1\.4\.5</a>
-    - <a href="#release-summary-6">Release Summary</a>
-    - <a href="#bugfixes">Bugfixes</a>
-- <a href="#v1-4-4">v1\.4\.4</a>
     - <a href="#release-summary-7">Release Summary</a>
     - <a href="#bugfixes-1">Bugfixes</a>
-- <a href="#v1-4-3">v1\.4\.3</a>
-    - <a href="#bugfixes-2">Bugfixes</a>
-- <a href="#v1-4-2">v1\.4\.2</a>
+- <a href="#v1-4-4">v1\.4\.4</a>
     - <a href="#release-summary-8">Release Summary</a>
+    - <a href="#bugfixes-2">Bugfixes</a>
+- <a href="#v1-4-3">v1\.4\.3</a>
     - <a href="#bugfixes-3">Bugfixes</a>
-- <a href="#v1-4-1">v1\.4\.1</a>
-    - <a href="#bugfixes-4">Bugfixes</a>
-- <a href="#v1-4-0">v1\.4\.0</a>
+- <a href="#v1-4-2">v1\.4\.2</a>
     - <a href="#release-summary-9">Release Summary</a>
+    - <a href="#bugfixes-4">Bugfixes</a>
+- <a href="#v1-4-1">v1\.4\.1</a>
+    - <a href="#bugfixes-5">Bugfixes</a>
+- <a href="#v1-4-0">v1\.4\.0</a>
+    - <a href="#release-summary-10">Release Summary</a>
     - <a href="#new-modules-4">New Modules</a>
 - <a href="#v1-3-0">v1\.3\.0</a>
-    - <a href="#release-summary-10">Release Summary</a>
+    - <a href="#release-summary-11">Release Summary</a>
     - <a href="#new-modules-5">New Modules</a>
 - <a href="#v1-2-1">v1\.2\.1</a>
-    - <a href="#release-summary-11">Release Summary</a>
-    - <a href="#bugfixes-5">Bugfixes</a>
-- <a href="#v1-2-0">v1\.2\.0</a>
     - <a href="#release-summary-12">Release Summary</a>
+    - <a href="#bugfixes-6">Bugfixes</a>
+- <a href="#v1-2-0">v1\.2\.0</a>
+    - <a href="#release-summary-13">Release Summary</a>
     - <a href="#new-modules-6">New Modules</a>
 - <a href="#v1-1-0">v1\.1\.0</a>
-    - <a href="#release-summary-13">Release Summary</a>
+    - <a href="#release-summary-14">Release Summary</a>
     - <a href="#new-modules-7">New Modules</a>
 - <a href="#v1-0-0">v1\.0\.0</a>
-    - <a href="#release-summary-14">Release Summary</a>
+    - <a href="#release-summary-15">Release Summary</a>
     - <a href="#new-modules-8">New Modules</a>
+
+<a id="v2-3-1"></a>
+## v2\.3\.1
+
+<a id="release-summary"></a>
+### Release Summary
+
+This release includes bug fixes\.
+
+<a id="bugfixes"></a>
+### Bugfixes
+
+* sfos\_firewall\_rule \- app\_control and intrusion\_prevention parameters now accept string values instead of just \"Enable\" or \"Disable\"\.
+* sfos\_qos\_policy \- added validation rules for qos policy arguments to prevent invalid configuration from being sent to the API\.
 
 <a id="v2-3-0"></a>
 ## v2\.3\.0
 
-<a id="release-summary"></a>
+<a id="release-summary-1"></a>
 ### Release Summary
 
 This release introduces new modules and updates for working with firewall rules on Sophos Firewall\.
@@ -85,7 +102,7 @@ This release introduces new modules and updates for working with firewall rules 
 <a id="v2-2-0"></a>
 ## v2\.2\.0
 
-<a id="release-summary-1"></a>
+<a id="release-summary-2"></a>
 ### Release Summary
 
 This release introduces new modules for working with URL Groups on Sophos Firewall
@@ -98,7 +115,7 @@ This release introduces new modules for working with URL Groups on Sophos Firewa
 <a id="v2-1-0"></a>
 ## v2\.1\.0
 
-<a id="release-summary-2"></a>
+<a id="release-summary-3"></a>
 ### Release Summary
 
 This release introduces a new module for working with Netflow collector configuration on Sophos Firewall
@@ -111,7 +128,7 @@ This release introduces a new module for working with Netflow collector configur
 <a id="v2-0-1"></a>
 ## v2\.0\.1
 
-<a id="release-summary-3"></a>
+<a id="release-summary-4"></a>
 ### Release Summary
 
 This release updates Python dependencies for the project to address security vulnerabilities\.
@@ -119,7 +136,7 @@ This release updates Python dependencies for the project to address security vul
 <a id="v2-0-0"></a>
 ## v2\.0\.0
 
-<a id="release-summary-4"></a>
+<a id="release-summary-5"></a>
 ### Release Summary
 
 This release implements an HTTPAPI plugin for managing connections\. It eliminates the need to define credentials at each task and removes the need to delegate tasks to localhost\.
@@ -144,7 +161,7 @@ Please see the [HTTPAPI Plugin Example](https\://sophosfirewall\-ansible\.readth
 <a id="v1-5-0"></a>
 ## v1\.5\.0
 
-<a id="release-summary-5"></a>
+<a id="release-summary-6"></a>
 ### Release Summary
 
 This release introduces a new module for working with IPSec site\-to\-site VPN connections on Sophos Firewall
@@ -157,19 +174,6 @@ This release introduces a new module for working with IPSec site\-to\-site VPN c
 <a id="v1-4-5"></a>
 ## v1\.4\.5
 
-<a id="release-summary-6"></a>
-### Release Summary
-
-This is a bugfix release for the Sophos Firewall Ansible collection\.
-
-<a id="bugfixes"></a>
-### Bugfixes
-
-* Fixed an issue where the sfos\_syslog module was missing the ability to enable logging for anti\-spam smtp events\.
-
-<a id="v1-4-4"></a>
-## v1\.4\.4
-
 <a id="release-summary-7"></a>
 ### Release Summary
 
@@ -178,12 +182,25 @@ This is a bugfix release for the Sophos Firewall Ansible collection\.
 <a id="bugfixes-1"></a>
 ### Bugfixes
 
+* Fixed an issue where the sfos\_syslog module was missing the ability to enable logging for anti\-spam smtp events\.
+
+<a id="v1-4-4"></a>
+## v1\.4\.4
+
+<a id="release-summary-8"></a>
+### Release Summary
+
+This is a bugfix release for the Sophos Firewall Ansible collection\.
+
+<a id="bugfixes-2"></a>
+### Bugfixes
+
 * Fixed an issue where the sfos\_syslog module required unneccessary arguments when updating logging settings\.
 
 <a id="v1-4-3"></a>
 ## v1\.4\.3
 
-<a id="bugfixes-2"></a>
+<a id="bugfixes-3"></a>
 ### Bugfixes
 
 * Fixed an issue where the sfos\_syslog module would fail to update log settings
@@ -191,12 +208,12 @@ This is a bugfix release for the Sophos Firewall Ansible collection\.
 <a id="v1-4-2"></a>
 ## v1\.4\.2
 
-<a id="release-summary-8"></a>
+<a id="release-summary-9"></a>
 ### Release Summary
 
 Bugfix
 
-<a id="bugfixes-3"></a>
+<a id="bugfixes-4"></a>
 ### Bugfixes
 
 * Fixed issue with service\_acl\_exception crashing when no destination hosts are defined
@@ -204,7 +221,7 @@ Bugfix
 <a id="v1-4-1"></a>
 ## v1\.4\.1
 
-<a id="bugfixes-4"></a>
+<a id="bugfixes-5"></a>
 ### Bugfixes
 
 * Correct test files
@@ -212,7 +229,7 @@ Bugfix
 <a id="v1-4-0"></a>
 ## v1\.4\.0
 
-<a id="release-summary-9"></a>
+<a id="release-summary-10"></a>
 ### Release Summary
 
 This release introduces a new module for working with firewall rule groups\.
@@ -225,7 +242,7 @@ This release introduces a new module for working with firewall rule groups\.
 <a id="v1-3-0"></a>
 ## v1\.3\.0
 
-<a id="release-summary-10"></a>
+<a id="release-summary-11"></a>
 ### Release Summary
 
 This release adds modules for working with authentication servers
@@ -243,12 +260,12 @@ This release adds modules for working with authentication servers
 <a id="v1-2-1"></a>
 ## v1\.2\.1
 
-<a id="release-summary-11"></a>
+<a id="release-summary-12"></a>
 ### Release Summary
 
 Minor bug fixes
 
-<a id="bugfixes-5"></a>
+<a id="bugfixes-6"></a>
 ### Bugfixes
 
 * Allow use of \'any\' keyword for src/dst networks and services for sfos\_firewall\_rule module
@@ -257,7 +274,7 @@ Minor bug fixes
 <a id="v1-2-0"></a>
 ## v1\.2\.0
 
-<a id="release-summary-12"></a>
+<a id="release-summary-13"></a>
 ### Release Summary
 
 This release adds modules for working with IPS and Syslog settings
@@ -271,7 +288,7 @@ This release adds modules for working with IPS and Syslog settings
 <a id="v1-1-0"></a>
 ## v1\.1\.0
 
-<a id="release-summary-13"></a>
+<a id="release-summary-14"></a>
 ### Release Summary
 
 This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall
@@ -285,7 +302,7 @@ This release contains new modules for working with the SNMP agent and SNMPv3 use
 <a id="v1-0-0"></a>
 ## v1\.0\.0
 
-<a id="release-summary-14"></a>
+<a id="release-summary-15"></a>
 ### Release Summary
 
 This is the first proper release of the <code>sophos\.sophos\_firewall</code> collection\.
