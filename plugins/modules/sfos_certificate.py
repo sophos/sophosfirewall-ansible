@@ -43,7 +43,6 @@ options:
         description: Password for the Certificate used for authentication
         type: str
         required: false
-        no_log: true
     valid_from:
         description: Date from which the Certificate is valid. Required when action is GenerateSelfSignedCertificate.
         type: str
