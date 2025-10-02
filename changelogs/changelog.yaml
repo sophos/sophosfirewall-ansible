@@ -291,3 +291,14 @@ releases:
     fragments:
     - 2.3.1.yaml
     release_date: '2025-09-09'
+  2.4.0:
+    changes:
+      release_summary: This release introduces new modules for working with certificates
+        on Sophos Firewall
+    fragments:
+    - 2.4.0.yaml
+    modules:
+    - description: Manage Certificates (System > Certificates).
+      name: sfos_certificate
+      namespace: ''
+    release_date: '2025-10-02'

@@ -13,7 +13,7 @@ module: sfos_certificate
 
 short_description: Manage Certificates (System > Certificates)
 
-version_added: "1.2.0"
+version_added: "2.4.0"
 
 description: Creates certificates on Sophos Firewall, including uploaded certificates, self-signed certificates, certificate signing requests, and Let's Encrypt certificates
 
