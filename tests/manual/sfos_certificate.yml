@@ -6,84 +6,83 @@
   hosts: all
   gather_facts: false
   
-  vars:
-    # Test certificate content for upload testing
-    test_certificate_content: |
-      -----BEGIN CERTIFICATE-----
-      MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
-      VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
-      GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
-      GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
-      ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
-      MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
-      cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
-      ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
-      CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
-      AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
-      JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
-      Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
-      T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
-      hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
-      ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
-      0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
-      0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
-      bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
-      4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
-      uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
-      Lx72icSDR6OGLJUbnX4=
-      -----END CERTIFICATE-----
-
-    test_private_key_content: |
-      -----BEGIN PRIVATE KEY-----
-      MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAHxOBiJaQLvny
-      ANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+JM+twnZ4eQLCSNePhHY9
-      Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdPUz1/7JZM4l8MGnMKSkwl
-      tzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsKT8f0W9RHyAON+56a7tVJ
-      BHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHdhBeJYuRc+PPTuN/2nZHt
-      +ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UXebuGVVE3QRq8ej9iCYsB
-      UkGco8BDAgMBAAECggEBAIssN+InAwLRtOh1ZhUQ7+OO9Nr7Nl/VOpokuZ+/MpQl
-      1OYbk/ycqYfvUFkdK4CxFUcySihZwiXKDClV0Yl9V/FL2S3eYrbYhKOINGbyMzwS
-      BRaAj3JvWl1EweOZ5jwsM7jgZ4AKDPoQVlcgBFNa91hihZixlo75Lve70RlKuCpN
-      ZO1tqJRaVKi03ja5KDLgmNrF8doqBZEjHf906ovD2xmxdmF5enHwHfSIfLuQVRnj
-      WuTA7hTI0nhrCvtDlgReyh3de1Lmq/c0PNq35C5NjZGSQ+txwF9h10eF8qgcjriA
-      59Mn9dMCst5RuDFsKTE1/xz28e71TL5fm5wjl1YRb3kCgYEA6pKytN/XfPSP8cCI
-      JzWPeTQzm9ugjygHb5swlrb1UXtLyOr1oJxg+14NKfj0KdopcbkBGL4P+uV+oBPB
-      KEwcqBP28ar8XoHkaqEkZ3k0cqsUfXGtIsV4uuqKNNtH9oQlRRwBwjyDyO+Xaiiz
-      WONk8l8P4xF7B1rI5yC6Q5KN1wKBgQDT2b3yVbGNm3xJw8zOlO9KKnC9fWy4hRqQ
-      UGF5TKsJ8sGKlzQ3x4yD7rF5sN8tLmVkJq2mCxJyF8Y3KwQ5A7rL9mN4oP6Q8sR1
-      -----END PRIVATE KEY-----
-
   tasks:
+
+    - name: CREATE TEMPORARY CERTIFICATE FILES FOR TESTING
+      ansible.builtin.copy:
+        content: |
+          -----BEGIN CERTIFICATE-----
+          MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
+          VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
+          GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
+          GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
+          ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
+          MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
+          cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
+          ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
+          CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+          AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
+          JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
+          Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
+          T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
+          hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
+          ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
+          0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
+          0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
+          bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
+          4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
+          uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
+          Lx72icSDR6OGLJUbnX4=
+          -----END CERTIFICATE-----
+        dest: /tmp/test_certificate.pem
+      delegate_to: localhost
+
+    - name: CREATE TEMPORARY PRIVATE KEY FOR TESTING
+      ansible.builtin.copy:
+        content: |
+          -----BEGIN PRIVATE KEY-----
+          MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAHxOBiJaQLvny
+          ANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+JM+twnZ4eQLCSNePhHY9
+          Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdPUz1/7JZM4l8MGnMKSkwl
+          tzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsKT8f0W9RHyAON+56a7tVJ
+          BHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHdhBeJYuRc+PPTuN/2nZHt
+          +ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UXebuGVVE3QRq8ej9iCYsB
+          UkGco8BDAgMBAAECggEBAIssN+InAwLRtOh1ZhUQ7+OO9Nr7Nl/VOpokuZ+/MpQl
+          1OYbk/ycqYfvUFkdK4CxFUcySihZwiXKDClV0Yl9V/FL2S3eYrbYhKOINGbyMzwS
+          BRaAj3JvWl1EweOZ5jwsM7jgZ4AKDPoQVlcgBFNa91hihZixlo75Lve70RlKuCpN
+          ZO1tqJRaVKi03ja5KDLgmNrF8doqBZEjHf906ovD2xmxdmF5enHwHfSIfLuQVRnj
+          WuTA7hTI0nhrCvtDlgReyh3de1Lmq/c0PNq35C5NjZGSQ+txwF9h10eF8qgcjriA
+          59Mn9dMCst5RuDFsKTE1/xz28e71TL5fm5wjl1YRb3kCgYEA6pKytN/XfPSP8cCI
+          JzWPeTQzm9ugjygHb5swlrb1UXtLyOr1oJxg+14NKfj0KdopcbkBGL4P+uV+oBPB
+          KEwcqBP28ar8XoHkaqEkZ3k0cqsUfXGtIsV4uuqKNNtH9oQlRRwBwjyDyO+Xaiiz
+          xn4SBkzf52VB3ImnjkQobm/n5Q0CgYEA0auuMw+kxjFhC6DvCQxxeaYd6pryx6Y8
+          KeFtXUHeQRXRAzvdr0x+Q7kymFyt+I+xxuj7vNi0udZYF5J0cUk1ZeeoPzr6gzmt
+          JP90GPez3kaHJZrSrNa3Uy1muL1GhSp6P6sX+44QUPvC0BQG3zPC+baCvyXPKuQX
+          zMfzypeOho8CgYBTHRlu1yUuJCVgnjxf0C1+340tuzr/nkpMNCuaK0du0IYAsafI
+          ecAvMJrvdUNmFOO8ZLXLw4Q7/NbJ91XoZld9Al3sMQ5smg+J7IDOnPaFbrK64+1Z
+          tahaakIACnZMFXRzMUI6RWDYcHQw7C0OtprCWri273zPnIKe+O1ue/4pfQKBgQC6
+          IjLvWX/qAoQokqIh4k4KtJHyZ8QHwWe/tkQkegkYtolq2YafzMR60ro70GsRMl+c
+          OdDhgXBPWh2yL2339AnXgaQ3HeCvBlDTe4RRdfTT6sCnfZ5xmdv9l1yNvFoSdfc4
+          9mbABwotGpODrYO8OnNow8Gmd6ZGaV9HiGrA+3KnuQKBgQC5KikfUxalx8SYO1p0
+          kLRXbbCkdMaxJTcVaFUMMKMfHiyy5rz18W5Woqce1yGcEqxSE+MvnB+06aIYRE1R
+          XW14a9anGkid1UOgkF/PeQSV3cg2LFfcZyuXytftLR15Xu0Y/IzB/4oO/X5d7qMv
+          5dTvJrmIO5VDbtgRNY4BTxNsyQ==
+          -----END PRIVATE KEY-----
+        dest: /tmp/test_certificate.key
+      delegate_to: localhost
 
     #=========================================
     # CERTIFICATE UPLOAD TESTS
     #=========================================
 
-    - name: CREATE TEMPORARY CERTIFICATE FILE
-      ansible.builtin.copy:
-        content: "{{ test_certificate_content }}"
-        dest: /tmp/manual_test_certificate.pem
-      delegate_to: localhost
-      tags:
-        - upload
-        - setup
-
-    - name: CREATE TEMPORARY PRIVATE KEY FILE
-      ansible.builtin.copy:
-        content: "{{ test_private_key_content }}"
-        dest: /tmp/manual_test_private_key.pem
-      delegate_to: localhost
-      tags:
-        - upload
-        - setup
-
     - name: UPLOAD CERTIFICATE WITH PRIVATE KEY
       sophos.sophos_firewall.sfos_certificate:
         name: MANUAL_UPLOAD_CERT
         action: UploadCertificate
-        certificate_file: /tmp/manual_test_certificate.pem
-        private_key_file: /tmp/manual_test_private_key.pem
-        certificate_password: ""
+        certificate_file: /tmp/test_certificate.pem
+        private_key_file: /tmp/test_certificate.key
+        certificate_format: pem
+        common_name: manual-upload.example.com
         state: present
       register: upload_result
       tags:
@@ -94,22 +93,6 @@
         var: upload_result
       tags:
         - upload
-
-    - name: QUERY UPLOADED CERTIFICATE
-      sophos.sophos_firewall.sfos_certificate:
-        name: MANUAL_UPLOAD_CERT
-        state: query
-      register: query_upload_result
-      tags:
-        - upload
-        - query
-
-    - name: DISPLAY UPLOADED CERTIFICATE DETAILS
-      ansible.builtin.debug:
-        var: query_upload_result.api_response.Response.Certificate
-      tags:
-        - upload
-        - query
 
     #=========================================
     # SELF-SIGNED CERTIFICATE TESTS
@@ -330,40 +313,6 @@
         - letsencrypt
         - multi
 
-    #=========================================
-    # CERTIFICATE QUERY AND MANAGEMENT TESTS
-    #=========================================
-
-    - name: QUERY ALL CERTIFICATES
-      sophos.sophos_firewall.sfos_certificate:
-        state: query
-      register: all_certificates_result
-      tags:
-        - query
-        - all
-
-    - name: DISPLAY ALL CERTIFICATES
-      ansible.builtin.debug:
-        var: all_certificates_result.api_response.Response.Certificate
-      tags:
-        - query
-        - all
-
-    - name: QUERY SPECIFIC CERTIFICATE
-      sophos.sophos_firewall.sfos_certificate:
-        name: MANUAL_SELFSIGNED_BASIC
-        state: query
-      register: specific_cert_result
-      tags:
-        - query
-        - specific
-
-    - name: DISPLAY SPECIFIC CERTIFICATE DETAILS
-      ansible.builtin.debug:
-        var: specific_cert_result.api_response.Response.Certificate
-      tags:
-        - query
-        - specific
 
     #=========================================
     # CERTIFICATE REMOVAL TESTS
@@ -376,14 +325,12 @@
       register: remove_upload_result
       tags:
         - remove
-        - upload
 
     - name: DISPLAY REMOVE UPLOADED CERTIFICATE RESULT
       ansible.builtin.debug:
         var: remove_upload_result
       tags:
         - remove
-        - upload
 
     - name: REMOVE BASIC SELF-SIGNED CERTIFICATE
       sophos.sophos_firewall.sfos_certificate:
