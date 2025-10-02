@@ -1,0 +1,297 @@
+---
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# Individual Certificate Operation Tests
+# Usage: ansible-playbook -i inventory.yml sfos_certificate_individual.yml --tags <operation>
+# Available tags: upload, selfsigned, csr, letsencrypt, query, remove, cleanup
+
+- name: SOPHOS FIREWALL INDIVIDUAL CERTIFICATE OPERATIONS
+  hosts: all
+  gather_facts: false
+  
+  vars:
+    # Configuration variables - modify these as needed
+    cert_name_prefix: "MANUAL_TEST"
+    domain_suffix: "example.com"
+    organization: "Manual Test Organization"
+    country: "US"
+    email: "test@example.com"
+    
+    # Certificate validity period (for self-signed certificates)
+    valid_from: "2025-01-01"
+    valid_upto: "2026-12-31"
+
+  tasks:
+
+    #=========================================
+    # UPLOAD CERTIFICATE OPERATION
+    #=========================================
+
+    - block:
+        - name: CREATE TEST CERTIFICATE FOR UPLOAD
+          ansible.builtin.copy:
+            content: |
+              -----BEGIN CERTIFICATE-----
+              MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
+              VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
+              GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
+              GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
+              ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
+              MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
+              cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
+              ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
+              CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+              AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
+              JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
+              Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
+              T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
+              hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
+              ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
+              0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
+              0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
+              bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
+              4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
+              uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
+              Lx72icSDR6OGLJUbnX4=
+              -----END CERTIFICATE-----
+            dest: /tmp/upload_test_certificate.pem
+          delegate_to: localhost
+
+        - name: CREATE TEST PRIVATE KEY FOR UPLOAD
+          ansible.builtin.copy:
+            content: |
+              -----BEGIN PRIVATE KEY-----
+              MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAHxOBiJaQLvny
+              ANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+JM+twnZ4eQLCSNePhHY9
+              Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdPUz1/7JZM4l8MGnMKSkwl
+              tzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsKT8f0W9RHyAON+56a7tVJ
+              BHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHdhBeJYuRc+PPTuN/2nZHt
+              +ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UXebuGVVE3QRq8ej9iCYsB
+              UkGco8BDAgMBAAECggEBAIssN+InAwLRtOh1ZhUQ7+OO9Nr7Nl/VOpokuZ+/MpQl
+              1OYbk/ycqYfvUFkdK4CxFUcySihZwiXKDClV0Yl9V/FL2S3eYrbYhKOINGbyMzwS
+              BRaAj3JvWl1EweOZ5jwsM7jgZ4AKDPoQVlcgBFNa91hihZixlo75Lve70RlKuCpN
+              ZO1tqJRaVKi03ja5KDLgmNrF8doqBZEjHf906ovD2xmxdmF5enHwHfSIfLuQVRnj
+              WuTA7hTI0nhrCvtDlgReyh3de1Lmq/c0PNq35C5NjZGSQ+txwF9h10eF8qgcjriA
+              59Mn9dMCst5RuDFsKTE1/xz28e71TL5fm5wjl1YRb3kCgYEA6pKytN/XfPSP8cCI
+              JzWPeTQzm9ugjygHb5swlrb1UXtLyOr1oJxg+14NKfj0KdopcbkBGL4P+uV+oBPB
+              KEwcqBP28ar8XoHkaqEkZ3k0cqsUfXGtIsV4uuqKNNtH9oQlRRwBwjyDyO+Xaiiz
+              WONk8l8P4xF7B1rI5yC6Q5KN1wKBgQDT2b3yVbGNm3xJw8zOlO9KKnC9fWy4hRqQ
+              UGF5TKsJ8sGKlzQ3x4yD7rF5sN8tLmVkJq2mCxJyF8Y3KwQ5A7rL9mN4oP6Q8sR1
+              -----END PRIVATE KEY-----
+            dest: /tmp/upload_test_private_key.pem
+          delegate_to: localhost
+
+        - name: UPLOAD CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_UPLOAD"
+            action: UploadCertificate
+            certificate_file: /tmp/upload_test_certificate.pem
+            private_key_file: /tmp/upload_test_private_key.pem
+            certificate_password: ""
+            state: present
+          register: upload_result
+
+        - name: SHOW UPLOAD RESULT
+          ansible.builtin.debug:
+            msg: 
+              - "Certificate uploaded successfully!"
+              - "Name: {{ cert_name_prefix }}_UPLOAD"
+              - "Result: {{ upload_result.api_response.Response.Certificate.Status['#text'] | default('Unknown') }}"
+
+      tags: upload
+
+    #=========================================
+    # GENERATE SELF-SIGNED CERTIFICATE
+    #=========================================
+
+    - block:
+        - name: GENERATE SELF-SIGNED CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_SELFSIGNED"
+            action: GenerateSelfSignedCertificate
+            common_name: "selfsigned.{{ domain_suffix }}"
+            organization_name: "{{ organization }}"
+            country_name: "{{ country }}"
+            email_address: "{{ email }}"
+            key_type: RSA
+            key_length: 2048
+            secure_hash: "SHA - 256"
+            valid_from: "{{ valid_from }}"
+            valid_upto: "{{ valid_upto }}"
+            dns_name:
+              - "selfsigned.{{ domain_suffix }}"
+              - "www.selfsigned.{{ domain_suffix }}"
+            state: present
+          register: selfsigned_result
+
+        - name: SHOW SELF-SIGNED CERTIFICATE RESULT
+          ansible.builtin.debug:
+            msg: 
+              - "Self-signed certificate generated successfully!"
+              - "Name: {{ cert_name_prefix }}_SELFSIGNED"
+              - "Common Name: selfsigned.{{ domain_suffix }}"
+              - "Valid From: {{ valid_from }}"
+              - "Valid Until: {{ valid_upto }}"
+              - "Result: {{ selfsigned_result.api_response.Response.Certificate.Status['#text'] | default('Unknown') }}"
+
+      tags: selfsigned
+
+    #=========================================
+    # GENERATE CSR (Certificate Signing Request)
+    #=========================================
+
+    - block:
+        - name: GENERATE CSR
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_CSR"
+            action: GenerateCSR
+            common_name: "csr.{{ domain_suffix }}"
+            organization_name: "{{ organization }}"
+            organization_unit_name: "IT Department"
+            country_name: "{{ country }}"
+            state_province_name: "California"
+            locality_name: "San Francisco"
+            email_address: "{{ email }}"
+            key_type: RSA
+            key_length: 2048
+            secure_hash: "SHA - 256"
+            dns_name:
+              - "csr.{{ domain_suffix }}"
+              - "www.csr.{{ domain_suffix }}"
+            ip_address:
+              - "192.168.1.100"
+            state: present
+          register: csr_result
+
+        - name: SHOW CSR RESULT
+          ansible.builtin.debug:
+            msg: 
+              - "CSR generated successfully!"
+              - "Name: {{ cert_name_prefix }}_CSR"
+              - "Common Name: csr.{{ domain_suffix }}"
+              - "Organization: {{ organization }}"
+              - "Result: {{ csr_result.api_response.Response.Certificate.Status['#text'] | default('Unknown') }}"
+
+      tags: csr
+
+    #=========================================
+    # REQUEST LET'S ENCRYPT CERTIFICATE
+    #=========================================
+
+    - block:
+        - name: REQUEST LET'S ENCRYPT CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_LETSENCRYPT"
+            action: RequestLetsEncryptCertificate
+            domain_name: "letsencrypt.{{ domain_suffix }}"
+            challenge_type: HTTP-01
+            email_address: "{{ email }}"
+            dns_name:
+              - "letsencrypt.{{ domain_suffix }}"
+              - "www.letsencrypt.{{ domain_suffix }}"
+            state: present
+          register: letsencrypt_result
+          ignore_errors: true  # This will likely fail in test environment
+
+        - name: SHOW LET'S ENCRYPT RESULT
+          ansible.builtin.debug:
+            msg: 
+              - "Let's Encrypt certificate request completed!"
+              - "Name: {{ cert_name_prefix }}_LETSENCRYPT"
+              - "Domain: letsencrypt.{{ domain_suffix }}"
+              - "Challenge Type: HTTP-01"
+              - "Success: {{ letsencrypt_result.failed | default(false) | ternary('No', 'Yes') }}"
+              - "Result: {{ letsencrypt_result.api_response.Response.Certificate.Status['#text'] | default(letsencrypt_result.msg | default('Unknown')) }}"
+
+      tags: letsencrypt
+
+    #=========================================
+    # QUERY CERTIFICATES
+    #=========================================
+
+    - block:
+        - name: QUERY ALL CERTIFICATES
+          sophos.sophos_firewall.sfos_certificate:
+            state: query
+          register: all_certs
+
+        - name: SHOW ALL CERTIFICATES
+          ansible.builtin.debug:
+            msg: "Found {{ all_certs.api_response.Response.Certificate | length if all_certs.api_response.Response.Certificate is iterable else 1 }} certificate(s)"
+
+        - name: LIST CERTIFICATE NAMES
+          ansible.builtin.debug:
+            msg: "{{ item.Name | default('Unknown') }}"
+          loop: "{{ all_certs.api_response.Response.Certificate if all_certs.api_response.Response.Certificate is iterable else [all_certs.api_response.Response.Certificate] }}"
+          loop_control:
+            label: "Certificate"
+
+      tags: query
+
+    #=========================================
+    # REMOVE CERTIFICATES
+    #=========================================
+
+    - block:
+        - name: REMOVE UPLOADED CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_UPLOAD"
+            state: absent
+          register: remove_upload
+          ignore_errors: true
+
+        - name: REMOVE SELF-SIGNED CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_SELFSIGNED"
+            state: absent
+          register: remove_selfsigned
+          ignore_errors: true
+
+        - name: REMOVE CSR
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_CSR"
+            state: absent
+          register: remove_csr
+          ignore_errors: true
+
+        - name: REMOVE LET'S ENCRYPT CERTIFICATE
+          sophos.sophos_firewall.sfos_certificate:
+            name: "{{ cert_name_prefix }}_LETSENCRYPT"
+            state: absent
+          register: remove_letsencrypt
+          ignore_errors: true
+
+        - name: SHOW REMOVAL RESULTS
+          ansible.builtin.debug:
+            msg: 
+              - "Certificate removal completed:"
+              - "Upload cert: {{ 'Removed' if not remove_upload.failed else 'Not found/Failed' }}"
+              - "Self-signed cert: {{ 'Removed' if not remove_selfsigned.failed else 'Not found/Failed' }}"
+              - "CSR: {{ 'Removed' if not remove_csr.failed else 'Not found/Failed' }}"
+              - "Let's Encrypt cert: {{ 'Removed' if not remove_letsencrypt.failed else 'Not found/Failed' }}"
+
+      tags: remove
+
+    #=========================================
+    # CLEANUP TEMPORARY FILES
+    #=========================================
+
+    - block:
+        - name: CLEANUP TEMPORARY CERTIFICATE FILE
+          ansible.builtin.file:
+            path: /tmp/upload_test_certificate.pem
+            state: absent
+          delegate_to: localhost
+
+        - name: CLEANUP TEMPORARY PRIVATE KEY FILE
+          ansible.builtin.file:
+            path: /tmp/upload_test_private_key.pem
+            state: absent
+          delegate_to: localhost
+
+        - name: SHOW CLEANUP RESULT
+          ansible.builtin.debug:
+            msg: "Temporary files cleaned up successfully"
+
+      tags: cleanup

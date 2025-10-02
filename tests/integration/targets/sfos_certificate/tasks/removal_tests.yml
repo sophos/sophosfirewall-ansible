@@ -1,0 +1,55 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+#=========================================
+# CERTIFICATE REMOVAL TESTS
+#=========================================
+
+- name: CREATE TEST CERTIFICATE FOR REMOVAL
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_REMOVE_TEST_CERT
+    action: GenerateSelfSignedCertificate
+    common_name: remove-test.example.com
+    organization_name: Removal Test Organization
+    country_name: US
+    key_type: RSA
+    key_length: 2048
+    secure_hash: "SHA - 256"
+    valid_from: "2025-01-01"
+    valid_upto: "2026-12-31"
+    state: present
+  register: create_for_removal_result
+
+- name: ASSERTION CHECK FOR CERTIFICATE CREATION
+  assert:
+    that: 
+      - create_for_removal_result is changed
+      - create_for_removal_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: REMOVE THE TEST CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_REMOVE_TEST_CERT
+    state: absent
+  register: remove_test_result
+
+- name: ASSERTION CHECK FOR CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_test_result is changed
+
+- name: TEST REMOVING NON-EXISTENT CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_NONEXISTENT_CERT_123
+    state: absent
+  register: remove_nonexistent_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR NON-EXISTENT CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_nonexistent_result is failed
+    fail_msg: "Removing a non-existent certificate should fail"
+
+- name: DISPLAY REMOVAL TESTS COMPLETION MESSAGE
+  ansible.builtin.debug:
+    msg: "Certificate removal tests completed successfully"

@@ -1,0 +1,105 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: GENERATE CERTIFICATE SIGNING REQUEST WITH BASIC PARAMETERS
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_BASIC
+    action: GenerateCertificateSigningRequest
+    common_name: csr.example.com
+    organization_name: CSR Test Organization
+    country_name: US
+    state_province_name: California
+    locality_name: San Francisco
+    email_address: csr@example.com
+    key_type: RSA
+    key_length: 2048
+    secure_hash: "SHA - 256"
+    state: present
+  register: csr_basic_result
+
+- name: ASSERTION CHECK FOR BASIC CSR
+  assert:
+    that: 
+      - csr_basic_result is changed
+      - csr_basic_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: GENERATE CSR WITH ADVANCED PARAMETERS
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_ADVANCED
+    action: GenerateCertificateSigningRequest
+    common_name: advanced-csr.example.com
+    organization_name: Advanced CSR Organization
+    organization_unit_name: Security Department
+    country_name: CA
+    state_province_name: Ontario
+    locality_name: Toronto
+    email_address: security@example.com
+    key_type: RSA
+    key_length: 4096
+    secure_hash: "SHA - 512"
+    dns_name:
+      - advanced-csr.example.com
+      - www.advanced-csr.example.com
+    ip_address:
+      - "203.0.113.1"
+    state: present
+  register: csr_advanced_result
+
+- name: ASSERTION CHECK FOR ADVANCED CSR
+  assert:
+    that: 
+      - csr_advanced_result is changed
+      - csr_advanced_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: GENERATE CSR WITH ELLIPTIC CURVE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_EC
+    action: GenerateCertificateSigningRequest
+    common_name: ec-csr.example.com
+    organization_name: EC CSR Organization
+    country_name: GB
+    email_address: ec-csr@example.com
+    key_type: "Elliptic Curve"
+    curve_name: secp521r1
+    secure_hash: "SHA - 512"
+    state: present
+  register: csr_ec_result
+
+- name: ASSERTION CHECK FOR ELLIPTIC CURVE CSR
+  assert:
+    that: 
+      - csr_ec_result is changed
+      - csr_ec_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: TEST CSR WITHOUT COMMON NAME (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_NO_CN
+    action: GenerateCertificateSigningRequest
+    organization_name: Test Organization
+    country_name: US
+    state: present
+  register: csr_no_cn_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR CSR MISSING COMMON NAME
+  assert:
+    that: 
+      - csr_no_cn_result is failed
+      - "'common_name is required for GenerateCertificateSigningRequest action' in csr_no_cn_result.msg"
+
+- name: TEST CSR WITH INVALID COUNTRY CODE (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_INVALID_COUNTRY
+    action: GenerateCertificateSigningRequest
+    common_name: invalid-country.example.com
+    organization_name: Test Organization
+    country_name: USA
+    state: present
+  register: csr_invalid_country_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR CSR INVALID COUNTRY CODE
+  assert:
+    that: 
+      - csr_invalid_country_result is failed
+      - "'Country name must be a 2-letter ISO code' in csr_invalid_country_result.msg"
