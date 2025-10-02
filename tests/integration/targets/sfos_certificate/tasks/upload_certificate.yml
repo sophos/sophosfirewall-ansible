@@ -1,0 +1,138 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: CREATE TEMPORARY CERTIFICATE FILES FOR TESTING
+  ansible.builtin.copy:
+    content: |
+      -----BEGIN CERTIFICATE-----
+      MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
+      VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
+      GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
+      GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
+      ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
+      MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
+      cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
+      ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
+      CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
+      JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
+      Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
+      T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
+      hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
+      ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
+      0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
+      0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
+      bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
+      4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
+      uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
+      Lx72icSDR6OGLJUbnX4=
+      -----END CERTIFICATE-----
+    dest: /tmp/test_certificate.pem
+  delegate_to: localhost
+
+- name: CREATE TEMPORARY PRIVATE KEY FOR TESTING
+  ansible.builtin.copy:
+    content: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAHxOBiJaQLvny
+      ANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+JM+twnZ4eQLCSNePhHY9
+      Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdPUz1/7JZM4l8MGnMKSkwl
+      tzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsKT8f0W9RHyAON+56a7tVJ
+      BHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHdhBeJYuRc+PPTuN/2nZHt
+      +ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UXebuGVVE3QRq8ej9iCYsB
+      UkGco8BDAgMBAAECggEBAIssN+InAwLRtOh1ZhUQ7+OO9Nr7Nl/VOpokuZ+/MpQl
+      1OYbk/ycqYfvUFkdK4CxFUcySihZwiXKDClV0Yl9V/FL2S3eYrbYhKOINGbyMzwS
+      BRaAj3JvWl1EweOZ5jwsM7jgZ4AKDPoQVlcgBFNa91hihZixlo75Lve70RlKuCpN
+      ZO1tqJRaVKi03ja5KDLgmNrF8doqBZEjHf906ovD2xmxdmF5enHwHfSIfLuQVRnj
+      WuTA7hTI0nhrCvtDlgReyh3de1Lmq/c0PNq35C5NjZGSQ+txwF9h10eF8qgcjriA
+      59Mn9dMCst5RuDFsKTE1/xz28e71TL5fm5wjl1YRb3kCgYEA6pKytN/XfPSP8cCI
+      JzWPeTQzm9ugjygHb5swlrb1UXtLyOr1oJxg+14NKfj0KdopcbkBGL4P+uV+oBPB
+      KEwcqBP28ar8XoHkaqEkZ3k0cqsUfXGtIsV4uuqKNNtH9oQlRRwBwjyDyO+Xaiiz
+      xn4SBkzf52VB3ImnjkQobm/n5Q0CgYEA0auuMw+kxjFhC6DvCQxxeaYd6pryx6Y8
+      KeFtXUHeQRXRAzvdr0x+Q7kymFyt+I+xxuj7vNi0udZYF5J0cUk1ZeeoPzr6gzmt
+      JP90GPez3kaHJZrSrNa3Uy1muL1GhSp6P6sX+44QUPvC0BQG3zPC+baCvyXPKuQX
+      zMfzypeOho8CgYBTHRlu1yUuJCVgnjxf0C1+340tuzr/nkpMNCuaK0du0IYAsafI
+      ecAvMJrvdUNmFOO8ZLXLw4Q7/NbJ91XoZld9Al3sMQ5smg+J7IDOnPaFbrK64+1Z
+      tahaakIACnZMFXRzMUI6RWDYcHQw7C0OtprCWri273zPnIKe+O1ue/4pfQKBgQC6
+      IjLvWX/qAoQokqIh4k4KtJHyZ8QHwWe/tkQkegkYtolq2YafzMR60ro70GsRMl+c
+      OdDhgXBPWh2yL2339AnXgaQ3HeCvBlDTe4RRdfTT6sCnfZ5xmdv9l1yNvFoSdfc4
+      9mbABwotGpODrYO8OnNow8Gmd6ZGaV9HiGrA+3KnuQKBgQC5KikfUxalx8SYO1p0
+      kLRXbbCkdMaxJTcVaFUMMKMfHiyy5rz18W5Woqce1yGcEqxSE+MvnB+06aIYRE1R
+      XW14a9anGkid1UOgkF/PeQSV3cg2LFfcZyuXytftLR15Xu0Y/IzB/4oO/X5d7qMv
+      5dTvJrmIO5VDbtgRNY4BTxNsyQ==
+      -----END PRIVATE KEY-----
+    dest: /tmp/test_certificate.key
+  delegate_to: localhost
+
+- name: UPLOAD CERTIFICATE WITH FILES
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT
+    action: UploadCertificate
+    certificate_file: /tmp/test_certificate.pem
+    private_key_file: /tmp/test_certificate.key
+    certificate_format: pem
+    common_name: test.example.com
+    state: present
+  register: upload_cert_result
+
+- name: ASSERTION CHECK FOR UPLOAD CERTIFICATE
+  assert:
+    that: 
+      - upload_cert_result is changed
+      - upload_cert_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: UPLOAD CERTIFICATE WITHOUT PRIVATE KEY
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT_NO_KEY
+    action: UploadCertificate
+    certificate_file: /tmp/test_certificate.pem
+    certificate_format: pem
+    common_name: test.example.com
+    state: present
+  register: upload_cert_no_key_result
+
+- name: ASSERTION CHECK FOR UPLOAD CERTIFICATE WITHOUT PRIVATE KEY
+  assert:
+    that: 
+      - upload_cert_no_key_result is changed
+      - upload_cert_no_key_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: TEST UPLOAD WITH MISSING CERTIFICATE FILE (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT_FAIL
+    action: UploadCertificate
+    certificate_file: "/nonexistent/path/cert.pem"
+    common_name: test.example.com
+    state: present
+  register: upload_cert_fail_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING CERTIFICATE FILE
+  assert:
+    that: 
+      - upload_cert_fail_result is failed
+      - "'Certificate file not found' in upload_cert_fail_result.msg"
+
+- name: TEST UPLOAD WITHOUT CERTIFICATE FILE PARAMETER (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT_NO_FILE
+    action: UploadCertificate
+    common_name: test.example.com
+    state: present
+  register: upload_cert_no_file_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING CERTIFICATE FILE PARAMETER
+  assert:
+    that: 
+      - upload_cert_no_file_result is failed
+      - "'certificate_file is required for UploadCertificate action' in upload_cert_no_file_result.msg"
+
+- name: CLEANUP TEMPORARY CERTIFICATE FILES
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/test_certificate.pem
+    - /tmp/test_certificate.key
+  delegate_to: localhost

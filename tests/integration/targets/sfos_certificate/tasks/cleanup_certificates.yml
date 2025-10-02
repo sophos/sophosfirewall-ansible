@@ -1,0 +1,174 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+#=========================================
+# CLEANUP TASKS - REMOVE CREATED CERTIFICATES
+#=========================================
+
+- name: REMOVE UPLOADED CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT
+    state: absent
+  register: remove_upload_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPLOADED CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_upload_result is changed or remove_upload_result is failed
+    fail_msg: "Certificate removal should either succeed (changed) or fail if certificate doesn't exist"
+
+- name: REMOVE UPLOADED CERTIFICATE WITHOUT KEY
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_CERT_NO_KEY
+    state: absent
+  register: remove_upload_no_key_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR UPLOADED CERTIFICATE WITHOUT KEY REMOVAL
+  assert:
+    that: 
+      - remove_upload_no_key_result is changed or remove_upload_no_key_result is failed
+    fail_msg: "Certificate removal should either succeed (changed) or fail if certificate doesn't exist"
+
+- name: REMOVE UPLOADED CERTIFICATE WITH PKCS12 FORMAT
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_UPLOAD_PKCS12_CERT
+    state: absent
+  register: remove_pkcs12_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR PKCS12 CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_pkcs12_result is changed or remove_pkcs12_result is failed
+
+- name: REMOVE BASIC SELF-SIGNED CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_BASIC
+    state: absent
+  register: remove_selfsigned_basic_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR BASIC SELF-SIGNED CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_selfsigned_basic_result is changed or remove_selfsigned_basic_result is failed
+
+- name: REMOVE ADVANCED SELF-SIGNED CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_ADVANCED
+    state: absent
+  register: remove_selfsigned_advanced_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR ADVANCED SELF-SIGNED CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_selfsigned_advanced_result is changed or remove_selfsigned_advanced_result is failed
+
+- name: REMOVE ELLIPTIC CURVE SELF-SIGNED CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_EC
+    state: absent
+  register: remove_selfsigned_ec_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR ELLIPTIC CURVE SELF-SIGNED CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_selfsigned_ec_result is changed or remove_selfsigned_ec_result is failed
+
+- name: REMOVE BASIC CSR
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_BASIC
+    state: absent
+  register: remove_csr_basic_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR BASIC CSR REMOVAL
+  assert:
+    that: 
+      - remove_csr_basic_result is changed or remove_csr_basic_result is failed
+
+- name: REMOVE ADVANCED CSR
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_ADVANCED
+    state: absent
+  register: remove_csr_advanced_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR ADVANCED CSR REMOVAL
+  assert:
+    that: 
+      - remove_csr_advanced_result is changed or remove_csr_advanced_result is failed
+
+- name: REMOVE ELLIPTIC CURVE CSR
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_CSR_EC
+    state: absent
+  register: remove_csr_ec_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR ELLIPTIC CURVE CSR REMOVAL
+  assert:
+    that: 
+      - remove_csr_ec_result is changed or remove_csr_ec_result is failed
+
+- name: REMOVE LET'S ENCRYPT CERTIFICATE (IF CREATED)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_LETSENCRYPT_BASIC
+    state: absent
+  register: remove_letsencrypt_basic_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR LET'S ENCRYPT CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_letsencrypt_basic_result is changed or remove_letsencrypt_basic_result is failed
+
+- name: REMOVE LET'S ENCRYPT MULTI-DOMAIN CERTIFICATE (IF CREATED)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_LETSENCRYPT_MULTI
+    state: absent
+  register: remove_letsencrypt_multi_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR LET'S ENCRYPT MULTI-DOMAIN CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_letsencrypt_multi_result is changed or remove_letsencrypt_multi_result is failed
+
+- name: REMOVE EDGE CASE CERTIFICATES
+  sophos.sophos_firewall.sfos_certificate:
+    name: "{{ item }}"
+    state: absent
+  register: remove_edge_case_results
+  ignore_errors: true
+  loop:
+    - IGT_MINIMAL_CERT
+    - IGT_SPECIAL-CERT_123
+
+- name: ASSERTION CHECK FOR EDGE CASE CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - item is changed or item is failed
+    fail_msg: "Certificate removal should either succeed (changed) or fail if certificate doesn't exist"
+  loop: "{{ remove_edge_case_results.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: CLEANUP TEMPORARY CERTIFICATE FILES
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  delegate_to: localhost
+  ignore_errors: true
+  loop:
+    - /tmp/test_certificate.pem
+    - /tmp/test_private_key.pem
+    - /tmp/test_pkcs12_certificate.p12
+
+- name: DISPLAY CLEANUP COMPLETION MESSAGE
+  ansible.builtin.debug:
+    msg: "Certificate cleanup completed. All test certificates and temporary files have been removed."

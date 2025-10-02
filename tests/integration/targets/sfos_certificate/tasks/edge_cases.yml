@@ -1,0 +1,135 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: TEST MISSING ACTION PARAMETER (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_NO_ACTION
+    common_name: test.example.com
+    state: present
+  register: no_action_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING ACTION PARAMETER
+  assert:
+    that: 
+      - no_action_result is failed
+
+- name: TEST MISSING NAME PARAMETER (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    action: GenerateSelfSignedCertificate
+    common_name: test.example.com
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: no_name_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING NAME PARAMETER
+  assert:
+    that: 
+      - no_name_result is failed
+
+- name: TEST MISSING COMMON NAME PARAMETER (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_NO_COMMON_NAME
+    action: GenerateSelfSignedCertificate
+    organization_name: Test Org
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: no_common_name_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING COMMON NAME PARAMETER
+  assert:
+    that: 
+      - no_common_name_result is failed
+
+- name: TEST INVALID KEY LENGTH
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_INVALID_KEY_LENGTH
+    action: GenerateSelfSignedCertificate
+    common_name: test.example.com
+    key_type: RSA
+    key_length: 512  # Invalid key length
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: invalid_key_length_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR INVALID KEY LENGTH
+  assert:
+    that: 
+      - invalid_key_length_result is failed
+
+- name: TEST VALID PARAMETERS WITH MINIMUM REQUIREMENTS
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_MINIMAL_CERT
+    action: GenerateSelfSignedCertificate
+    common_name: minimal.example.com
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: minimal_cert_result
+
+- name: ASSERTION CHECK FOR MINIMAL CERTIFICATE
+  assert:
+    that: 
+      - minimal_cert_result is changed
+      - minimal_cert_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: TEST CERTIFICATE WITH SPECIAL CHARACTERS IN NAME
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SPECIAL-CERT_123
+    action: GenerateSelfSignedCertificate
+    common_name: special-123.example.com
+    organization_name: "Test Org & Co."
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: special_name_result
+
+- name: ASSERTION CHECK FOR SPECIAL CHARACTERS
+  assert:
+    that: 
+      - special_name_result is changed
+      - special_name_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+#=========================================
+# CERTIFICATE REMOVAL TESTS
+#=========================================
+
+- name: TEST REMOVING EXISTING CERTIFICATE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SPECIAL-CERT_123
+    state: absent
+  register: remove_existing_result
+
+- name: ASSERTION CHECK FOR REMOVING EXISTING CERTIFICATE
+  assert:
+    that: 
+      - remove_existing_result is changed
+
+- name: TEST REMOVING NON-EXISTENT CERTIFICATE (SHOULD FAIL GRACEFULLY)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_NON_EXISTENT_CERT
+    state: absent
+  register: remove_nonexistent_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR NON-EXISTENT CERTIFICATE REMOVAL
+  assert:
+    that: 
+      - remove_nonexistent_result is failed
+
+- name: TEST CERTIFICATE REMOVAL WITHOUT COMMON_NAME PARAMETER
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_MINIMAL_CERT
+    state: absent
+  register: remove_without_common_name_result
+
+- name: ASSERTION CHECK FOR REMOVAL WITHOUT COMMON_NAME
+  assert:
+    that: 
+      - remove_without_common_name_result is changed

@@ -1,0 +1,69 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# NOTE: Let's Encrypt tests may fail in test environments due to domain validation requirements
+# These tests are provided for completeness but may need to be run manually with valid domains
+
+- name: TEST LETS ENCRYPT WITHOUT EMAIL (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_LETSENCRYPT_NO_EMAIL
+    action: RequestLetsEncryptCertificate
+    common_name: letsencrypt.example.com
+    hosted_address: "192.168.1.1"
+    state: present
+  register: letsencrypt_no_email_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR LETS ENCRYPT MISSING EMAIL
+  assert:
+    that: 
+      - letsencrypt_no_email_result is failed
+      - "'email_address is required' in letsencrypt_no_email_result.msg"
+
+- name: TEST LETS ENCRYPT WITHOUT COMMON NAME (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_LETSENCRYPT_NO_CN
+    action: RequestLetsEncryptCertificate
+    email_address: test@example.com
+    hosted_address: "192.168.1.1"
+    state: present
+  register: letsencrypt_no_cn_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR LETS ENCRYPT MISSING COMMON NAME
+  assert:
+    that: 
+      - letsencrypt_no_cn_result is failed
+      - "'common_name is required for RequestLetsEncryptCertificate action' in letsencrypt_no_cn_result.msg"
+
+- name: TEST INVALID EMAIL FORMAT (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_INVALID_EMAIL
+    action: RequestLetsEncryptCertificate
+    common_name: test.example.com
+    email_address: "invalid-email"
+    hosted_address: "192.168.1.1"
+    state: present
+  register: invalid_email_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR INVALID EMAIL FORMAT
+  assert:
+    that: 
+      - invalid_email_result is failed
+      - "'Invalid email address format' in invalid_email_result.msg"
+
+# Commented out actual Let's Encrypt request as it requires valid domain and DNS setup
+# - name: REQUEST LETS ENCRYPT CERTIFICATE (MANUAL TEST ONLY)
+#   sophos.sophos_firewall.sfos_certificate:
+#     name: IGT_LETSENCRYPT_CERT
+#     action: RequestLetsEncryptCertificate
+#     common_name: yourdomain.com  # Replace with actual domain
+#     email_address: admin@yourdomain.com  # Replace with actual email
+#     hosted_address: "203.0.113.1"  # Replace with actual public IP
+#     dns_name:
+#       - yourdomain.com
+#       - www.yourdomain.com
+#     state: present
+#   register: letsencrypt_result
+#   tags: manual

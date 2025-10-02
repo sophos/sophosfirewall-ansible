@@ -1,0 +1,115 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: GENERATE SELF-SIGNED CERTIFICATE WITH BASIC PARAMETERS
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_BASIC
+    action: GenerateSelfSignedCertificate
+    common_name: selfsigned.example.com
+    organization_name: Test Organization
+    country_name: US
+    state_province_name: California
+    locality_name: San Francisco
+    email_address: admin@example.com
+    key_type: RSA
+    key_length: 2048
+    secure_hash: "SHA - 256"
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: selfsigned_basic_result
+
+- name: ASSERTION CHECK FOR BASIC SELF-SIGNED CERTIFICATE
+  assert:
+    that: 
+      - selfsigned_basic_result is changed
+      - selfsigned_basic_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: GENERATE SELF-SIGNED CERTIFICATE WITH ADVANCED PARAMETERS
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_ADVANCED
+    action: GenerateSelfSignedCertificate
+    common_name: advanced.example.com
+    organization_name: Advanced Test Organization
+    organization_unit_name: IT Department
+    country_name: US
+    state_province_name: California
+    locality_name: San Francisco
+    email_address: it@example.com
+    key_type: RSA
+    key_length: 4096
+    secure_hash: "SHA - 512"
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    dns_name:
+      - advanced.example.com
+      - www.advanced.example.com
+      - api.advanced.example.com
+    ip_address:
+      - "192.168.1.100"
+      - "10.0.0.100"
+    state: present
+  register: selfsigned_advanced_result
+
+- name: ASSERTION CHECK FOR ADVANCED SELF-SIGNED CERTIFICATE
+  assert:
+    that: 
+      - selfsigned_advanced_result is changed
+      - selfsigned_advanced_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: GENERATE SELF-SIGNED CERTIFICATE WITH ELLIPTIC CURVE
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_EC
+    action: GenerateSelfSignedCertificate
+    common_name: ec.example.com
+    organization_name: EC Test Organization
+    country_name: US
+    email_address: ec@example.com
+    key_type: "Elliptic Curve"
+    curve_name: secp384r1
+    secure_hash: "SHA - 384"
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: selfsigned_ec_result
+
+- name: ASSERTION CHECK FOR ELLIPTIC CURVE SELF-SIGNED CERTIFICATE
+  assert:
+    that: 
+      - selfsigned_ec_result is changed
+      - selfsigned_ec_result['api_response']['Response']['Certificate']['Status']['#text'] == "Configuration applied successfully."
+
+- name: TEST SELF-SIGNED CERTIFICATE WITHOUT COMMON NAME (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_NO_CN
+    action: GenerateSelfSignedCertificate
+    organization_name: Test Organization
+    country_name: US
+    valid_from: "2024-01-01"
+    valid_upto: "2025-12-31"
+    state: present
+  register: selfsigned_no_cn_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING COMMON NAME
+  assert:
+    that: 
+      - selfsigned_no_cn_result is failed
+      - "'common_name is required for GenerateSelfSignedCertificate action' in selfsigned_no_cn_result.msg"
+
+- name: TEST SELF-SIGNED CERTIFICATE WITHOUT VALIDITY DATES (SHOULD FAIL)
+  sophos.sophos_firewall.sfos_certificate:
+    name: IGT_SELFSIGNED_NO_VALIDITY
+    action: GenerateSelfSignedCertificate
+    common_name: novaliditytest.example.com
+    organization_name: Test Organization
+    country_name: US
+    state: present
+  register: selfsigned_no_validity_result
+  ignore_errors: true
+
+- name: ASSERTION CHECK FOR MISSING VALIDITY DATES
+  assert:
+    that: 
+      - selfsigned_no_validity_result is failed
+      - "'action is GenerateSelfSignedCertificate but any of the following are missing: valid_from, valid_upto' in selfsigned_no_validity_result.msg"
