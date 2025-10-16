@@ -1,0 +1,207 @@
+---
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: SOPHOS FIREWALL CERTIFICATE AUTHORITY MANAGEMENT TESTING
+  hosts: all
+  gather_facts: false
+  
+  tasks:
+
+    - name: CREATE TEMPORARY CA CERTIFICATE FILE FOR TESTING
+      ansible.builtin.copy:
+        content: |
+          -----BEGIN CERTIFICATE-----
+          MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
+          VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
+          GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
+          GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
+          ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
+          MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
+          cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
+          ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
+          CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+          AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
+          JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
+          Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
+          T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
+          hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
+          ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
+          0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
+          0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
+          bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
+          4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
+          uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
+          Lx72icSDR6OGLJUbnX4=
+          -----END CERTIFICATE-----
+        dest: /tmp/test_ca_certificate.pem
+      delegate_to: localhost
+
+    - name: CREATE TEMPORARY CA PRIVATE KEY FOR TESTING
+      ansible.builtin.copy:
+        content: |
+          -----BEGIN PRIVATE KEY-----
+          MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDAHxOBiJaQLvny
+          ANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+JM+twnZ4eQLCSNePhHY9
+          Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdPUz1/7JZM4l8MGnMKSkwl
+          tzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsKT8f0W9RHyAON+56a7tVJ
+          BHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHdhBeJYuRc+PPTuN/2nZHt
+          +ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UXebuGVVE3QRq8ej9iCYsB
+          UkGco8BDAgMBAAECggEBAIssN+InAwLRtOh1ZhUQ7+OO9Nr7Nl/VOpokuZ+/MpQl
+          4TF8xSZgJYFQN7vWgKzNt+FkL3x9gUxzO8CqHbNInJghJn5J9lW5kR4tFz1c9zML
+          pMR8hMpHgCxp2N5uO8RQELoQWzMQ3P6+eTCVQYlWzR4fKF5H9qX7tJpWb3MFzRbQ
+          oXhqz5u7Q9PJoZlKhSn3F8DkYEo2qJ4ZsXc9O7F5RQzj2fY8XzKr3mJlL4vP2NwK
+          HF3hP5W1RzQ7Y9K2MfQlP6R3J8nH4cL2Y1sJo9R5F8QzO3N7tK2fL6XrP9M1Q5z2
+          3kO8F7L9nZ4YqWxQfP8RzT5JuL2K6N3F7v1H9QoX2+ECgYkA4qzJF8mF3O2P7z9K
+          t8F5sJ4Q7R3Y6WzM9fL2K1zQ3xF7H8N9P2Y4J6L5Q9zO7F3mK8N2vR5z1P4WzJ7F
+          Y3nF2L8oQ9zR5K4F7H1zM3Q6Y8WzJ2L4P9F5K7z3Y1mF8Q7H2L6z9K5F3Y4zO1mW
+          7P8Q2z5F9K3Y1L7mJ4Q6z8F2Y9K5L3P1F7mQ4z6Y8K9L2J5F3Q7z1mY4K8L9P6F2
+          Y3Q5z7K1L4F9mJ8Q6Y2z5K3L7F1P9mQ4z8Y6K2L5F3J7Q1z9mY4K8L6P2F5Q3z7K
+          Y9L1F4mJ8Q6Y2z5K3L7F1P9mQ4z8Y6K2L5F3J7Q1z9mY4K8L6P2F5Q3z7KY9L1F4m
+          -----END PRIVATE KEY-----
+        dest: /tmp/test_ca_private_key.key
+      delegate_to: localhost
+
+    - name: ADD CERTIFICATE AUTHORITY - PEM FORMAT
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_CA_PEM
+        format: PEM
+        ca_cert_file: /tmp/test_ca_certificate.pem
+        ca_private_key_file: /tmp/test_ca_private_key.key
+        password: testpassword123
+        state: present
+      register: add_ca_pem_result
+
+    - name: DISPLAY ADD CA PEM RESULT
+      ansible.builtin.debug:
+        var: add_ca_pem_result
+
+    - name: ADD CERTIFICATE AUTHORITY - WITHOUT PRIVATE KEY
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_CA_NO_KEY
+        format: PEM
+        ca_cert_file: /tmp/test_ca_certificate.pem
+        state: present
+      register: add_ca_no_key_result
+
+    - name: DISPLAY ADD CA WITHOUT KEY RESULT
+      ansible.builtin.debug:
+        var: add_ca_no_key_result
+
+    - name: UPDATE CERTIFICATE AUTHORITY
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_CA_PEM
+        format: PEM
+        ca_cert_file: /tmp/test_ca_certificate.pem
+        state: update
+      register: update_ca_result
+
+    - name: DISPLAY UPDATE CA RESULT
+      ansible.builtin.debug:
+        var: update_ca_result
+
+    - name: CREATE DER FORMAT CERTIFICATE FILE
+      ansible.builtin.copy:
+        content: |
+          MIIDyjCCArICCQCiXmMJsU/2EDANBgkqhkiG9w0BAQsFADCBpjELMAkGA1UEBhMC
+          VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28x
+          GjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlUZXN0IFVuaXQx
+          GTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0BCQEWEHRlc3RA
+          ZXhhbXBsZS5jb20wHhcNMjUxMDAyMTg0ODM2WhcNMjYxMDAyMTg0ODM2WjCBpjEL
+          MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBG
+          cmFuY2lzY28xGjAYBgNVBAoMEVRlc3QgT3JnYW5pemF0aW9uMRIwEAYDVQQLDAlU
+          ZXN0IFVuaXQxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xHzAdBgkqhkiG9w0B
+          CQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+          AoIBAQDAHxOBiJaQLvnyANKSgPp8gJOWVSbjvJv2vkAS8TXsy3fl0UgRu8Fz0LM+
+          JM+twnZ4eQLCSNePhHY9Qa17rWtIkvFsTV89gYakEi65plZt7zbvLfKW3BCGgEdP
+          Uz1/7JZM4l8MGnMKSkwltzux5Nkcz3a1H5QoI5QB+lIsjOBpd5zM1fZcJ/sD9NsK
+          T8f0W9RHyAON+56a7tVJBHuBijb8ndzjmUY2DMMrEBOLAb0Bwp1ryd7mYUSK6AHd
+          hBeJYuRc+PPTuN/2nZHt+ro/Z5W3zo8k7LaO4tMU/4asVjPiQgSLIwsCUljET1UX
+          ebuGVVE3QRq8ej9iCYsBUkGco8BDAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGRX
+          0djitWZh21oinAqpr1ymVp/w6FQfye8P33YbNWg1bxJfHHmnhv1h6EVfAz4ehvYw
+          0xrhuD9QEJD7m6ual07VKGPUJYplFDJZpoVql7s3GQ/8CXTmd60YEieVjeZ+kGEx
+          bW8+nJbjGBDoeTQIsaw7BIO82pWWn6P3WarUCPWxuaFWhAijBR0n4ysIFOXZWfW6
+          4LaPKxIfVcHZOEPgMm/SwIivX5r9sjQIseHN/fWtL5p8/um1TOtWwxBqCRJgDwZh
+          uiw/y7GPC5GZoxbwJhFA4G/kPBTiIG/TKdkTxPQY3hQQTc0Z5Lf7+GVjobFHeeIN
+          Lx72icSDR6OGLJUbnX4=
+        dest: /tmp/test_ca_certificate.der
+      delegate_to: localhost
+
+    - name: ADD CERTIFICATE AUTHORITY - DER FORMAT
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_CA_DER
+        format: DER
+        ca_cert_file: /tmp/test_ca_certificate.der
+        state: present
+      register: add_ca_der_result
+
+    - name: DISPLAY ADD CA DER RESULT
+      ansible.builtin.debug:
+        var: add_ca_der_result
+
+    # Test error handling
+    - name: TEST INVALID NAME CHARACTERS
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: "INVALID*NAME!"
+        format: PEM
+        ca_cert_file: /tmp/test_ca_certificate.pem
+        state: present
+      register: invalid_name_result
+      ignore_errors: true
+
+    - name: DISPLAY INVALID NAME TEST RESULT
+      ansible.builtin.debug:
+        var: invalid_name_result
+
+    - name: TEST MISSING CERTIFICATE FILE
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_NO_FILE
+        format: PEM
+        ca_cert_file: /tmp/nonexistent_file.pem
+        state: present
+      register: missing_file_result
+      ignore_errors: true
+
+    - name: DISPLAY MISSING FILE TEST RESULT
+      ansible.builtin.debug:
+        var: missing_file_result
+
+    - name: TEST INVALID PASSWORD LENGTH
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: TEST_BAD_PASSWORD
+        format: PEM
+        ca_cert_file: /tmp/test_ca_certificate.pem
+        password: "abc"  # Too short
+        state: present
+      register: invalid_password_result
+      ignore_errors: true
+
+    - name: DISPLAY INVALID PASSWORD TEST RESULT
+      ansible.builtin.debug:
+        var: invalid_password_result
+
+    # Cleanup
+    - name: REMOVE TEST CERTIFICATE AUTHORITIES
+      sophos.sophos_firewall.sfos_certificate_authority:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - TEST_CA_PEM
+        - TEST_CA_NO_KEY
+        - TEST_CA_DER
+      register: remove_ca_results
+      ignore_errors: true
+
+    - name: DISPLAY REMOVE RESULTS
+      ansible.builtin.debug:
+        var: remove_ca_results
+
+    - name: CLEANUP TEMPORARY FILES
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/test_ca_certificate.pem
+        - /tmp/test_ca_private_key.key
+        - /tmp/test_ca_certificate.der
+      delegate_to: localhost

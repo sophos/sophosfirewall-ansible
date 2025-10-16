@@ -1,0 +1,24 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: CLEANUP - REMOVE ALL TEST CERTIFICATE AUTHORITIES
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - TEST_CA_PEM_WITH_KEY
+    - TEST_CA_PEM_NO_KEY
+    - TEST_CA_DER
+    - TEST_CA_MINIMAL
+    - TEST_CA_AUTO_FORMAT
+    - Valid_Name-123.Test@CA
+    - TEST_CA_BOUNDARY_PASSWORD
+    - TEST_CA_MAX_PASSWORD
+  register: cleanup_cas_result
+  ignore_errors: true
+
+- name: DISPLAY CLEANUP RESULTS
+  ansible.builtin.debug:
+    msg: "Cleanup result for {{ item.item }}: {{ 'SUCCESS' if not item.failed else 'FAILED - ' + item.msg | default('Unknown error') }}"
+  loop: "{{ cleanup_cas_result.results }}"
+  when: cleanup_cas_result.results is defined

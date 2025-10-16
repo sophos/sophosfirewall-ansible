@@ -1,0 +1,47 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: REMOVE SPECIFIC CERTIFICATE AUTHORITY
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_PEM_WITH_KEY
+    state: absent
+  register: remove_specific_ca_result
+
+- name: ASSERT REMOVE SPECIFIC CA SUCCESS
+  ansible.builtin.assert:
+    that:
+      - remove_specific_ca_result.changed == true
+      - remove_specific_ca_result.api_response is defined
+    fail_msg: "Failed to remove specific certificate authority"
+
+- name: REMOVE MULTIPLE CERTIFICATE AUTHORITIES
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - TEST_CA_PEM_NO_KEY
+    - TEST_CA_DER
+    - TEST_CA_MINIMAL
+  register: remove_multiple_cas_result
+
+- name: ASSERT REMOVE MULTIPLE CAS SUCCESS
+  ansible.builtin.assert:
+    that:
+      - item.changed == true
+      - item.api_response is defined
+    fail_msg: "Failed to remove certificate authority: {{ item.item }}"
+  loop: "{{ remove_multiple_cas_result.results }}"
+
+- name: ATTEMPT TO REMOVE NON-EXISTENT CERTIFICATE AUTHORITY
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: NON_EXISTENT_CA
+    state: absent
+  register: remove_nonexistent_ca_result
+  ignore_errors: true
+
+- name: VERIFY REMOVAL OF NON-EXISTENT CA HANDLING
+  ansible.builtin.debug:
+    msg: "Removal of non-existent CA result: {{ remove_nonexistent_ca_result }}"
+
+# Note: The actual behavior for removing non-existent CAs may vary
+# Some APIs fail, others succeed silently - both are acceptable
