@@ -1,0 +1,170 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- name: GENERATE CA CERTIFICATE FOR PEM WITH KEY TEST
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_pem_with_key.key -out /tmp/test_ca_pem_with_key.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-PemWithKey"
+  delegate_to: localhost
+
+- name: GENERATE CA CERTIFICATE FOR PEM WITHOUT KEY TEST
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_pem_no_key.key -out /tmp/test_ca_pem_no_key.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-PemNoKey"
+  delegate_to: localhost
+
+- name: GENERATE CA CERTIFICATE FOR DER FORMAT TEST
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_der.key -out /tmp/test_ca_der.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-DER"
+  delegate_to: localhost
+
+- name: CONVERT DER TEST CERTIFICATE TO DER FORMAT
+  ansible.builtin.shell: |
+    openssl x509 -in /tmp/test_ca_der.pem -outform DER -out /tmp/test_ca_der.der
+  delegate_to: localhost
+
+- name: GENERATE CA CERTIFICATE FOR MINIMAL CONFIG TEST
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_minimal.key -out /tmp/test_ca_minimal.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-Minimal"
+  delegate_to: localhost
+
+- name: GENERATE CA CERTIFICATE FOR AUTO FORMAT TEST
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_auto_format.key -out /tmp/test_ca_auto_format.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-AutoFormat"
+  delegate_to: localhost
+
+- name: GENERATE CA CERTIFICATE FOR UPDATE TESTS
+  ansible.builtin.shell: |
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/test_ca_update.key -out /tmp/test_ca_update.pem -days 365 -nodes -subj "/C=US/ST=TestState/L=TestCity/O=TestOrg/CN=TestCA-Update"
+  delegate_to: localhost
+
+- name: CONVERT UPDATE TEST CERTIFICATE TO DER FORMAT
+  ansible.builtin.shell: |
+    openssl x509 -in /tmp/test_ca_update.pem -outform DER -out /tmp/test_ca_update.der
+  delegate_to: localhost
+
+- name: UPLOAD CA - PEM FORMAT WITH PRIVATE KEY AND PASSWORD
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_PEM_WITH_KEY
+    format: PEM
+    ca_cert_file: /tmp/test_ca_pem_with_key.pem
+    ca_private_key_file: /tmp/test_ca_pem_with_key.key
+    # password: testpassword123
+    state: present
+  register: upload_ca_pem_with_key_result
+
+- name: ASSERT UPLOAD CA PEM WITH KEY SUCCESS
+  ansible.builtin.assert:
+    that:
+      - upload_ca_pem_with_key_result.changed == true
+      - upload_ca_pem_with_key_result.api_response is defined
+    fail_msg: "Failed to upload CA certificate with private key"
+
+- name: UPLOAD CA - PEM FORMAT WITHOUT PRIVATE KEY
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_PEM_NO_KEY
+    format: PEM
+    ca_cert_file: /tmp/test_ca_pem_no_key.pem
+    state: present
+  register: upload_ca_pem_no_key_result
+
+- name: ASSERT UPLOAD CA PEM WITHOUT KEY SUCCESS
+  ansible.builtin.assert:
+    that:
+      - upload_ca_pem_no_key_result.changed == true
+      - upload_ca_pem_no_key_result.api_response is defined
+    fail_msg: "Failed to upload CA certificate without private key"
+
+- name: UPLOAD CA - DER FORMAT
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_DER
+    format: DER
+    ca_cert_file: /tmp/test_ca_der.der
+    state: present
+  register: upload_ca_der_result
+
+- name: ASSERT UPLOAD CA DER SUCCESS
+  ansible.builtin.assert:
+    that:
+      - upload_ca_der_result.changed == true
+      - upload_ca_der_result.api_response is defined
+    fail_msg: "Failed to upload CA certificate in DER format"
+
+- name: UPDATE EXISTING CA - CHANGE FORMAT
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_PEM_WITH_KEY
+    format: DER
+    ca_cert_file: /tmp/test_ca_update.der
+    state: update
+  register: update_ca_format_result
+
+- name: ASSERT UPDATE CA FORMAT SUCCESS
+  ansible.builtin.assert:
+    that:
+      - update_ca_format_result.changed == true
+      - update_ca_format_result.api_response is defined
+    fail_msg: "Failed to update CA certificate format"
+
+- name: UPDATE EXISTING CA - CHANGE CERTIFICATE FILE
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_PEM_NO_KEY
+    format: PEM
+    ca_cert_file: /tmp/test_ca_update.pem
+    ca_private_key_file: /tmp/test_ca_update.key
+    # password: newpassword456
+    state: update
+  register: update_ca_cert_result
+
+- name: ASSERT UPDATE CA CERTIFICATE SUCCESS
+  ansible.builtin.assert:
+    that:
+      - update_ca_cert_result.changed == true
+      - update_ca_cert_result.api_response is defined
+    fail_msg: "Failed to update CA certificate file"
+
+- name: UPLOAD CA - MINIMAL CONFIGURATION
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_MINIMAL
+    ca_cert_file: /tmp/test_ca_minimal.pem
+    state: present
+  register: upload_ca_minimal_result
+
+- name: ASSERT UPLOAD CA MINIMAL SUCCESS
+  ansible.builtin.assert:
+    that:
+      - upload_ca_minimal_result.changed == true
+      - upload_ca_minimal_result.api_response is defined
+    fail_msg: "Failed to upload CA with minimal configuration"
+
+- name: UPLOAD CA - AUTO-DETECT FORMAT (NO FORMAT SPECIFIED)
+  sophos.sophos_firewall.sfos_certificate_authority:
+    name: TEST_CA_AUTO_FORMAT
+    ca_cert_file: /tmp/test_ca_auto_format.pem
+    state: present
+  register: upload_ca_auto_format_result
+
+- name: ASSERT UPLOAD CA AUTO FORMAT SUCCESS
+  ansible.builtin.assert:
+    that:
+      - upload_ca_auto_format_result.changed == true
+      - upload_ca_auto_format_result.api_response is defined
+    fail_msg: "Failed to upload CA with auto-detected format"
+
+- name: CLEANUP TEMPORARY FILES
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/test_ca_pem_with_key.pem
+    - /tmp/test_ca_pem_with_key.key
+    - /tmp/test_ca_pem_no_key.pem
+    - /tmp/test_ca_pem_no_key.key
+    - /tmp/test_ca_der.pem
+    - /tmp/test_ca_der.key
+    - /tmp/test_ca_der.der
+    - /tmp/test_ca_minimal.pem
+    - /tmp/test_ca_minimal.key
+    - /tmp/test_ca_auto_format.pem
+    - /tmp/test_ca_auto_format.key
+    - /tmp/test_ca_update.pem
+    - /tmp/test_ca_update.key
+    - /tmp/test_ca_update.der
+  delegate_to: localhost

@@ -302,3 +302,18 @@ releases:
       name: sfos_certificate
       namespace: ''
     release_date: '2025-10-02'
+  2.5.0:
+    changes:
+      release_summary: This release introduces new modules for working with certificate
+        authorities and notification email settings on Sophos Firewall.
+    fragments:
+    - 2.5.0.yaml
+    modules:
+    - description: Manage Certificate Authorities (System > Certificates > Certificate
+        Authorities).
+      name: sfos_certificate_authority
+      namespace: ''
+    - description: Manage Notification Settings (System > Administration > Notification).
+      name: sfos_notification_target
+      namespace: ''
+    release_date: '2025-10-16'

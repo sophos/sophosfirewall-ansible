@@ -1,0 +1,314 @@
+# Copyright 2024 Sophos Ltd.  All rights reserved.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+- name: CHECK REQUIRED VARS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure these variables are set in tests/integration/integration_config.yml: 
+      - ansible_user
+      - ansible_host
+      - ansible_password
+      - ansible_connection
+      - ansible_httpapi_validate_certs
+      - ansible_httpapi_port
+      - ansible_network_os
+      
+  when: ansible_user is not defined or
+        ansible_host is not defined or
+        ansible_password is not defined or
+        ansible_connection is not defined or
+        ansible_httpapi_validate_certs is not defined or
+        ansible_httpapi_port is not defined or
+        ansible_network_os is not defined
+
+- name: CHECK CONNECTION
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_connection is set to ansible.netcommon.httpapi in tests/integration/integration_config.yml
+      
+  when: ansible_connection != "ansible.netcommon.httpapi"
+
+- name: CHECK NETWORK_OS
+  ansible.builtin.fail:
+    msg: | 
+      Please ensure ansible_network_os is set to sophos.sophos_firewall.sfos in tests/integration/integration_config.yml
+      
+  when: ansible_network_os != "sophos.sophos_firewall.sfos"
+
+- name: SET INITIAL NOTIFICATION SETTINGS
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.initial.test"
+    port: 25
+    authentication_required: false
+    sender_address: "initial@test.com"
+    recipient: "initial@test.com"
+    connection_security: "None"
+    subject: "Initial Test Subject"
+    mail_body: "Initial test message for integration testing"
+    ip_family: "IPv4"
+    state: updated
+  delegate_to: localhost
+
+- name: UPDATE NOTIFICATION SETTINGS - BASIC SMTP
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.example.com"
+    port: 587
+    authentication_required: true
+    username: "test@example.com"
+    password: "test_password"
+    sender_address: "firewall@example.com"
+    recipient: "admin@example.com"
+    connection_security: "STARTTLS"
+    certificate: "ApplianceCertificate"
+    subject: "Firewall Alert"
+    mail_body: "This is a test notification from the firewall"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_basic
+
+- name: ASSERTION CHECK FOR UPDATE NOTIFICATION SETTINGS - BASIC SMTP
+  assert:
+    that: 
+      - update_notification_basic is changed
+      - update_notification_basic['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_basic['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS
+  assert:
+    that: 
+      - query_notification is not changed
+      - query_notification['api_response']['Response']['Notification']['MailServer'] == 'smtp.example.com'
+      - query_notification['api_response']['Response']['Notification']['Port'] == '587'
+      - query_notification['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Enable'
+      - query_notification['api_response']['Response']['Notification']['Username'] == 'test@example.com'
+      - query_notification['api_response']['Response']['Notification']['SenderAddress'] == 'firewall@example.com'
+      - query_notification['api_response']['Response']['Notification']['Recepient'] == 'admin@example.com'
+      - query_notification['api_response']['Response']['Notification']['ConnectionSecurity'] == 'STARTTLS'
+      - query_notification['api_response']['Response']['Notification']['IPFamily'] == 'IPv4'
+
+- name: UPDATE NOTIFICATION SETTINGS - NO CHANGE
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.example.com"
+    port: 587
+    authentication_required: true
+    username: "test@example.com"
+    # password: "test_password"
+    sender_address: "firewall@example.com"
+    recipient: "admin@example.com"
+    connection_security: "STARTTLS"
+    certificate: "ApplianceCertificate"
+    subject: "Firewall Alert"
+    mail_body: "This is a test notification from the firewall"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_nochg
+
+- name: ASSERTION CHECK FOR NOTIFICATION SETTINGS NO CHANGE
+  assert:
+    that: 
+      - update_notification_nochg is not changed
+
+- name: UPDATE NOTIFICATION SETTINGS - OAUTH2 GMAIL
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.gmail.com"
+    port: 587
+    authentication_required: true
+    oauth2_provider: "Gmail"
+    username: "notifications@gmail.com"
+    password: "app_password"
+    sender_address: "firewall@gmail.com"
+    recipient: "admin@gmail.com"
+    connection_security: "STARTTLS"
+    certificate: "ApplianceCertificate"
+    subject: "Gmail Firewall Alert"
+    mail_body: "Gmail OAuth2 test notification"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_gmail
+
+- name: ASSERTION CHECK FOR UPDATE NOTIFICATION SETTINGS - OAUTH2 GMAIL
+  assert:
+    that: 
+      - update_notification_gmail is changed
+      - update_notification_gmail['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_gmail['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS - OAUTH2 GMAIL
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification_gmail
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS - OAUTH2 GMAIL
+  assert:
+    that: 
+      - query_notification_gmail is not changed
+      - query_notification_gmail['api_response']['Response']['Notification']['MailServer'] == 'smtp.gmail.com'
+      - query_notification_gmail['api_response']['Response']['Notification']['Port'] == '587'
+      - query_notification_gmail['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Enable'
+      - query_notification_gmail['api_response']['Response']['Notification']['Username'] == 'notifications@gmail.com'
+      - query_notification_gmail['api_response']['Response']['Notification']['SenderAddress'] == 'firewall@gmail.com'
+      - query_notification_gmail['api_response']['Response']['Notification']['Recepient'] == 'admin@gmail.com'
+      - query_notification_gmail['api_response']['Response']['Notification']['ConnectionSecurity'] == 'STARTTLS'
+      - query_notification_gmail['api_response']['Response']['Notification']['IPFamily'] == 'IPv4'
+
+- name: UPDATE NOTIFICATION SETTINGS - MICROSOFT365 OAUTH2
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.office365.com"
+    port: 587
+    authentication_required: true
+    oauth2_provider: "Microsoft365"
+    username: "notifications@company.com"
+    password: "oauth_token"
+    sender_address: "firewall@company.com"
+    recipient: "admin@company.com"
+    connection_security: "SSLTLS"
+    certificate: "ApplianceCertificate"
+    subject: "Office365 Firewall Alert"
+    mail_body: "Microsoft365 OAuth2 test notification"
+    management_interface: "PortA"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_office365
+
+- name: ASSERTION CHECK FOR UPDATE NOTIFICATION SETTINGS - MICROSOFT365 OAUTH2
+  assert:
+    that: 
+      - update_notification_office365 is changed
+      - update_notification_office365['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_office365['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS - MICROSOFT365 OAUTH2
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification_office365
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS - MICROSOFT365 OAUTH2
+  assert:
+    that: 
+      - query_notification_office365 is not changed
+      - query_notification_office365['api_response']['Response']['Notification']['MailServer'] == 'smtp.office365.com'
+      - query_notification_office365['api_response']['Response']['Notification']['Port'] == '587'
+      - query_notification_office365['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Enable'
+      - query_notification_office365['api_response']['Response']['Notification']['Username'] == 'notifications@company.com'
+      - query_notification_office365['api_response']['Response']['Notification']['SenderAddress'] == 'firewall@company.com'
+      - query_notification_office365['api_response']['Response']['Notification']['Recepient'] == 'admin@company.com'
+      - query_notification_office365['api_response']['Response']['Notification']['ConnectionSecurity'] == 'SSLTLS'
+      - query_notification_office365['api_response']['Response']['Notification']['ManagementInterface'] == 'PortA'
+      - query_notification_office365['api_response']['Response']['Notification']['IPFamily'] == 'IPv4'
+
+- name: UPDATE NOTIFICATION SETTINGS - NO AUTHENTICATION
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "mail.local.domain"
+    port: 25
+    authentication_required: false
+    sender_address: "firewall@local.domain"
+    recipient: "admin@local.domain"
+    connection_security: "None"
+    subject: "Local Firewall Alert"
+    mail_body: "No authentication test notification"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_noauth
+
+- name: ASSERTION CHECK FOR UPDATE NOTIFICATION SETTINGS - NO AUTHENTICATION
+  assert:
+    that: 
+      - update_notification_noauth is changed
+      - update_notification_noauth['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_noauth['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS - NO AUTHENTICATION
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification_noauth
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS - NO AUTHENTICATION
+  assert:
+    that: 
+      - query_notification_noauth is not changed
+      - query_notification_noauth['api_response']['Response']['Notification']['MailServer'] == 'mail.local.domain'
+      - query_notification_noauth['api_response']['Response']['Notification']['Port'] == '25'
+      - query_notification_noauth['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Disable'
+      - query_notification_noauth['api_response']['Response']['Notification']['SenderAddress'] == 'firewall@local.domain'
+      - query_notification_noauth['api_response']['Response']['Notification']['Recepient'] == 'admin@local.domain'
+      - query_notification_noauth['api_response']['Response']['Notification']['ConnectionSecurity'] == 'None'
+      - query_notification_noauth['api_response']['Response']['Notification']['IPFamily'] == 'IPv4'
+
+- name: TEST PARTIAL UPDATE - ONLY PORT AND SECURITY
+  sophos.sophos_firewall.sfos_notification_target:
+    port: 465
+    connection_security: "SSLTLS"
+    certificate: "ApplianceCertificate"
+    state: updated
+  register: update_notification_partial
+
+- name: ASSERTION CHECK FOR PARTIAL UPDATE
+  assert:
+    that: 
+      - update_notification_partial is changed
+      - update_notification_partial['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_partial['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS - PARTIAL UPDATE
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification_partial
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS - PARTIAL UPDATE
+  assert:
+    that: 
+      - query_notification_partial is not changed
+      - query_notification_partial['api_response']['Response']['Notification']['Port'] == '465'
+      - query_notification_partial['api_response']['Response']['Notification']['ConnectionSecurity'] == 'SSLTLS'
+      # Verify other settings remained unchanged
+      - query_notification_partial['api_response']['Response']['Notification']['MailServer'] == 'mail.local.domain'
+      - query_notification_partial['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Disable'
+
+- name: UPDATE NOTIFICATION SETTINGS - BASIC SMTP
+  sophos.sophos_firewall.sfos_notification_target:
+    mail_server: "smtp.example.com"
+    port: 587
+    authentication_required: true
+    username: "test@example.com"
+    password: "test_password"
+    sender_address: "firewall@example.com"
+    recipient: "admin@example.com"
+    connection_security: "STARTTLS"
+    certificate: "ApplianceCertificate"
+    subject: "Firewall Alert"
+    mail_body: "This is a test notification from the firewall"
+    ip_family: "IPv4"
+    state: updated
+  register: update_notification_basic
+
+- name: ASSERTION CHECK FOR UPDATE NOTIFICATION SETTINGS - BASIC SMTP
+  assert:
+    that: 
+      - update_notification_basic is changed
+      - update_notification_basic['api_response']['Response']['Notification']['Status']['@code'] == '200'
+      - update_notification_basic['api_response']['Response']['Notification']['Status']['#text'] == 'Configuration applied successfully.'
+
+- name: QUERY NOTIFICATION SETTINGS
+  sophos.sophos_firewall.sfos_notification_target:
+    state: query
+  register: query_notification
+
+- name: ASSERTION CHECK FOR QUERY NOTIFICATION SETTINGS
+  assert:
+    that: 
+      - query_notification is not changed
+      - query_notification['api_response']['Response']['Notification']['MailServer'] == 'smtp.example.com'
+      - query_notification['api_response']['Response']['Notification']['Port'] == '587'
+      - query_notification['api_response']['Response']['Notification']['AuthenticationRequired'] == 'Enable'
+      - query_notification['api_response']['Response']['Notification']['Username'] == 'test@example.com'
+      - query_notification['api_response']['Response']['Notification']['SenderAddress'] == 'firewall@example.com'
+      - query_notification['api_response']['Response']['Notification']['Recepient'] == 'admin@example.com'
+      - query_notification['api_response']['Response']['Notification']['ConnectionSecurity'] == 'STARTTLS'
+      - query_notification['api_response']['Response']['Notification']['IPFamily'] == 'IPv4'
+
