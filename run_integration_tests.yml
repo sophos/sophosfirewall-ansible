@@ -1,0 +1,854 @@
+---
+# Ansible Playbook to run all integration tests for Sophos Firewall Collection
+# Usage: cd /path/to/collection && ansible-playbook run_integration_tests.yml
+# Run specific tests: ansible-playbook run_integration_tests.yml --tags "admin,dns,firewall"
+# Skip tests: ansible-playbook run_integration_tests.yml --skip-tags "slow,auth"
+
+- name: Run Sophos Firewall Integration Tests
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    test_results: []
+    failed_tests: []
+    
+  tasks:
+    - name: Check if we're in the collection directory
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/galaxy.yml"
+      register: galaxy_file
+      tags: always
+
+    - name: Fail if not in collection directory
+      ansible.builtin.fail:
+        msg: |
+          This playbook must be run from the collection root directory.
+          Current directory: {{ playbook_dir }}
+          Expected to find: galaxy.yml
+          Please run: cd /path/to/sophos/sophos_firewall && ansible-playbook run_integration_tests.yml
+      when: not galaxy_file.stat.exists
+      tags: always
+
+    - name: Run sfos_admin_settings integration test
+      ansible.builtin.shell: ansible-test integration sfos_admin_settings -v
+      register: admin_settings_result
+      ignore_errors: true
+      tags:
+        - admin
+        - admin_settings
+        - core
+        - webadmin
+        
+    - name: Record admin_settings test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_admin_settings', 'status': 'passed' if admin_settings_result.rc == 0 else 'failed', 'output': admin_settings_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_admin_settings'] if admin_settings_result.rc != 0 else failed_tests }}"
+      tags:
+        - admin
+        - admin_settings
+        - core
+        - webadmin
+
+    - name: Run sfos_atp integration test
+      ansible.builtin.shell: ansible-test integration sfos_atp -v
+      register: atp_result
+      ignore_errors: true
+      tags:
+        - security
+        - atp
+        - protection
+        
+    - name: Record atp test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_atp', 'status': 'passed' if atp_result.rc == 0 else 'failed', 'output': atp_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_atp'] if atp_result.rc != 0 else failed_tests }}"
+      tags:
+        - security
+        - atp
+        - protection
+
+    - name: Run sfos_authentication_ad integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_ad -v
+      register: auth_ad_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - ad
+        - activedirectory
+        
+    - name: Record auth_ad test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_ad', 'status': 'passed' if auth_ad_result.rc == 0 else 'failed', 'output': auth_ad_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_ad'] if auth_ad_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - ad
+        - activedirectory
+
+    - name: Run sfos_authentication_azure integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_azure -v
+      register: auth_azure_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - azure
+        - cloud
+        
+    - name: Record auth_azure test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_azure', 'status': 'passed' if auth_azure_result.rc == 0 else 'failed', 'output': auth_azure_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_azure'] if auth_azure_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - azure
+        - cloud
+
+    - name: Run sfos_authentication_edirectory integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_edirectory -v
+      register: auth_edirectory_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - edirectory
+        - novell
+        
+    - name: Record auth_edirectory test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_edirectory', 'status': 'passed' if auth_edirectory_result.rc == 0 else 'failed', 'output': auth_edirectory_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_edirectory'] if auth_edirectory_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - edirectory
+        - novell
+
+    - name: Run sfos_authentication_ldap integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_ldap -v
+      register: auth_ldap_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - ldap
+        
+    - name: Record auth_ldap test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_ldap', 'status': 'passed' if auth_ldap_result.rc == 0 else 'failed', 'output': auth_ldap_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_ldap'] if auth_ldap_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - ldap
+
+    - name: Run sfos_authentication_radius integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_radius -v
+      register: auth_radius_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - radius
+        
+    - name: Record auth_radius test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_radius', 'status': 'passed' if auth_radius_result.rc == 0 else 'failed', 'output': auth_radius_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_radius'] if auth_radius_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - radius
+
+    - name: Run sfos_authentication_tacacs integration test
+      ansible.builtin.shell: ansible-test integration sfos_authentication_tacacs -v
+      register: auth_tacacs_result
+      ignore_errors: true
+      tags:
+        - authentication
+        - auth
+        - tacacs
+        
+    - name: Record auth_tacacs test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_authentication_tacacs', 'status': 'passed' if auth_tacacs_result.rc == 0 else 'failed', 'output': auth_tacacs_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_authentication_tacacs'] if auth_tacacs_result.rc != 0 else failed_tests }}"
+      tags:
+        - authentication
+        - auth
+        - tacacs
+
+    - name: Run sfos_backup integration test
+      ansible.builtin.shell: ansible-test integration sfos_backup -v
+      register: backup_result
+      ignore_errors: true
+      tags:
+        - backup
+        - maintenance
+        - admin
+        
+    - name: Record backup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_backup', 'status': 'passed' if backup_result.rc == 0 else 'failed', 'output': backup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_backup'] if backup_result.rc != 0 else failed_tests }}"
+      tags:
+        - backup
+        - maintenance
+        - admin
+
+    - name: Run sfos_certificate integration test
+      ansible.builtin.shell: ansible-test integration sfos_certificate -v
+      register: certificate_result
+      ignore_errors: true
+      tags:
+        - certificate
+        - cert
+        - security
+        - crypto
+        
+    - name: Record certificate test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_certificate', 'status': 'passed' if certificate_result.rc == 0 else 'failed', 'output': certificate_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_certificate'] if certificate_result.rc != 0 else failed_tests }}"
+      tags:
+        - certificate
+        - cert
+        - security
+        - crypto
+
+    - name: Run sfos_certificate_authority integration test
+      ansible.builtin.shell: ansible-test integration sfos_certificate_authority -v
+      register: ca_result
+      ignore_errors: true
+      tags:
+        - certificate
+        - cert
+        - ca
+        - security
+        - crypto
+        
+    - name: Record ca test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_certificate_authority', 'status': 'passed' if ca_result.rc == 0 else 'failed', 'output': ca_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_certificate_authority'] if ca_result.rc != 0 else failed_tests }}"
+      tags:
+        - certificate
+        - cert
+        - ca
+        - security
+        - crypto
+
+    - name: Run sfos_device_access_profile integration test
+      ansible.builtin.shell: ansible-test integration sfos_device_access_profile -v
+      register: device_access_result
+      ignore_errors: true
+      tags:
+        - device
+        - access
+        - profile
+        - admin
+        
+    - name: Record device_access test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_device_access_profile', 'status': 'passed' if device_access_result.rc == 0 else 'failed', 'output': device_access_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_device_access_profile'] if device_access_result.rc != 0 else failed_tests }}"
+      tags:
+        - device
+        - access
+        - profile
+        - admin
+
+    - name: Run sfos_dns integration test
+      ansible.builtin.shell: ansible-test integration sfos_dns -v
+      register: dns_result
+      ignore_errors: true
+      tags:
+        - dns
+        - network
+        - core
+        
+    - name: Record dns test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_dns', 'status': 'passed' if dns_result.rc == 0 else 'failed', 'output': dns_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_dns'] if dns_result.rc != 0 else failed_tests }}"
+      tags:
+        - dns
+        - network
+        - core
+
+    - name: Run sfos_firewall_rule integration test
+      ansible.builtin.shell: ansible-test integration sfos_firewall_rule -v
+      register: firewall_rule_result
+      ignore_errors: true
+      tags:
+        - firewall
+        - rule
+        - security
+        - policy
+        
+    - name: Record firewall_rule test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_firewall_rule', 'status': 'passed' if firewall_rule_result.rc == 0 else 'failed', 'output': firewall_rule_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_firewall_rule'] if firewall_rule_result.rc != 0 else failed_tests }}"
+      tags:
+        - firewall
+        - rule
+        - security
+        - policy
+
+    - name: Run sfos_firewall_rulegroup integration test
+      ansible.builtin.shell: ansible-test integration sfos_firewall_rulegroup -v
+      register: firewall_rulegroup_result
+      ignore_errors: true
+      tags:
+        - firewall
+        - rulegroup
+        - security
+        - policy
+        
+    - name: Record firewall_rulegroup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_firewall_rulegroup', 'status': 'passed' if firewall_rulegroup_result.rc == 0 else 'failed', 'output': firewall_rulegroup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_firewall_rulegroup'] if firewall_rulegroup_result.rc != 0 else failed_tests }}"
+      tags:
+        - firewall
+        - rulegroup
+        - security
+        - policy
+
+    - name: Run sfos_fqdn_host integration test
+      ansible.builtin.shell: ansible-test integration sfos_fqdn_host -v
+      register: fqdn_host_result
+      ignore_errors: true
+      tags:
+        - fqdn
+        - host
+        - network
+        - objects
+        
+    - name: Record fqdn_host test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_fqdn_host', 'status': 'passed' if fqdn_host_result.rc == 0 else 'failed', 'output': fqdn_host_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_fqdn_host'] if fqdn_host_result.rc != 0 else failed_tests }}"
+      tags:
+        - fqdn
+        - host
+        - network
+        - objects
+
+    - name: Run sfos_fqdn_hostgroup integration test
+      ansible.builtin.shell: ansible-test integration sfos_fqdn_hostgroup -v
+      register: fqdn_hostgroup_result
+      ignore_errors: true
+      tags:
+        - fqdn
+        - hostgroup
+        - network
+        - objects
+        
+    - name: Record fqdn_hostgroup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_fqdn_hostgroup', 'status': 'passed' if fqdn_hostgroup_result.rc == 0 else 'failed', 'output': fqdn_hostgroup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_fqdn_hostgroup'] if fqdn_hostgroup_result.rc != 0 else failed_tests }}"
+      tags:
+        - fqdn
+        - hostgroup
+        - network
+        - objects
+
+    - name: Run sfos_ip_host integration test
+      ansible.builtin.shell: ansible-test integration sfos_ip_host -v
+      register: ip_host_result
+      ignore_errors: true
+      tags:
+        - ip
+        - host
+        - network
+        - objects
+        
+    - name: Record ip_host test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_ip_host', 'status': 'passed' if ip_host_result.rc == 0 else 'failed', 'output': ip_host_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_ip_host'] if ip_host_result.rc != 0 else failed_tests }}"
+      tags:
+        - ip
+        - host
+        - network
+        - objects
+
+    - name: Run sfos_ip_hostgroup integration test
+      ansible.builtin.shell: ansible-test integration sfos_ip_hostgroup -v
+      register: ip_hostgroup_result
+      ignore_errors: true
+      tags:
+        - ip
+        - hostgroup
+        - network
+        - objects
+        
+    - name: Record ip_hostgroup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_ip_hostgroup', 'status': 'passed' if ip_hostgroup_result.rc == 0 else 'failed', 'output': ip_hostgroup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_ip_hostgroup'] if ip_hostgroup_result.rc != 0 else failed_tests }}"
+      tags:
+        - ip
+        - hostgroup
+        - network
+        - objects
+
+    - name: Run sfos_ips integration test
+      ansible.builtin.shell: ansible-test integration sfos_ips -v
+      register: ips_result
+      ignore_errors: true
+      tags:
+        - ips
+        - security
+        - protection
+        
+    - name: Record ips test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_ips', 'status': 'passed' if ips_result.rc == 0 else 'failed', 'output': ips_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_ips'] if ips_result.rc != 0 else failed_tests }}"
+      tags:
+        - ips
+        - security
+        - protection
+
+    - name: Run sfos_ipsec_connection integration test
+      ansible.builtin.shell: ansible-test integration sfos_ipsec_connection -v
+      register: ipsec_result
+      ignore_errors: true
+      tags:
+        - ipsec
+        - vpn
+        - connection
+        - security
+        
+    - name: Record ipsec test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_ipsec_connection', 'status': 'passed' if ipsec_result.rc == 0 else 'failed', 'output': ipsec_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_ipsec_connection'] if ipsec_result.rc != 0 else failed_tests }}"
+      tags:
+        - ipsec
+        - vpn
+        - connection
+        - security
+
+    - name: Run sfos_malware_protection integration test
+      ansible.builtin.shell: ansible-test integration sfos_malware_protection -v
+      register: malware_result
+      ignore_errors: true
+      tags:
+        - malware
+        - protection
+        - security
+        
+    - name: Record malware test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_malware_protection', 'status': 'passed' if malware_result.rc == 0 else 'failed', 'output': malware_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_malware_protection'] if malware_result.rc != 0 else failed_tests }}"
+      tags:
+        - malware
+        - protection
+        - security
+
+    - name: Run sfos_netflow integration test
+      ansible.builtin.shell: ansible-test integration sfos_netflow -v
+      register: netflow_result
+      ignore_errors: true
+      tags:
+        - netflow
+        - monitoring
+        - network
+        
+    - name: Record netflow test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_netflow', 'status': 'passed' if netflow_result.rc == 0 else 'failed', 'output': netflow_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_netflow'] if netflow_result.rc != 0 else failed_tests }}"
+      tags:
+        - netflow
+        - monitoring
+        - network
+
+    - name: Run sfos_notification_target integration test
+      ansible.builtin.shell: ansible-test integration sfos_notification_target -v
+      register: notification_result
+      ignore_errors: true
+      tags:
+        - notification
+        - email
+        - alerts
+        - monitoring
+        
+    - name: Record notification test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_notification_target', 'status': 'passed' if notification_result.rc == 0 else 'failed', 'output': notification_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_notification_target'] if notification_result.rc != 0 else failed_tests }}"
+      tags:
+        - notification
+        - email
+        - alerts
+        - monitoring
+
+    - name: Run sfos_qos_policy integration test
+      ansible.builtin.shell: ansible-test integration sfos_qos_policy -v
+      register: qos_result
+      ignore_errors: true
+      tags:
+        - qos
+        - policy
+        - network
+        - traffic
+        
+    - name: Record qos test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_qos_policy', 'status': 'passed' if qos_result.rc == 0 else 'failed', 'output': qos_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_qos_policy'] if qos_result.rc != 0 else failed_tests }}"
+      tags:
+        - qos
+        - policy
+        - network
+        - traffic
+
+    - name: Run sfos_service integration test
+      ansible.builtin.shell: ansible-test integration sfos_service -v
+      register: service_result
+      ignore_errors: true
+      tags:
+        - service
+        - network
+        - objects
+        
+    - name: Record service test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_service', 'status': 'passed' if service_result.rc == 0 else 'failed', 'output': service_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_service'] if service_result.rc != 0 else failed_tests }}"
+      tags:
+        - service
+        - network
+        - objects
+
+    - name: Run sfos_service_acl_exception integration test
+      ansible.builtin.shell: ansible-test integration sfos_service_acl_exception -v
+      register: service_acl_result
+      ignore_errors: true
+      tags:
+        - service
+        - acl
+        - exception
+        - security
+        
+    - name: Record service_acl test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_service_acl_exception', 'status': 'passed' if service_acl_result.rc == 0 else 'failed', 'output': service_acl_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_service_acl_exception'] if service_acl_result.rc != 0 else failed_tests }}"
+      tags:
+        - service
+        - acl
+        - exception
+        - security
+
+    - name: Run sfos_servicegroup integration test
+      ansible.builtin.shell: ansible-test integration sfos_servicegroup -v
+      register: servicegroup_result
+      ignore_errors: true
+      tags:
+        - servicegroup
+        - network
+        - objects
+        
+    - name: Record servicegroup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_servicegroup', 'status': 'passed' if servicegroup_result.rc == 0 else 'failed', 'output': servicegroup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_servicegroup'] if servicegroup_result.rc != 0 else failed_tests }}"
+      tags:
+        - servicegroup
+        - network
+        - objects
+
+    - name: Run sfos_snmp_agent integration test
+      ansible.builtin.shell: ansible-test integration sfos_snmp_agent -v
+      register: snmp_agent_result
+      ignore_errors: true
+      tags:
+        - snmp
+        - monitoring
+        - agent
+        
+    - name: Record snmp_agent test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_snmp_agent', 'status': 'passed' if snmp_agent_result.rc == 0 else 'failed', 'output': snmp_agent_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_snmp_agent'] if snmp_agent_result.rc != 0 else failed_tests }}"
+      tags:
+        - snmp
+        - monitoring
+        - agent
+
+    - name: Run sfos_snmp_user integration test
+      ansible.builtin.shell: ansible-test integration sfos_snmp_user -v
+      register: snmp_user_result
+      ignore_errors: true
+      tags:
+        - snmp
+        - monitoring
+        - user
+        
+    - name: Record snmp_user test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_snmp_user', 'status': 'passed' if snmp_user_result.rc == 0 else 'failed', 'output': snmp_user_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_snmp_user'] if snmp_user_result.rc != 0 else failed_tests }}"
+      tags:
+        - snmp
+        - monitoring
+        - user
+
+    - name: Run sfos_syslog integration test
+      ansible.builtin.shell: ansible-test integration sfos_syslog -v
+      register: syslog_result
+      ignore_errors: true
+      tags:
+        - syslog
+        - logging
+        - monitoring
+        
+    - name: Record syslog test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_syslog', 'status': 'passed' if syslog_result.rc == 0 else 'failed', 'output': syslog_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_syslog'] if syslog_result.rc != 0 else failed_tests }}"
+      tags:
+        - syslog
+        - logging
+        - monitoring
+
+    - name: Run sfos_time integration test
+      ansible.builtin.shell: ansible-test integration sfos_time -v
+      register: time_result
+      ignore_errors: true
+      tags:
+        - time
+        - ntp
+        - system
+        
+    - name: Record time test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_time', 'status': 'passed' if time_result.rc == 0 else 'failed', 'output': time_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_time'] if time_result.rc != 0 else failed_tests }}"
+      tags:
+        - time
+        - ntp
+        - system
+
+    - name: Run sfos_urlgroup integration test
+      ansible.builtin.shell: ansible-test integration sfos_urlgroup -v
+      register: urlgroup_result
+      ignore_errors: true
+      tags:
+        - urlgroup
+        - web
+        - security
+        - objects
+        
+    - name: Record urlgroup test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_urlgroup', 'status': 'passed' if urlgroup_result.rc == 0 else 'failed', 'output': urlgroup_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_urlgroup'] if urlgroup_result.rc != 0 else failed_tests }}"
+      tags:
+        - urlgroup
+        - web
+        - security
+        - objects
+
+    - name: Run sfos_user integration test
+      ansible.builtin.shell: ansible-test integration sfos_user -v
+      register: user_result
+      ignore_errors: true
+      tags:
+        - user
+        - authentication
+        - admin
+        
+    - name: Record user test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_user', 'status': 'passed' if user_result.rc == 0 else 'failed', 'output': user_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_user'] if user_result.rc != 0 else failed_tests }}"
+      tags:
+        - user
+        - authentication
+        - admin
+
+    - name: Run sfos_web_category integration test
+      ansible.builtin.shell: ansible-test integration sfos_web_category -v
+      register: web_category_result
+      ignore_errors: true
+      tags:
+        - web
+        - category
+        - security
+        - filtering
+        
+    - name: Record web_category test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_web_category', 'status': 'passed' if web_category_result.rc == 0 else 'failed', 'output': web_category_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_web_category'] if web_category_result.rc != 0 else failed_tests }}"
+      tags:
+        - web
+        - category
+        - security
+        - filtering
+
+    - name: Run sfos_web_filetype integration test
+      ansible.builtin.shell: ansible-test integration sfos_web_filetype -v
+      register: web_filetype_result
+      ignore_errors: true
+      tags:
+        - web
+        - filetype
+        - security
+        - filtering
+        
+    - name: Record web_filetype test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_web_filetype', 'status': 'passed' if web_filetype_result.rc == 0 else 'failed', 'output': web_filetype_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_web_filetype'] if web_filetype_result.rc != 0 else failed_tests }}"
+      tags:
+        - web
+        - filetype
+        - security
+        - filtering
+
+    - name: Run sfos_web_policy integration test
+      ansible.builtin.shell: ansible-test integration sfos_web_policy -v
+      register: web_policy_result
+      ignore_errors: true
+      tags:
+        - web
+        - policy
+        - security
+        - filtering
+        
+    - name: Record web_policy test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_web_policy', 'status': 'passed' if web_policy_result.rc == 0 else 'failed', 'output': web_policy_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_web_policy'] if web_policy_result.rc != 0 else failed_tests }}"
+      tags:
+        - web
+        - policy
+        - security
+        - filtering
+
+    - name: Run sfos_web_useractivity integration test
+      ansible.builtin.shell: ansible-test integration sfos_web_useractivity -v
+      register: web_useractivity_result
+      ignore_errors: true
+      tags:
+        - web
+        - useractivity
+        - monitoring
+        - logging
+        
+    - name: Record web_useractivity test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_web_useractivity', 'status': 'passed' if web_useractivity_result.rc == 0 else 'failed', 'output': web_useractivity_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_web_useractivity'] if web_useractivity_result.rc != 0 else failed_tests }}"
+      tags:
+        - web
+        - useractivity
+        - monitoring
+        - logging
+
+    - name: Run sfos_xmlapi integration test
+      ansible.builtin.shell: ansible-test integration sfos_xmlapi -v
+      register: xmlapi_result
+      ignore_errors: true
+      tags:
+        - xmlapi
+        - api
+        - core
+        
+    - name: Record xmlapi test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_xmlapi', 'status': 'passed' if xmlapi_result.rc == 0 else 'failed', 'output': xmlapi_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_xmlapi'] if xmlapi_result.rc != 0 else failed_tests }}"
+      tags:
+        - xmlapi
+        - api
+        - core
+
+    - name: Run sfos_zone integration test
+      ansible.builtin.shell: ansible-test integration sfos_zone -v
+      register: zone_result
+      ignore_errors: true
+      tags:
+        - zone
+        - network
+        - interfaces
+        
+    - name: Record zone test result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'sfos_zone', 'status': 'passed' if zone_result.rc == 0 else 'failed', 'output': zone_result.stdout}] }}"
+        failed_tests: "{{ failed_tests + ['sfos_zone'] if zone_result.rc != 0 else failed_tests }}"
+      tags:
+        - zone
+        - network
+        - interfaces
+
+    # Summary and reporting tasks
+    - name: Display test summary
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          SOPHOS FIREWALL INTEGRATION TEST SUMMARY
+          ========================================
+          Total tests: {{ test_results | length }}
+          Passed: {{ test_results | selectattr('status', 'equalto', 'passed') | list | length }}
+          Failed: {{ test_results | selectattr('status', 'equalto', 'failed') | list | length }}
+          
+          {% if failed_tests | length > 0 %}
+          FAILED TESTS:
+          {% for test in failed_tests %}
+          - {{ test }}
+          {% endfor %}
+          {% endif %}
+      tags:
+        - always
+        - summary
+
+    - name: Write detailed test results to file
+      ansible.builtin.copy:
+        content: |
+          # Sophos Firewall Integration Test Results
+          Generated: {{ ansible_date_time.iso8601 }}
+          
+          ## Summary
+          - Total tests: {{ test_results | length }}
+          - Passed: {{ test_results | selectattr('status', 'equalto', 'passed') | list | length }}
+          - Failed: {{ test_results | selectattr('status', 'equalto', 'failed') | list | length }}
+          
+          ## Detailed Results
+          {% for result in test_results %}
+          ### {{ result.test }}
+          **Status:** {{ result.status | upper }}
+          
+          {% if result.status == 'failed' %}
+          **Output:**
+          ```
+          {{ result.output }}
+          ```
+          {% endif %}
+          
+          {% endfor %}
+        dest: "{{ playbook_dir }}/integration_test_results_{{ ansible_date_time.epoch }}.md"
+      tags:
+        - always
+        - summary
+
+    - name: Fail if any tests failed
+      ansible.builtin.fail:
+        msg: "{{ failed_tests | length }} test(s) failed: {{ failed_tests | join(', ') }}"
+      when: failed_tests | length > 0
+      tags:
+        - always
+        - summary
