@@ -169,13 +169,14 @@ def get_snmp_user(connection, module, result):
 
     return {"exists": True, "api_response": resp["response"]}
 
-def create_snmp_user(connection, module, result):
+def create_snmp_user(connection, module, result, api_version):
     """Create an SNMPv3 User on Sophos Firewall
 
     Args:
         connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
+        api_version (str): API version of the Sophos Firewall
 
     Returns:
         dict: API response
@@ -183,11 +184,21 @@ def create_snmp_user(connection, module, result):
     payload = """
         <SNMPv3User>
           <Username>{{ name }}</Username>
+          {% if api_version.startswith("22") %}
+          <Name>{{ name }}</Name>
+          {% endif %}
           <AcceptQueries>{{ accept_queries }}</AcceptQueries>
           <SendTraps>{{ send_traps }}</SendTraps>
           {% for host in authorized_hosts %}
+          {% if api_version.startswith("22") %}
+          <AuthorizedHostsIpv4>{{ host }}</AuthorizedHostsIpv4>
+            {% else %}
           <AuthorizedHosts>{{ host }}</AuthorizedHosts>
+          {% endif %}
           {% endfor %}
+          {% if api_version.startswith("22") %}
+          <AuthorizedHostsIpv6></AuthorizedHostsIpv6>
+          {% endif %}
           {% if encryption_algorithm == 'AES' %}
           <EncryptionAlgorithm>1</EncryptionAlgorithm>
           {% elif encryption_algorithm == 'DES' %}
@@ -206,10 +217,19 @@ def create_snmp_user(connection, module, result):
           <AuthenticationPassword>{{ authentication_password }}</AuthenticationPassword>
         </SNMPv3User>
     """
+    
+    if api_version.startswith("22"):
+        accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
+        send_traps = "true" if module.params.get("send_traps") == "Enable" else "false"
+    else:
+        accept_queries = module.params.get("accept_queries")
+        send_traps = module.params.get("send_traps")
+
     template_vars = {
+        "api_version": api_version,
         "name": module.params.get("name"),
-        "accept_queries": module.params.get("accept_queries"),
-        "send_traps": module.params.get("send_traps"),
+        "accept_queries": accept_queries,
+        "send_traps": send_traps,
         "authorized_hosts": module.params.get("authorized_hosts"),
         "encryption_algorithm": module.params.get("encryption_algorithm"),
         "encryption_password": module.params.get("encryption_password"),
@@ -233,7 +253,7 @@ def create_snmp_user(connection, module, result):
 
     return resp["response"]
 
-def update_snmp_user(connection, exist_settings, module, result):
+def update_snmp_user(connection, exist_settings, module, result, api_version):
     """Update SNMPv3 user configuration on Sophos Firewall
 
     Args:
@@ -241,6 +261,7 @@ def update_snmp_user(connection, exist_settings, module, result):
         exist_settings (dict): API response containing existing SNMPv3 user
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
+        api_version (str): API version of the Sophos Firewall
 
     Returns:
         dict: API response
@@ -249,22 +270,37 @@ def update_snmp_user(connection, exist_settings, module, result):
     
     update_params["Username"] = module.params.get("name")
 
-    if module.params.get("accept_queries"):
-        update_params["AcceptQueries"] = module.params.get("accept_queries")
+    if api_version.startswith("22"):
+        if module.params.get("accept_queries"):
+            accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
+            update_params["AcceptQueries"] = accept_queries
 
-    if module.params.get("send_traps"):
-        update_params["SendTraps"] = module.params.get("send_traps")
+        if module.params.get("send_traps"):
+            send_traps = "true" if module.params.get("send_traps") == "Enable" else "false"
+            update_params["SendTraps"] = send_traps
+    else:
+        if module.params.get("accept_queries"):
+            update_params["AcceptQueries"] = module.params.get("accept_queries")
+
+        if module.params.get("send_traps"):
+            update_params["SendTraps"] = module.params.get("send_traps")
 
     if module.params.get("authorized_hosts"):
-        if isinstance(exist_settings["Response"]["SNMPv3User"]["AuthorizedHosts"], str):
-            update_params["AuthorizedHosts"] = [exist_settings["Response"]["SNMPv3User"]["AuthorizedHosts"]]
+        if api_version.startswith("22"):
+            auth_hosts_key = "AuthorizedHostsIpv4"
+        else:
+            auth_hosts_key = "AuthorizedHosts"
+        if isinstance(exist_settings["Response"]["SNMPv3User"][auth_hosts_key], str):
+            update_params[auth_hosts_key] = [exist_settings["Response"]["SNMPv3User"][auth_hosts_key]]
             for host in module.params.get("authorized_hosts"):
-                update_params["AuthorizedHosts"].append(host)
-        if isinstance(exist_settings["Response"]["SNMPv3User"]["AuthorizedHosts"], list):
-            host_list = exist_settings["Response"]["SNMPv3User"]["AuthorizedHosts"]
+                if not host in exist_settings["Response"]["SNMPv3User"][auth_hosts_key]:
+                    update_params[auth_hosts_key].append(host)
+        if isinstance(exist_settings["Response"]["SNMPv3User"][auth_hosts_key], list):
+            host_list = exist_settings["Response"]["SNMPv3User"][auth_hosts_key]
             for host in module.params.get("authorized_hosts"):
-                host_list.append(host)
-            update_params["AuthorizedHosts"] = host_list
+                if not host in host_list:
+                    host_list.append(host)
+            update_params[auth_hosts_key] = host_list
     
     if module.params.get("encryption_algorithm"):
         encr_algo = module.params.get("encryption_algorithm")
@@ -304,20 +340,34 @@ def update_snmp_user(connection, exist_settings, module, result):
 
     return resp["response"]
 
-def eval_changed(module, exist_settings):
+def eval_changed(module, exist_settings, api_version):
     """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
         exist_settings (dict): Response from the call to get_admin_settings()
+        api_version (str): API version of the Sophos Firewall
 
     Returns:
         bool: Return true if any settings are different, otherwise return false
     """
     exist_settings = exist_settings["api_response"]["Response"]["SNMPv3User"]
 
-    if (module.params.get("accept_queries") and not module.params.get("accept_queries") == exist_settings["AcceptQueries"] or
-        module.params.get("send_traps") and not module.params.get("send_traps") == exist_settings["SendTraps"]
+    if api_version.startswith("22"):
+        if module.params.get("accept_queries"):
+            accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
+        else:
+            accept_queries = None
+        if module.params.get("send_traps"):
+            send_traps = "true" if module.params.get("send_traps") == "Enable" else "false"
+        else:
+            send_traps = None
+    else:
+        accept_queries = module.params.get("accept_queries")
+        send_traps = module.params.get("send_traps")
+
+    if (accept_queries and not accept_queries == exist_settings["AcceptQueries"] or
+        send_traps and not send_traps == exist_settings["SendTraps"]
         ):
         return True
 
@@ -452,6 +502,12 @@ def main():
     exist_settings = get_snmp_user(connection, module, result)
     result["api_response"] = exist_settings["api_response"]
 
+    if exist_settings["exists"]:
+        api_version = exist_settings["api_response"]["Response"]["@APIVersion"]
+    else:
+        resp = connection.invoke_sdk("login")
+        api_version = resp["response"]["Response"]["@APIVersion"]
+
     if state == "query":
         module.exit_json(**result)
 
@@ -460,9 +516,10 @@ def main():
         module.exit_json(**result)
 
     if state == "present" and not exist_settings["exists"]:
-        api_response = create_snmp_user(connection, module, result)
+        api_response = create_snmp_user(connection, module, result, api_version=api_version)
         if (
-            "Operation Successful" in api_response["Response"]["SNMPv3User"]["Status"]["#text"]
+            "Operation Successful" in api_response["Response"]["SNMPv3User"]["Status"]["#text"] or
+            "Configuration applied successfully" in api_response["Response"]["SNMPv3User"]["Status"]["#text"]
         ):
             result["changed"] = True
             result["api_response"] = api_response
@@ -482,13 +539,14 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_settings["exists"]:
-        if eval_changed(module, exist_settings):
-            api_response = update_snmp_user(connection, exist_settings["api_response"], module, result)
+        if eval_changed(module, exist_settings, api_version=api_version):
+            api_response = update_snmp_user(connection, exist_settings["api_response"], module, result, api_version=api_version)
 
             if api_response:
                 result["api_response"] = api_response
                 if (
                     "Operation Successful" in api_response["Response"]["SNMPv3User"]["Status"]["#text"]
+                    or "Configuration applied successfully" in api_response["Response"]["SNMPv3User"]["Status"]["#text"]
                 ):
                     result["changed"] = True
     
