@@ -116,7 +116,9 @@
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Events']['AuthenticationEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Events']['SystemEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['WebServerProtection']['WAFEvents'] == "Enable"
-      - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['ATP']['ATPEvents'] == "Enable"
+      - >-
+        "22" in query_syslog['api_response']['Response']['@APIVersion'] or
+        query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['ATP']['ATPEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Wireless']['AccessPoints_SSID'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Heartbeat']['EndpointStatus'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['SystemHealth']['Usage'] == "Enable"
@@ -224,7 +226,9 @@
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Events']['AuthenticationEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Events']['SystemEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['WebServerProtection']['WAFEvents'] == "Enable"
-      - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['ATP']['ATPEvents'] == "Enable"
+      - >-
+        "22" in query_syslog['api_response']['Response']['@APIVersion'] or
+        query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['ATP']['ATPEvents'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Wireless']['AccessPoints_SSID'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['Heartbeat']['EndpointStatus'] == "Enable"
       - query_syslog['api_response']['Response']['SyslogServers'][0]['LogSettings']['SystemHealth']['Usage'] == "Enable"

@@ -693,6 +693,7 @@ def update_syslog(connection, exist_settings, module, result):
     Returns:
         dict: API response
     """
+    api_version = exist_settings["api_response"]["Response"]["@APIVersion"]
     if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], dict):
         exist_settings = exist_settings["api_response"]["Response"]["SyslogServers"]
     if isinstance(exist_settings["api_response"]["Response"]["SyslogServers"], list):
@@ -769,7 +770,7 @@ def update_syslog(connection, exist_settings, module, result):
         "authentication": get_with_default(events, "authentication", exist_settings["LogSettings"]["Events"]["AuthenticationEvents"]),
         "system": get_with_default(events, "system", exist_settings["LogSettings"]["Events"]["SystemEvents"]),
         "waf_events": get_with_default(web_server_protection, "waf_events", exist_settings["LogSettings"]["WebServerProtection"]["WAFEvents"]),
-        "atp_events": get_with_default(atp, "atp_events", exist_settings["LogSettings"]["ATP"]["ATPEvents"]),
+        "atp_events": get_with_default(atp, "atp_events", exist_settings["LogSettings"]["ATP"]["ATPEvents"]) if int(api_version[:2]) < 22 else None,
         "access_points_ssid": get_with_default(wireless, "access_points_ssid", exist_settings["LogSettings"]["Wireless"]["AccessPoints_SSID"]),
         "endpoint_status": get_with_default(heartbeat, "endpoint_status", exist_settings["LogSettings"]["Heartbeat"]["EndpointStatus"]),
         "usage": get_with_default(system_health, "usage", exist_settings["LogSettings"]["SystemHealth"]["Usage"]),
