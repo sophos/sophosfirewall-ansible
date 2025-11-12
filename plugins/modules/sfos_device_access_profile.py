@@ -518,7 +518,7 @@ def eval_changed(module, exist_settings):
     ignored_sub_params = []
 
     # In v22, the disconnect_live_user argument is no longer valid so we ignore it here
-    if api_version.startswith("22"):
+    if int(api_version[:2]) >= 22:
         ignored_sub_params.append("disconnect_live_user")
 
     arguments = {

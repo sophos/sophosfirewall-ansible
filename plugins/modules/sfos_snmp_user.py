@@ -184,19 +184,19 @@ def create_snmp_user(connection, module, result, api_version):
     payload = """
         <SNMPv3User>
           <Username>{{ name }}</Username>
-          {% if api_version.startswith("22") %}
+          {% if api_version[:2]|int >= 22 %}
           <Name>{{ name }}</Name>
           {% endif %}
           <AcceptQueries>{{ accept_queries }}</AcceptQueries>
           <SendTraps>{{ send_traps }}</SendTraps>
           {% for host in authorized_hosts %}
-          {% if api_version.startswith("22") %}
+          {% if api_version[:2]|int >= 22 %}
           <AuthorizedHostsIpv4>{{ host }}</AuthorizedHostsIpv4>
             {% else %}
           <AuthorizedHosts>{{ host }}</AuthorizedHosts>
           {% endif %}
           {% endfor %}
-          {% if api_version.startswith("22") %}
+          {% if api_version[:2]|int >= 22 %}
           <AuthorizedHostsIpv6></AuthorizedHostsIpv6>
           {% endif %}
           {% if encryption_algorithm == 'AES' %}
@@ -218,7 +218,7 @@ def create_snmp_user(connection, module, result, api_version):
         </SNMPv3User>
     """
     
-    if api_version.startswith("22"):
+    if int(api_version[:2]) >= 22:
         accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
         send_traps = "true" if module.params.get("send_traps") == "Enable" else "false"
     else:
@@ -270,7 +270,7 @@ def update_snmp_user(connection, exist_settings, module, result, api_version):
     
     update_params["Username"] = module.params.get("name")
 
-    if api_version.startswith("22"):
+    if int(api_version[:2]) >= 22:
         if module.params.get("accept_queries"):
             accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
             update_params["AcceptQueries"] = accept_queries
@@ -286,7 +286,7 @@ def update_snmp_user(connection, exist_settings, module, result, api_version):
             update_params["SendTraps"] = module.params.get("send_traps")
 
     if module.params.get("authorized_hosts"):
-        if api_version.startswith("22"):
+        if int(api_version[:2]) >= 22:
             auth_hosts_key = "AuthorizedHostsIpv4"
         else:
             auth_hosts_key = "AuthorizedHosts"
@@ -353,7 +353,7 @@ def eval_changed(module, exist_settings, api_version):
     """
     exist_settings = exist_settings["api_response"]["Response"]["SNMPv3User"]
 
-    if api_version.startswith("22"):
+    if int(api_version[:2]) >= 22:
         if module.params.get("accept_queries"):
             accept_queries = "true" if module.params.get("accept_queries") == "Enable" else "false"
         else:
