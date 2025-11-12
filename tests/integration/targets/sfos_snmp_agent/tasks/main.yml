@@ -72,7 +72,11 @@
   assert:
     that: 
       - query_snmp is not changed
-      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Enable'
+      - >-
+        ("22" in query_snmp['api_response']['Response']['@APIVersion'] and
+         query_snmp['api_response']['Response']['SNMPAgentConfiguration']['EnableAgent'] == 'true') or
+        ("22" not in query_snmp['api_response']['Response']['@APIVersion'] and
+         query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Enable')
       - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Name'] == 'IGT-TEST-NAME'
       - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Location'] == 'IGT-TEST-LOCATION'
       - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['ContactPerson'] == 'IGT-TEST-CONTACT'
@@ -119,5 +123,9 @@
   assert:
     that: 
       - query_snmp is not changed
-      - query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Disable'
+      - >-
+        ("22" in query_snmp['api_response']['Response']['@APIVersion'] and
+         query_snmp['api_response']['Response']['SNMPAgentConfiguration']['EnableAgent'] == 'false') or
+        ("22" not in query_snmp['api_response']['Response']['@APIVersion'] and
+         query_snmp['api_response']['Response']['SNMPAgentConfiguration']['Configuration'] == 'Disable')
 

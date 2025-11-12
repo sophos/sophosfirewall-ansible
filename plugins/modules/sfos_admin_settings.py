@@ -374,7 +374,7 @@ def eval_changed(module, exist_settings):
             certificate
             and not certificate == exist_settings["WebAdminSettings"]["Certificate"]
             or https_port
-            and not https_port == exist_settings["WebAdminSettings"]["HTTPSPort"]
+            and not https_port == exist_settings["WebAdminSettings"]["HTTPSport"]
             or userportal_https_port
             and not userportal_https_port
             == exist_settings["WebAdminSettings"]["UserPortalHTTPSPort"]

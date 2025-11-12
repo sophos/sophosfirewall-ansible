@@ -261,7 +261,9 @@
       - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['OtherGuestUserSettings'] == 'Read-Write'
       - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['Policy'] == 'Read-Write'
       - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['TestExternalServerConnectivity'] == 'Read-Write'
-      - query_profile['api_response']['Response']['AdministrationProfile']['Identity']['DisconnectLiveUser'] == 'Read-Write'
+      - >-
+        "2200" in query_profile['api_response']["Response"]["@APIVersion"] or
+        query_profile['api_response']['Response']['AdministrationProfile']['Identity']['DisconnectLiveUser'] == 'Read-Write'
 
 - name: UPDATE PROFILE VPN/WAF
   sophos.sophos_firewall.sfos_device_access_profile:

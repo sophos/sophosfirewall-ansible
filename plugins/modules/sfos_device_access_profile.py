@@ -504,6 +504,7 @@ def eval_changed(module, exist_settings):
     Returns:
         bool: Return true if any settings are different, otherwise return false
     """
+    api_version = exist_settings["api_response"]["Response"]["@APIVersion"]
     exist_settings = exist_settings["api_response"]["Response"]["AdministrationProfile"]
 
     # Iterate through the provided arguments. If the argument has no suboptions, then it will be
@@ -514,6 +515,12 @@ def eval_changed(module, exist_settings):
     # function handles situations where .title() doesn't convert to the correct XML key
 
     ignored_arguments = ["hostname", "username", "password", "port", "verify", "state"]
+    ignored_sub_params = []
+
+    # In v22, the disconnect_live_user argument is no longer valid so we ignore it here
+    if int(api_version[:2]) >= 22:
+        ignored_sub_params.append("disconnect_live_user")
+
     arguments = {
         k: v
         for k, v in module.params.items()
@@ -526,6 +533,8 @@ def eval_changed(module, exist_settings):
                 return True
         elif isinstance(arguments.get(param), dict):
             for subparam, subval in arguments.get(param).items():
+                if subparam in ignored_sub_params:
+                    continue
                 if (
                     subval
                     and not subval

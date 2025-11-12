@@ -55,8 +55,8 @@
   assert:
     that: 
       - snmp_user_add is changed
-      - snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['@code'] == '216'
-      - "'Operation Successful' in snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['#text']"
+      - snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['@code'] in ['216', '201']
+      - "'Operation Successful' in snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['#text'] or 'Configuration applied successfully' in snmp_user_add['api_response']['Response']['SNMPv3User']['Status']['#text']"
 
 - name: QUERY SNMP USER
   sophos.sophos_firewall.sfos_snmp_user:
@@ -69,9 +69,13 @@
     that: 
       - query_snmp is not changed
       - query_snmp['api_response']['Response']['SNMPv3User']['Username'] == 'IGT-TESTUSER'
-      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] == 'Disable'
-      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] == 'Enable'
-      - query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2']
+      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] in ['Disable', 'false']
+      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] in ['Enable', 'true']
+      - >-
+        (query_snmp['api_response']['Response']["@APIVersion"].startswith("22") and
+         query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHostsIpv4'] == ['10.1.1.1', '10.1.1.2']) or
+        (not query_snmp['api_response']['Response']["@APIVersion"].startswith("22") and
+         query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2'])
       - query_snmp['api_response']['Response']['SNMPv3User']['EncryptionAlgorithm'] == '1'
       - query_snmp['api_response']['Response']['SNMPv3User']['AuthenticationAlgorithm'] == '1'
 
@@ -93,8 +97,8 @@
   assert:
     that: 
       - update_snmp_user is changed
-      - update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['@code'] == '216'
-      - "'Operation Successful' in update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['#text']"
+      - update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['@code'] in ['200', '216']
+      - "'Operation Successful' in update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['#text'] or 'Configuration applied successfully' in update_snmp_user['api_response']['Response']['SNMPv3User']['Status']['#text']"
 
 - name: QUERY UPDATED SNMP USER
   sophos.sophos_firewall.sfos_snmp_user:
@@ -107,9 +111,13 @@
     that: 
       - query_snmp is not changed
       - query_snmp['api_response']['Response']['SNMPv3User']['Username'] == 'IGT-TESTUSER'
-      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] == 'Enable'
-      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] == 'Enable'
-      - query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2', '10.1.1.3']
+      - query_snmp['api_response']['Response']['SNMPv3User']['AcceptQueries'] in ['Enable', 'true']
+      - query_snmp['api_response']['Response']['SNMPv3User']['SendTraps'] in ['Enable', 'true']
+      - >-
+        (query_snmp['api_response']['Response']["@APIVersion"].startswith("22") and
+         query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHostsIpv4'] == ['10.1.1.1', '10.1.1.2', '10.1.1.3']) or
+        (not query_snmp['api_response']['Response']["@APIVersion"].startswith("22") and
+         query_snmp['api_response']['Response']['SNMPv3User']['AuthorizedHosts'] == ['10.1.1.1', '10.1.1.2', '10.1.1.3'])
       - query_snmp['api_response']['Response']['SNMPv3User']['EncryptionAlgorithm'] == '2'
       - query_snmp['api_response']['Response']['SNMPv3User']['AuthenticationAlgorithm'] == '3'
 
