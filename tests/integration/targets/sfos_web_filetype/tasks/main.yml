@@ -150,7 +150,9 @@
     that: 
       - update_web_filetype_basic is changed
       - update_web_filetype_basic['api_response']['Response']['FileType']['Status']['@code'] == '200'
-      - "'Operation Successful' in update_web_filetype_basic['api_response']['Response']['FileType']['Status']['#text']"
+      - >-
+        'Operation Successful' in update_web_filetype_basic['api_response']['Response']['FileType']['Status']['#text'] or
+        'Configuration applied successfully' in update_web_filetype_basic['api_response']['Response']['FileType']['Status']['#text']
 
 - name: QUERY UPDATED WEB FILE TYPE BASIC
   sophos.sophos_firewall.sfos_web_filetype:
@@ -230,7 +232,9 @@
     that: 
       - update_web_filetype_advanced is changed
       - update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['@code'] == '200'
-      - "'Operation Successful' in update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['#text']"
+      - >-
+        'Operation Successful' in update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['#text'] or
+        'Configuration applied successfully' in update_web_filetype_advanced['api_response']['Response']['FileType']['Status']['#text']
 
 - name: QUERY UPDATED WEB FILE TYPE ADVANCED
   sophos.sophos_firewall.sfos_web_filetype:
