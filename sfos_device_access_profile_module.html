@@ -1,0 +1,1008 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta content="2.22.0" name="antsibull-docs" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access) &mdash; Sophos.Sophos_Firewall  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7f41d439"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="sophos.sophos_firewall.sfos_dns module – Manage DNS settings (Configure &gt; Network &gt; DNS)" href="sfos_dns_module.html" />
+    <link rel="prev" title="sophos.sophos_firewall.sfos_certificate_authority module – Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities)" href="sfos_certificate_authority_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Sophos Firewall Ansible Collection</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Sophos.Sophos_Firewall
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Sophos.Sophos_Firewall Release Notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/httpapi_example.html">New in version 2.0: HttpApi Plugin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/setup.html">Required Firewall Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/tutorial2.x.html">Tutorial v2.x</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/tutorial1.x.html">Tutorial v1.x</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="sfos_admin_settings_module.html">sophos.sophos_firewall.sfos_admin_settings module – Manage Admin and user settings (System &gt; Administration)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_atp_module.html">sophos.sophos_firewall.sfos_atp module – Manage Active Threat Protection (Protect &gt; Active threat response &gt; Sophos X-Ops threat feeds)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_ad_module.html">sophos.sophos_firewall.sfos_authentication_ad module – Manage Authentication settings Active Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_azure_module.html">sophos.sophos_firewall.sfos_authentication_azure module – Manage Authentication settings AzureADSSO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_edirectory_module.html">sophos.sophos_firewall.sfos_authentication_edirectory module – Manage Authentication settings eDirectory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_ldap_module.html">sophos.sophos_firewall.sfos_authentication_ldap module – Manage Authentication settings LDAP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_radius_module.html">sophos.sophos_firewall.sfos_authentication_radius module – Manage Authentication settings Radius</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_tacacs_module.html">sophos.sophos_firewall.sfos_authentication_tacacs module – Manage Authentication settings Tacacs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_backup_module.html">sophos.sophos_firewall.sfos_backup module – Manage Backup settings (System &gt; Backup &amp; firmware)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_certificate_module.html">sophos.sophos_firewall.sfos_certificate module – Manage Certificates (System &gt; Certificates)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_certificate_authority_module.html">sophos.sophos_firewall.sfos_certificate_authority module – Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#return-values">Return Values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#authors">Authors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#collection-links">Collection links</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_dns_module.html">sophos.sophos_firewall.sfos_dns module – Manage DNS settings (Configure &gt; Network &gt; DNS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_firewall_rule_module.html">sophos.sophos_firewall.sfos_firewall_rule module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_firewall_rulegroup_module.html">sophos.sophos_firewall.sfos_firewall_rulegroup module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_fqdn_host_module.html">sophos.sophos_firewall.sfos_fqdn_host module – Manage FQDN hosts (System &gt; Hosts &amp; services &gt; FQDN host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_fqdn_hostgroup_module.html">sophos.sophos_firewall.sfos_fqdn_hostgroup module – Manage FQDN Host Groups (System &gt; Hosts &amp; services &gt; FQDN host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ip_host_module.html">sophos.sophos_firewall.sfos_ip_host module – Manage IP Host (System &gt; Hosts &amp; services &gt; IP host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ip_hostgroup_module.html">sophos.sophos_firewall.sfos_ip_hostgroup module – Manage IP Hostgroup (System &gt; Hosts &amp; services &gt; IP host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ips_module.html">sophos.sophos_firewall.sfos_ips module – Manage IPS protection (Protect &gt; Intrusion Protection &gt; IPS policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ipsec_connection_module.html">sophos.sophos_firewall.sfos_ipsec_connection module – Manage IPSec Connection (Configure &gt; Site-to-site VPN &gt; IPSec)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_malware_protection_module.html">sophos.sophos_firewall.sfos_malware_protection module – Manage Malware Protection (Configure &gt; System services &gt; Malware protection)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_netflow_module.html">sophos.sophos_firewall.sfos_netflow module – Manage NetFlow configuration (System &gt; Administration &gt; NetFlow)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_notification_target_module.html">sophos.sophos_firewall.sfos_notification_target module – Manage Notification Settings (System &gt; Administration &gt; Notification)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_qos_policy_module.html">sophos.sophos_firewall.sfos_qos_policy module – Manage QoS Policies (Configure &gt; System Services &gt; Traffic Shaping)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_service_module.html">sophos.sophos_firewall.sfos_service module – Manage Service (System &gt; Hosts and services &gt; Services)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_service_acl_exception_module.html">sophos.sophos_firewall.sfos_service_acl_exception module – Manage Local Service Exception ACL Rules (System &gt; Administration &gt; Device Access)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_servicegroup_module.html">sophos.sophos_firewall.sfos_servicegroup module – Manage Service Group (System &gt; Hosts and services &gt; Service Group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_snmp_agent_module.html">sophos.sophos_firewall.sfos_snmp_agent module – Manage SNMP Agent (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_snmp_user_module.html">sophos.sophos_firewall.sfos_snmp_user module – Manage SNMPv3 User (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_syslog_module.html">sophos.sophos_firewall.sfos_syslog module – Manage Syslog servers (Configure &gt; System services &gt; Log settings)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_time_module.html">sophos.sophos_firewall.sfos_time module – Manage Date and Time settings (System &gt; Administration &gt; Time)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_urlgroup_module.html">sophos.sophos_firewall.sfos_urlgroup module – Manage URL Groups on Sophos Firewall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_user_module.html">sophos.sophos_firewall.sfos_user module – Manage Users (Configure &gt; Authentication &gt; Users)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_category_module.html">sophos.sophos_firewall.sfos_web_category module – Manage Web Categories (Protect &gt; Web &gt; Web Categories)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_filetype_module.html">sophos.sophos_firewall.sfos_web_filetype module – Manage Web File Types (Protect &gt; Web &gt; File Types)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_policy_module.html">sophos.sophos_firewall.sfos_web_policy module – Manage Web Filter Policies (Protect &gt; Web &gt; Policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_useractivity_module.html">sophos.sophos_firewall.sfos_web_useractivity module – Manage Web User Activities (Protect &gt; Web &gt; User Activities)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_xmlapi_module.html">sophos.sophos_firewall.sfos_xmlapi module – Use the XML API to get, create, update, or delete settings on Sophos Firewall.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_zone_module.html">sophos.sophos_firewall.sfos_zone module – Manage Zones (Configure &gt; Network &gt; Zones)</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sfos_httpapi.html">sophos.sophos_firewall.sfos httpapi – HttpApi plugin for Sophos Firewall (SFOS)</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Sophos.Sophos_Firewall</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access)</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module"></span><section id="sophos-sophos-firewall-sfos-device-access-profile-module-manage-device-access-profiles-system-profiles-device-access">
+<h1>sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access)<a class="headerlink" href="#sophos-sophos-firewall-sfos-device-access-profile-module-manage-device-access-profiles-system-profiles-device-access" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/sophos/sophos_firewall/">sophos.sophos_firewall collection</a> (version 2.5.1).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">sophos.sophos_firewall</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">sophos.sophos_firewall.sfos_device_access_profile</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in sophos.sophos_firewall 1.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Manage Device Access Profiles (System &gt; Profiles &gt; Device Access) on Sophos Firewall</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>sophosfirewall-python</p></li>
+<li><p>Beginning in version 2.0.0, this module requires use of an httpapi connection plugin. See the <a class="reference internal" href="docsite/httpapi_example.html#ansible-collections-sophos-sophos-firewall-docsite-httpapi-example"><span class="std std-ref">HTTPAPI example</span></a> for details.</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-application_filter"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-application-filter"><strong>application_filter</strong></p>
+<a class="ansibleOptionLink" href="#parameter-application_filter" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Application Filter permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-cloud_application_dashboard"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-cloud-application-dashboard"><strong>cloud_application_dashboard</strong></p>
+<a class="ansibleOptionLink" href="#parameter-cloud_application_dashboard" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Cloud Application Dashboard permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-dashboard"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-dashboard"><strong>dashboard</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dashboard" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Dashboard permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-default_permission"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-default-permission"><strong>default_permission</strong></p>
+<a class="ansibleOptionLink" href="#parameter-default_permission" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Default permission to use for unspecified arguments when creating profile.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-email_protection"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-email-protection"><strong>email_protection</strong></p>
+<a class="ansibleOptionLink" href="#parameter-email_protection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Email Protection permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-firewall"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-firewall"><strong>firewall</strong></p>
+<a class="ansibleOptionLink" href="#parameter-firewall" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Firewall permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity"><strong>identity</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Identity permissions group.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/authentication"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-authentication"><strong>authentication</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/authentication" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Authentication permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/disconnect_live_user"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-disconnect-live-user"><strong>disconnect_live_user</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/disconnect_live_user" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Disconnect live user permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/groups"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-groups"><strong>groups</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Groups permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/guest_user_management"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-guest-user-management"><strong>guest_user_management</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/guest_user_management" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Guest user management permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/policy"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-policy"><strong>policy</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Policy permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-identity/test_external_server_connectivity"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-identity-test-external-server-connectivity"><strong>test_external_server_connectivity</strong></p>
+<a class="ansibleOptionLink" href="#parameter-identity/test_external_server_connectivity" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Test external server connectivity permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ips"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-ips"><strong>ips</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ips" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IPS permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports"><strong>logs_reports</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Logs/Reports permissions group</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports/configuration"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports-configuration"><strong>configuration</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports/configuration" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Configuration permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports/de_anonymization"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports-de-anonymization"><strong>de_anonymization</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports/de_anonymization" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>De-anonymization permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports/four_eye_authentication_settings"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports-four-eye-authentication-settings"><strong>four_eye_authentication_settings</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports/four_eye_authentication_settings" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Four Eye authentication settings permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports/log_viewer"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports-log-viewer"><strong>log_viewer</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports/log_viewer" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Log viewer permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-logs_reports/reports_access"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-logs-reports-reports-access"><strong>reports_access</strong></p>
+<a class="ansibleOptionLink" href="#parameter-logs_reports/reports_access" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Reports access permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the profile.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-network"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-network"><strong>network</strong></p>
+<a class="ansibleOptionLink" href="#parameter-network" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Network permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-objects"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-objects"><strong>objects</strong></p>
+<a class="ansibleOptionLink" href="#parameter-objects" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Objects permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-qos"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-qos"><strong>qos</strong></p>
+<a class="ansibleOptionLink" href="#parameter-qos" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>QoS permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Use <code class="docutils literal notranslate"><span class="pre">query</span></code> to retrieve or <code class="docutils literal notranslate"><span class="pre">updated</span></code> to modify</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;present&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;updated&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;query&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system"><strong>system</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>System permissions group.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/backup"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-backup"><strong>backup</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/backup" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Backup permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/central_management"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-central-management"><strong>central_management</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/central_management" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Central Management permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/download_certificates"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-download-certificates"><strong>download_certificates</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/download_certificates" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Restore permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/firmware"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-firmware"><strong>firmware</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/firmware" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Firmware permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/ha"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-ha"><strong>ha</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/ha" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>HA permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/licensing"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-licensing"><strong>licensing</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/licensing" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Licensing permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/other_certificate_configuration"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-other-certificate-configuration"><strong>other_certificate_configuration</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/other_certificate_configuration" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Other certificate configuration permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/profile"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-profile"><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Profile permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/reboot_shutdown"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-reboot-shutdown"><strong>reboot_shutdown</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/reboot_shutdown" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Reboot/Shutdown permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/restore"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-restore"><strong>restore</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/restore" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Restore permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/services"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-services"><strong>services</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/services" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Services permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/system_password"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-system-password"><strong>system_password</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/system_password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Manage system password</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-system/updates"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-system-updates"><strong>updates</strong></p>
+<a class="ansibleOptionLink" href="#parameter-system/updates" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Updates permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-traffic_discovery"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-traffic-discovery"><strong>traffic_discovery</strong></p>
+<a class="ansibleOptionLink" href="#parameter-traffic_discovery" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Traffic Discovery permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpn"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-vpn"><strong>vpn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>VPN permissions group</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpn/connect_tunnel"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-vpn-connect-tunnel"><strong>connect_tunnel</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpn/connect_tunnel" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Connect tunnel permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-vpn/other_vpn_configurations"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-vpn-other-vpn-configurations"><strong>other_vpn_configurations</strong></p>
+<a class="ansibleOptionLink" href="#parameter-vpn/other_vpn_configurations" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Other VPN configurations permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-waf"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-waf"><strong>waf</strong></p>
+<a class="ansibleOptionLink" href="#parameter-waf" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>WAF permissions group</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-waf/alerts"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-waf-alerts"><strong>alerts</strong></p>
+<a class="ansibleOptionLink" href="#parameter-waf/alerts" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Alerts permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-waf/other_waf_configuration"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-waf-other-waf-configuration"><strong>other_waf_configuration</strong></p>
+<a class="ansibleOptionLink" href="#parameter-waf/other_waf_configuration" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Other WAF configuration permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-web_filter"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-web-filter"><strong>web_filter</strong></p>
+<a class="ansibleOptionLink" href="#parameter-web_filter" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Web Filter permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection"><strong>wireless_protection</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Wireless protection permissions group</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection/wireless_protection_access_point"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection-wireless-protection-access-point"><strong>wireless_protection_access_point</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection/wireless_protection_access_point" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Wireless protection access point permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection/wireless_protection_mesh"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection-wireless-protection-mesh"><strong>wireless_protection_mesh</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection/wireless_protection_mesh" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Wireless protection mesh permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection/wireless_protection_network"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection-wireless-protection-network"><strong>wireless_protection_network</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection/wireless_protection_network" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Wireless protection network permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection/wireless_protection_overview"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection-wireless-protection-overview"><strong>wireless_protection_overview</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection/wireless_protection_overview" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Wireless protection overview permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wireless_protection/wireless_protection_settings"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wireless-protection-wireless-protection-settings"><strong>wireless_protection_settings</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wireless_protection/wireless_protection_settings" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Wireless protection permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-wizard"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-wizard"><strong>wizard</strong></p>
+<a class="ansibleOptionLink" href="#parameter-wizard" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Wizard permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-zero_day_protection"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-parameter-zero-day-protection"><strong>zero_day_protection</strong></p>
+<a class="ansibleOptionLink" href="#parameter-zero_day_protection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Zero day protection permissions.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Write&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;Read-Only&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;None&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CREATE A READ-ONLY PROFILE</span>
+<span class="w">  </span><span class="nt">sophos.sophos_firewall.sfos_device_access_profile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ReadOnlyAll</span>
+<span class="w">    </span><span class="nt">default_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Only</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CREATE A WIRELESS ADMIN PROFILE</span>
+<span class="w">  </span><span class="nt">sophos.sophos_firewall.sfos_device_access_profile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WirelessAdmin</span>
+<span class="w">    </span><span class="nt">default_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Only</span>
+<span class="w">    </span><span class="nt">wireless_protection</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">wireless_protection_overview</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">        </span><span class="nt">wireless_protection_settings</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">        </span><span class="nt">wireless_protection_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">        </span><span class="nt">wireless_protection_access_point</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">        </span><span class="nt">wireless_protection_mesh</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UPDATE PROFILE PERMISSIONS</span>
+<span class="w">  </span><span class="nt">sophos.sophos_firewall.sfos_device_access_profile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ExampleProfile</span>
+<span class="w">    </span><span class="nt">system</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">central_management</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Only</span>
+<span class="w">    </span><span class="nt">logs_reports</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">log_viewer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">        </span><span class="nt">reports_access</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Read-Write</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">updated</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RETRIEVE PROFILE</span>
+<span class="w">  </span><span class="nt">sophos.sophos_firewall.sfos_device_access_profile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ExampleProfile</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">query</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DELETE PROFILE</span>
+<span class="w">  </span><span class="nt">sophos.sophos_firewall.sfos_device_access_profile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ExampleProfile</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-api_response"></div><p class="ansible-option-title" id="ansible-collections-sophos-sophos-firewall-sfos-device-access-profile-module-return-api-response"><strong>api_response</strong></p>
+<a class="ansibleOptionLink" href="#return-api_response" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Serialized object containing the API response.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Matt Mullen (&#64;mamullen13316)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/sophos/sophosfirewall-ansible/issues" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/sophos/sophosfirewall-ansible" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the firewall is a member of a group in Central, the changes made by Ansible
+will override the settings of the group. The actual configuration on the firewall may then differ from what is displayed
+for the same setting in the Central group.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sfos_certificate_authority_module.html" class="btn btn-neutral float-left" title="sophos.sophos_firewall.sfos_certificate_authority module – Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sfos_dns_module.html" class="btn btn-neutral float-right" title="sophos.sophos_firewall.sfos_dns module – Manage DNS settings (Configure &gt; Network &gt; DNS)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Sophos, Ltd..</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>

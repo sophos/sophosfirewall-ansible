@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; Sophos.Sophos_Firewall  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Required Firewall Setup" href="setup.html" />
+    <link rel="prev" title="New in version 2.0: HttpApi Plugin" href="httpapi_example.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Sophos Firewall Ansible Collection</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Sophos.Sophos_Firewall
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Sophos.Sophos_Firewall Release Notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="httpapi_example.html">New in version 2.0: HttpApi Plugin</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Required Firewall Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial2.x.html">Tutorial v2.x</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial1.x.html">Tutorial v1.x</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_admin_settings_module.html">sophos.sophos_firewall.sfos_admin_settings module – Manage Admin and user settings (System &gt; Administration)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_atp_module.html">sophos.sophos_firewall.sfos_atp module – Manage Active Threat Protection (Protect &gt; Active threat response &gt; Sophos X-Ops threat feeds)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_ad_module.html">sophos.sophos_firewall.sfos_authentication_ad module – Manage Authentication settings Active Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_azure_module.html">sophos.sophos_firewall.sfos_authentication_azure module – Manage Authentication settings AzureADSSO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_edirectory_module.html">sophos.sophos_firewall.sfos_authentication_edirectory module – Manage Authentication settings eDirectory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_ldap_module.html">sophos.sophos_firewall.sfos_authentication_ldap module – Manage Authentication settings LDAP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_radius_module.html">sophos.sophos_firewall.sfos_authentication_radius module – Manage Authentication settings Radius</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_authentication_tacacs_module.html">sophos.sophos_firewall.sfos_authentication_tacacs module – Manage Authentication settings Tacacs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_backup_module.html">sophos.sophos_firewall.sfos_backup module – Manage Backup settings (System &gt; Backup &amp; firmware)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_certificate_module.html">sophos.sophos_firewall.sfos_certificate module – Manage Certificates (System &gt; Certificates)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_certificate_authority_module.html">sophos.sophos_firewall.sfos_certificate_authority module – Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_device_access_profile_module.html">sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_dns_module.html">sophos.sophos_firewall.sfos_dns module – Manage DNS settings (Configure &gt; Network &gt; DNS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_firewall_rule_module.html">sophos.sophos_firewall.sfos_firewall_rule module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_firewall_rulegroup_module.html">sophos.sophos_firewall.sfos_firewall_rulegroup module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_fqdn_host_module.html">sophos.sophos_firewall.sfos_fqdn_host module – Manage FQDN hosts (System &gt; Hosts &amp; services &gt; FQDN host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_fqdn_hostgroup_module.html">sophos.sophos_firewall.sfos_fqdn_hostgroup module – Manage FQDN Host Groups (System &gt; Hosts &amp; services &gt; FQDN host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_ip_host_module.html">sophos.sophos_firewall.sfos_ip_host module – Manage IP Host (System &gt; Hosts &amp; services &gt; IP host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_ip_hostgroup_module.html">sophos.sophos_firewall.sfos_ip_hostgroup module – Manage IP Hostgroup (System &gt; Hosts &amp; services &gt; IP host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_ips_module.html">sophos.sophos_firewall.sfos_ips module – Manage IPS protection (Protect &gt; Intrusion Protection &gt; IPS policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_ipsec_connection_module.html">sophos.sophos_firewall.sfos_ipsec_connection module – Manage IPSec Connection (Configure &gt; Site-to-site VPN &gt; IPSec)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_malware_protection_module.html">sophos.sophos_firewall.sfos_malware_protection module – Manage Malware Protection (Configure &gt; System services &gt; Malware protection)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_netflow_module.html">sophos.sophos_firewall.sfos_netflow module – Manage NetFlow configuration (System &gt; Administration &gt; NetFlow)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_notification_target_module.html">sophos.sophos_firewall.sfos_notification_target module – Manage Notification Settings (System &gt; Administration &gt; Notification)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_qos_policy_module.html">sophos.sophos_firewall.sfos_qos_policy module – Manage QoS Policies (Configure &gt; System Services &gt; Traffic Shaping)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_service_module.html">sophos.sophos_firewall.sfos_service module – Manage Service (System &gt; Hosts and services &gt; Services)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_service_acl_exception_module.html">sophos.sophos_firewall.sfos_service_acl_exception module – Manage Local Service Exception ACL Rules (System &gt; Administration &gt; Device Access)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_servicegroup_module.html">sophos.sophos_firewall.sfos_servicegroup module – Manage Service Group (System &gt; Hosts and services &gt; Service Group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_snmp_agent_module.html">sophos.sophos_firewall.sfos_snmp_agent module – Manage SNMP Agent (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_snmp_user_module.html">sophos.sophos_firewall.sfos_snmp_user module – Manage SNMPv3 User (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_syslog_module.html">sophos.sophos_firewall.sfos_syslog module – Manage Syslog servers (Configure &gt; System services &gt; Log settings)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_time_module.html">sophos.sophos_firewall.sfos_time module – Manage Date and Time settings (System &gt; Administration &gt; Time)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_urlgroup_module.html">sophos.sophos_firewall.sfos_urlgroup module – Manage URL Groups on Sophos Firewall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_user_module.html">sophos.sophos_firewall.sfos_user module – Manage Users (Configure &gt; Authentication &gt; Users)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_web_category_module.html">sophos.sophos_firewall.sfos_web_category module – Manage Web Categories (Protect &gt; Web &gt; Web Categories)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_web_filetype_module.html">sophos.sophos_firewall.sfos_web_filetype module – Manage Web File Types (Protect &gt; Web &gt; File Types)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_web_policy_module.html">sophos.sophos_firewall.sfos_web_policy module – Manage Web Filter Policies (Protect &gt; Web &gt; Policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_web_useractivity_module.html">sophos.sophos_firewall.sfos_web_useractivity module – Manage Web User Activities (Protect &gt; Web &gt; User Activities)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_xmlapi_module.html">sophos.sophos_firewall.sfos_xmlapi module – Use the XML API to get, create, update, or delete settings on Sophos Firewall.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_zone_module.html">sophos.sophos_firewall.sfos_zone module – Manage Zones (Configure &gt; Network &gt; Zones)</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../sfos_httpapi.html">sophos.sophos_firewall.sfos httpapi – HttpApi plugin for Sophos Firewall (SFOS)</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sophos.Sophos_Firewall</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<span id="ansible-collections-sophos-sophos-firewall-docsite-installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>The following must be installed prior to installing the module:</p>
+<ul class="simple">
+<li><p>Python 3.11+</p></li>
+<li><p>Ansible 2.16+</p></li>
+<li><p>sophosfirewall-python 0.1.56+</p></li>
+</ul>
+<p>With Python installed on the system, Ansible and the sophosfirewall-python module can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>ansible
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sophosfirewall-python
+</pre></div>
+</div>
+</section>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading"></a></h2>
+<p>The Sophos Firewall Ansible Collection can be installed using the <code class="docutils literal notranslate"><span class="pre">ansible-galaxy</span></code> utility which is included with Ansible:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ansible-galaxy<span class="w"> </span>collection<span class="w"> </span>install<span class="w"> </span>sophos.sophos_firewall
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the firewall is a member of a group in Central, the changes made by Ansible
+will override the settings of the group. The actual configuration on the firewall may then differ from what is displayed
+for the same setting in the Central group.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="httpapi_example.html" class="btn btn-neutral float-left" title="New in version 2.0: HttpApi Plugin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="setup.html" class="btn btn-neutral float-right" title="Required Firewall Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Sophos, Ltd..</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>

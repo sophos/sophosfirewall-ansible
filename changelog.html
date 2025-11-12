@@ -1,0 +1,767 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sophos.Sophos_Firewall Release Notes &mdash; Sophos.Sophos_Firewall  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7f41d439"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="New in version 2.0: HttpApi Plugin" href="docsite/httpapi_example.html" />
+    <link rel="prev" title="Sophos.Sophos_Firewall" href="index.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Sophos Firewall Ansible Collection</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Sophos.Sophos_Firewall
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Sophos.Sophos_Firewall Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v2-5-1">v2.5.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#release-summary">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bugfixes">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-5-0">v2.5.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-modules">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-4-0">v2.4.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-1">v2.3.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-0">v2.3.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#major-changes">Major Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-0">v2.2.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-1-0">v2.1.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-0-1">v2.0.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Release Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-0-0">v2.0.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id13">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes-porting-guide">Breaking Changes / Porting Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-plugins">New Plugins</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#httpapi">Httpapi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-5-0">v1.5.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-5">v1.4.5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id16">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id17">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-4">v1.4.4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id18">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-3">v1.4.3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id20">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-2">v1.4.2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id21">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id22">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-1">v1.4.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id23">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-4-0">v1.4.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id24">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id25">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-3-0">v1.3.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id26">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-2-1">v1.2.1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id28">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id29">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-2-0">v1.2.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id30">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id31">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-1-0">v1.1.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id32">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id33">New Modules</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-0-0">v1.0.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id34">Release Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id35">New Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/httpapi_example.html">New in version 2.0: HttpApi Plugin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docsite/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/setup.html">Required Firewall Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/tutorial2.x.html">Tutorial v2.x</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsite/tutorial1.x.html">Tutorial v1.x</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sfos_admin_settings_module.html">sophos.sophos_firewall.sfos_admin_settings module – Manage Admin and user settings (System &gt; Administration)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_atp_module.html">sophos.sophos_firewall.sfos_atp module – Manage Active Threat Protection (Protect &gt; Active threat response &gt; Sophos X-Ops threat feeds)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_ad_module.html">sophos.sophos_firewall.sfos_authentication_ad module – Manage Authentication settings Active Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_azure_module.html">sophos.sophos_firewall.sfos_authentication_azure module – Manage Authentication settings AzureADSSO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_edirectory_module.html">sophos.sophos_firewall.sfos_authentication_edirectory module – Manage Authentication settings eDirectory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_ldap_module.html">sophos.sophos_firewall.sfos_authentication_ldap module – Manage Authentication settings LDAP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_radius_module.html">sophos.sophos_firewall.sfos_authentication_radius module – Manage Authentication settings Radius</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_authentication_tacacs_module.html">sophos.sophos_firewall.sfos_authentication_tacacs module – Manage Authentication settings Tacacs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_backup_module.html">sophos.sophos_firewall.sfos_backup module – Manage Backup settings (System &gt; Backup &amp; firmware)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_certificate_module.html">sophos.sophos_firewall.sfos_certificate module – Manage Certificates (System &gt; Certificates)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_certificate_authority_module.html">sophos.sophos_firewall.sfos_certificate_authority module – Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_device_access_profile_module.html">sophos.sophos_firewall.sfos_device_access_profile module – Manage Device Access Profiles (System &gt; Profiles &gt; Device Access)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_dns_module.html">sophos.sophos_firewall.sfos_dns module – Manage DNS settings (Configure &gt; Network &gt; DNS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_firewall_rule_module.html">sophos.sophos_firewall.sfos_firewall_rule module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_firewall_rulegroup_module.html">sophos.sophos_firewall.sfos_firewall_rulegroup module – Manage Firewall Rules (Protect &gt; Rules &amp; policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_fqdn_host_module.html">sophos.sophos_firewall.sfos_fqdn_host module – Manage FQDN hosts (System &gt; Hosts &amp; services &gt; FQDN host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_fqdn_hostgroup_module.html">sophos.sophos_firewall.sfos_fqdn_hostgroup module – Manage FQDN Host Groups (System &gt; Hosts &amp; services &gt; FQDN host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ip_host_module.html">sophos.sophos_firewall.sfos_ip_host module – Manage IP Host (System &gt; Hosts &amp; services &gt; IP host)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ip_hostgroup_module.html">sophos.sophos_firewall.sfos_ip_hostgroup module – Manage IP Hostgroup (System &gt; Hosts &amp; services &gt; IP host group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ips_module.html">sophos.sophos_firewall.sfos_ips module – Manage IPS protection (Protect &gt; Intrusion Protection &gt; IPS policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_ipsec_connection_module.html">sophos.sophos_firewall.sfos_ipsec_connection module – Manage IPSec Connection (Configure &gt; Site-to-site VPN &gt; IPSec)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_malware_protection_module.html">sophos.sophos_firewall.sfos_malware_protection module – Manage Malware Protection (Configure &gt; System services &gt; Malware protection)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_netflow_module.html">sophos.sophos_firewall.sfos_netflow module – Manage NetFlow configuration (System &gt; Administration &gt; NetFlow)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_notification_target_module.html">sophos.sophos_firewall.sfos_notification_target module – Manage Notification Settings (System &gt; Administration &gt; Notification)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_qos_policy_module.html">sophos.sophos_firewall.sfos_qos_policy module – Manage QoS Policies (Configure &gt; System Services &gt; Traffic Shaping)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_service_module.html">sophos.sophos_firewall.sfos_service module – Manage Service (System &gt; Hosts and services &gt; Services)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_service_acl_exception_module.html">sophos.sophos_firewall.sfos_service_acl_exception module – Manage Local Service Exception ACL Rules (System &gt; Administration &gt; Device Access)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_servicegroup_module.html">sophos.sophos_firewall.sfos_servicegroup module – Manage Service Group (System &gt; Hosts and services &gt; Service Group)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_snmp_agent_module.html">sophos.sophos_firewall.sfos_snmp_agent module – Manage SNMP Agent (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_snmp_user_module.html">sophos.sophos_firewall.sfos_snmp_user module – Manage SNMPv3 User (System &gt; Administration &gt; SNMP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_syslog_module.html">sophos.sophos_firewall.sfos_syslog module – Manage Syslog servers (Configure &gt; System services &gt; Log settings)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_time_module.html">sophos.sophos_firewall.sfos_time module – Manage Date and Time settings (System &gt; Administration &gt; Time)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_urlgroup_module.html">sophos.sophos_firewall.sfos_urlgroup module – Manage URL Groups on Sophos Firewall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_user_module.html">sophos.sophos_firewall.sfos_user module – Manage Users (Configure &gt; Authentication &gt; Users)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_category_module.html">sophos.sophos_firewall.sfos_web_category module – Manage Web Categories (Protect &gt; Web &gt; Web Categories)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_filetype_module.html">sophos.sophos_firewall.sfos_web_filetype module – Manage Web File Types (Protect &gt; Web &gt; File Types)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_policy_module.html">sophos.sophos_firewall.sfos_web_policy module – Manage Web Filter Policies (Protect &gt; Web &gt; Policies)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_web_useractivity_module.html">sophos.sophos_firewall.sfos_web_useractivity module – Manage Web User Activities (Protect &gt; Web &gt; User Activities)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_xmlapi_module.html">sophos.sophos_firewall.sfos_xmlapi module – Use the XML API to get, create, update, or delete settings on Sophos Firewall.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sfos_zone_module.html">sophos.sophos_firewall.sfos_zone module – Manage Zones (Configure &gt; Network &gt; Zones)</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sfos_httpapi.html">sophos.sophos_firewall.sfos httpapi – HttpApi plugin for Sophos Firewall (SFOS)</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Sophos.Sophos_Firewall</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Sophos.Sophos_Firewall Release Notes</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="sophos-sophos-firewall-release-notes">
+<span id="changelog-for-sophos-sophos-firewall"></span><h1><a class="toc-backref" href="#id36" role="doc-backlink">Sophos.Sophos_Firewall Release Notes</a><a class="headerlink" href="#sophos-sophos-firewall-release-notes" title="Link to this heading"></a></h1>
+<nav class="contents" id="topics">
+<p class="topic-title">Topics</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sophos-sophos-firewall-release-notes" id="id36">Sophos.Sophos_Firewall Release Notes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#v2-5-1" id="id37">v2.5.1</a></p>
+<ul>
+<li><p><a class="reference internal" href="#release-summary" id="id38">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#bugfixes" id="id39">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-5-0" id="id40">v2.5.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id1" id="id41">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#new-modules" id="id42">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-4-0" id="id43">v2.4.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id2" id="id44">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id3" id="id45">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-3-1" id="id46">v2.3.1</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id4" id="id47">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id5" id="id48">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-3-0" id="id49">v2.3.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id6" id="id50">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#major-changes" id="id51">Major Changes</a></p></li>
+<li><p><a class="reference internal" href="#id7" id="id52">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-2-0" id="id53">v2.2.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id8" id="id54">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id9" id="id55">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-1-0" id="id56">v2.1.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id10" id="id57">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id11" id="id58">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-0-1" id="id59">v2.0.1</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id12" id="id60">Release Summary</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v2-0-0" id="id61">v2.0.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id13" id="id62">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#breaking-changes-porting-guide" id="id63">Breaking Changes / Porting Guide</a></p></li>
+<li><p><a class="reference internal" href="#new-plugins" id="id64">New Plugins</a></p>
+<ul>
+<li><p><a class="reference internal" href="#httpapi" id="id65">Httpapi</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-5-0" id="id66">v1.5.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id14" id="id67">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id15" id="id68">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-5" id="id69">v1.4.5</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id16" id="id70">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id17" id="id71">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-4" id="id72">v1.4.4</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id18" id="id73">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id19" id="id74">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-3" id="id75">v1.4.3</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id20" id="id76">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-2" id="id77">v1.4.2</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id21" id="id78">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id22" id="id79">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-1" id="id80">v1.4.1</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id23" id="id81">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-4-0" id="id82">v1.4.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id24" id="id83">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id25" id="id84">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-3-0" id="id85">v1.3.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id26" id="id86">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id27" id="id87">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-2-1" id="id88">v1.2.1</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id28" id="id89">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id29" id="id90">Bugfixes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-2-0" id="id91">v1.2.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id30" id="id92">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id31" id="id93">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-1-0" id="id94">v1.1.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id32" id="id95">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id33" id="id96">New Modules</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v1-0-0" id="id97">v1.0.0</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id34" id="id98">Release Summary</a></p></li>
+<li><p><a class="reference internal" href="#id35" id="id99">New Modules</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="v2-5-1">
+<h2><a class="toc-backref" href="#id37" role="doc-backlink">v2.5.1</a><a class="headerlink" href="#v2-5-1" title="Link to this heading"></a></h2>
+<section id="release-summary">
+<h3><a class="toc-backref" href="#id38" role="doc-backlink">Release Summary</a><a class="headerlink" href="#release-summary" title="Link to this heading"></a></h3>
+<p>This release implements bug fixes for working with Sophos Firewall running SFOS version 22.0 and later versions.</p>
+</section>
+<section id="bugfixes">
+<h3><a class="toc-backref" href="#id39" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#bugfixes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixed an issue in sfos_admin_settings with the key HTTPSPort (should have been HTTPSport) causing module failures</p></li>
+<li><p>Fixed an issue in sfos_device_access_profile where the DisconnectLiveUser option is no longer available</p></li>
+<li><p>Fixed an issue in sfos_snmp_agent where the Configuration key is now renamed to EnableAgent</p></li>
+<li><p>Fixed an issue in sfos_snmp_user where send_queries and accept_queries changed from Enable/Disable to true/false</p></li>
+<li><p>Fixed an issue in sfos_snmp_user where the AuthorizedHosts key is now renamed to AuthorizedHostsIpv4.</p></li>
+<li><p>Fixed an issue in sfos_syslog where Syslog no longer has an ATPEvents key in the log settings</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-5-0">
+<h2><a class="toc-backref" href="#id40" role="doc-backlink">v2.5.0</a><a class="headerlink" href="#v2-5-0" title="Link to this heading"></a></h2>
+<section id="id1">
+<h3><a class="toc-backref" href="#id41" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>This release introduces new modules for working with certificate authorities and notification email settings on Sophos Firewall.</p>
+</section>
+<section id="new-modules">
+<h3><a class="toc-backref" href="#id42" role="doc-backlink">New Modules</a><a class="headerlink" href="#new-modules" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_certificate_authority - Manage Certificate Authorities (System &gt; Certificates &gt; Certificate Authorities).</p></li>
+<li><p>sophos.sophos_firewall.sfos_notification_target - Manage Notification Settings (System &gt; Administration &gt; Notification).</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-4-0">
+<h2><a class="toc-backref" href="#id43" role="doc-backlink">v2.4.0</a><a class="headerlink" href="#v2-4-0" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3><a class="toc-backref" href="#id44" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>This release introduces new modules for working with certificates on Sophos Firewall</p>
+</section>
+<section id="id3">
+<h3><a class="toc-backref" href="#id45" role="doc-backlink">New Modules</a><a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_certificate - Manage Certificates (System &gt; Certificates).</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-3-1">
+<h2><a class="toc-backref" href="#id46" role="doc-backlink">v2.3.1</a><a class="headerlink" href="#v2-3-1" title="Link to this heading"></a></h2>
+<section id="id4">
+<h3><a class="toc-backref" href="#id47" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>This release includes bug fixes.</p>
+</section>
+<section id="id5">
+<h3><a class="toc-backref" href="#id48" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sfos_firewall_rule - app_control and intrusion_prevention parameters now accept string values instead of just “Enable” or “Disable”.</p></li>
+<li><p>sfos_qos_policy - added validation rules for qos policy arguments to prevent invalid configuration from being sent to the API.</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-3-0">
+<h2><a class="toc-backref" href="#id49" role="doc-backlink">v2.3.0</a><a class="headerlink" href="#v2-3-0" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3><a class="toc-backref" href="#id50" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>This release introduces new modules and updates for working with firewall rules on Sophos Firewall.</p>
+</section>
+<section id="major-changes">
+<h3><a class="toc-backref" href="#id51" role="doc-backlink">Major Changes</a><a class="headerlink" href="#major-changes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>new module <code class="docutils literal notranslate"><span class="pre">sfos_qos_policy</span></code> for managing QoS Traffic Shaping policies</p></li>
+<li><p>new module <code class="docutils literal notranslate"><span class="pre">sfos_web_category</span></code> for managing Web categories</p></li>
+<li><p>new module <code class="docutils literal notranslate"><span class="pre">sfos_web_filetype</span></code> for managing Web file types</p></li>
+<li><p>new module <code class="docutils literal notranslate"><span class="pre">sfos_web_policy</span></code> for managing Web policies</p></li>
+<li><p>new module <code class="docutils literal notranslate"><span class="pre">sfos_web_useractivity</span></code> for managing Web user activities</p></li>
+<li><p>updated module <code class="docutils literal notranslate"><span class="pre">sfos_firewall_rule</span></code> to support additional configuration parameters</p></li>
+<li><p>updated module <code class="docutils literal notranslate"><span class="pre">sfos_firewall_rule</span></code> to support attachment of web and qos policies to firewall rules</p></li>
+</ul>
+</section>
+<section id="id7">
+<h3><a class="toc-backref" href="#id52" role="doc-backlink">New Modules</a><a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_qos_policy - Manage QoS Policies (Configure &gt; System Services &gt; Traffic Shaping).</p></li>
+<li><p>sophos.sophos_firewall.sfos_web_category - Manage Web Categories (Protect &gt; Web &gt; Web Categories).</p></li>
+<li><p>sophos.sophos_firewall.sfos_web_filetype - Manage Web File Types (Protect &gt; Web &gt; File Types).</p></li>
+<li><p>sophos.sophos_firewall.sfos_web_policy - Manage Web Filter Policies (Protect &gt; Web &gt; Policies).</p></li>
+<li><p>sophos.sophos_firewall.sfos_web_useractivity - Manage Web User Activities (Protect &gt; Web &gt; User Activities).</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-2-0">
+<h2><a class="toc-backref" href="#id53" role="doc-backlink">v2.2.0</a><a class="headerlink" href="#v2-2-0" title="Link to this heading"></a></h2>
+<section id="id8">
+<h3><a class="toc-backref" href="#id54" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<p>This release introduces new modules for working with URL Groups on Sophos Firewall</p>
+</section>
+<section id="id9">
+<h3><a class="toc-backref" href="#id55" role="doc-backlink">New Modules</a><a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_urlgroup - Manage URL Groups on Sophos Firewall.</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-1-0">
+<h2><a class="toc-backref" href="#id56" role="doc-backlink">v2.1.0</a><a class="headerlink" href="#v2-1-0" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3><a class="toc-backref" href="#id57" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>This release introduces a new module for working with Netflow collector configuration on Sophos Firewall</p>
+</section>
+<section id="id11">
+<h3><a class="toc-backref" href="#id58" role="doc-backlink">New Modules</a><a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_netflow - Manage NetFlow configuration (System &gt; Administration &gt; NetFlow).</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-0-1">
+<h2><a class="toc-backref" href="#id59" role="doc-backlink">v2.0.1</a><a class="headerlink" href="#v2-0-1" title="Link to this heading"></a></h2>
+<section id="id12">
+<h3><a class="toc-backref" href="#id60" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<p>This release updates Python dependencies for the project to address security vulnerabilities.</p>
+</section>
+</section>
+<section id="v2-0-0">
+<h2><a class="toc-backref" href="#id61" role="doc-backlink">v2.0.0</a><a class="headerlink" href="#v2-0-0" title="Link to this heading"></a></h2>
+<section id="id13">
+<h3><a class="toc-backref" href="#id62" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<p>This release implements an HTTPAPI plugin for managing connections. It eliminates the need to define credentials at each task and removes the need to delegate tasks to localhost.
+Please see the <a class="reference external" href="https://sophosfirewall-ansible.readthedocs.io/en/latest/docsite/httpapi_example.html">HTTPAPI Plugin Example</a> for details.</p>
+</section>
+<section id="breaking-changes-porting-guide">
+<h3><a class="toc-backref" href="#id63" role="doc-backlink">Breaking Changes / Porting Guide</a><a class="headerlink" href="#breaking-changes-porting-guide" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Existing playbooks developed on versions prior to 2.x must be modified with these changes in order to function</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">delegate_to</span></code> localhost is no longer required on tasks, and will cause the task to fail if configured</p></li>
+<li><p>The arguments <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, <code class="docutils literal notranslate"><span class="pre">port</span></code>, and <code class="docutils literal notranslate"><span class="pre">verify</span></code> arguments are no longer supported on tasks</p></li>
+<li><p>The variable <code class="docutils literal notranslate"><span class="pre">ansible_network_os</span></code> must be set to <code class="docutils literal notranslate"><span class="pre">sophos.sophos_firewall.sfos</span></code></p></li>
+</ul>
+</section>
+<section id="new-plugins">
+<h3><a class="toc-backref" href="#id64" role="doc-backlink">New Plugins</a><a class="headerlink" href="#new-plugins" title="Link to this heading"></a></h3>
+<section id="httpapi">
+<h4><a class="toc-backref" href="#id65" role="doc-backlink">Httpapi</a><a class="headerlink" href="#httpapi" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos - HttpApi plugin for Sophos Firewall (SFOS).</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="v1-5-0">
+<h2><a class="toc-backref" href="#id66" role="doc-backlink">v1.5.0</a><a class="headerlink" href="#v1-5-0" title="Link to this heading"></a></h2>
+<section id="id14">
+<h3><a class="toc-backref" href="#id67" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<p>This release introduces a new module for working with IPSec site-to-site VPN connections on Sophos Firewall</p>
+</section>
+<section id="id15">
+<h3><a class="toc-backref" href="#id68" role="doc-backlink">New Modules</a><a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_ipsec_connection - Manage IPSec Connection (Configure &gt; Site-to-site VPN &gt; IPSec).</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-5">
+<h2><a class="toc-backref" href="#id69" role="doc-backlink">v1.4.5</a><a class="headerlink" href="#v1-4-5" title="Link to this heading"></a></h2>
+<section id="id16">
+<h3><a class="toc-backref" href="#id70" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<p>This is a bugfix release for the Sophos Firewall Ansible collection.</p>
+</section>
+<section id="id17">
+<h3><a class="toc-backref" href="#id71" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixed an issue where the sfos_syslog module was missing the ability to enable logging for anti-spam smtp events.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-4">
+<h2><a class="toc-backref" href="#id72" role="doc-backlink">v1.4.4</a><a class="headerlink" href="#v1-4-4" title="Link to this heading"></a></h2>
+<section id="id18">
+<h3><a class="toc-backref" href="#id73" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<p>This is a bugfix release for the Sophos Firewall Ansible collection.</p>
+</section>
+<section id="id19">
+<h3><a class="toc-backref" href="#id74" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixed an issue where the sfos_syslog module required unneccessary arguments when updating logging settings.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-3">
+<h2><a class="toc-backref" href="#id75" role="doc-backlink">v1.4.3</a><a class="headerlink" href="#v1-4-3" title="Link to this heading"></a></h2>
+<section id="id20">
+<h3><a class="toc-backref" href="#id76" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixed an issue where the sfos_syslog module would fail to update log settings</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-2">
+<h2><a class="toc-backref" href="#id77" role="doc-backlink">v1.4.2</a><a class="headerlink" href="#v1-4-2" title="Link to this heading"></a></h2>
+<section id="id21">
+<h3><a class="toc-backref" href="#id78" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<p>Bugfix</p>
+</section>
+<section id="id22">
+<h3><a class="toc-backref" href="#id79" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixed issue with service_acl_exception crashing when no destination hosts are defined</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-1">
+<h2><a class="toc-backref" href="#id80" role="doc-backlink">v1.4.1</a><a class="headerlink" href="#v1-4-1" title="Link to this heading"></a></h2>
+<section id="id23">
+<h3><a class="toc-backref" href="#id81" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Correct test files</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-4-0">
+<h2><a class="toc-backref" href="#id82" role="doc-backlink">v1.4.0</a><a class="headerlink" href="#v1-4-0" title="Link to this heading"></a></h2>
+<section id="id24">
+<h3><a class="toc-backref" href="#id83" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<p>This release introduces a new module for working with firewall rule groups.</p>
+</section>
+<section id="id25">
+<h3><a class="toc-backref" href="#id84" role="doc-backlink">New Modules</a><a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_firewall_rulegroup - Manage Firewall Rules (Protect &gt; Rules &amp; policies).</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-3-0">
+<h2><a class="toc-backref" href="#id85" role="doc-backlink">v1.3.0</a><a class="headerlink" href="#v1-3-0" title="Link to this heading"></a></h2>
+<section id="id26">
+<h3><a class="toc-backref" href="#id86" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<p>This release adds modules for working with authentication servers</p>
+</section>
+<section id="id27">
+<h3><a class="toc-backref" href="#id87" role="doc-backlink">New Modules</a><a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_authentication_ad - Manage Authentication settings Active Directory.</p></li>
+<li><p>sophos.sophos_firewall.sfos_authentication_azure - Manage Authentication settings AzureADSSO.</p></li>
+<li><p>sophos.sophos_firewall.sfos_authentication_edirectory - Manage Authentication settings eDirectory.</p></li>
+<li><p>sophos.sophos_firewall.sfos_authentication_ldap - Manage Authentication settings LDAP.</p></li>
+<li><p>sophos.sophos_firewall.sfos_authentication_radius - Manage Authentication settings Radius.</p></li>
+<li><p>sophos.sophos_firewall.sfos_authentication_tacacs - Manage Authentication settings Tacacs.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-2-1">
+<h2><a class="toc-backref" href="#id88" role="doc-backlink">v1.2.1</a><a class="headerlink" href="#v1-2-1" title="Link to this heading"></a></h2>
+<section id="id28">
+<h3><a class="toc-backref" href="#id89" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<p>Minor bug fixes</p>
+</section>
+<section id="id29">
+<h3><a class="toc-backref" href="#id90" role="doc-backlink">Bugfixes</a><a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Allow use of ‘any’ keyword for src/dst networks and services for sfos_firewall_rule module</p></li>
+<li><p>Fixed documentation error in examples for sfos_zone</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-2-0">
+<h2><a class="toc-backref" href="#id91" role="doc-backlink">v1.2.0</a><a class="headerlink" href="#v1-2-0" title="Link to this heading"></a></h2>
+<section id="id30">
+<h3><a class="toc-backref" href="#id92" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<p>This release adds modules for working with IPS and Syslog settings</p>
+</section>
+<section id="id31">
+<h3><a class="toc-backref" href="#id93" role="doc-backlink">New Modules</a><a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_ips - Manage IPS protection (Protect &gt; Intrusion Protection &gt; IPS policies).</p></li>
+<li><p>sophos.sophos_firewall.sfos_syslog - Manage Syslog servers (Configure &gt; System services &gt; Log settings).</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-1-0">
+<h2><a class="toc-backref" href="#id94" role="doc-backlink">v1.1.0</a><a class="headerlink" href="#v1-1-0" title="Link to this heading"></a></h2>
+<section id="id32">
+<h3><a class="toc-backref" href="#id95" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<p>This release contains new modules for working with the SNMP agent and SNMPv3 users on Sophos Firewall</p>
+</section>
+<section id="id33">
+<h3><a class="toc-backref" href="#id96" role="doc-backlink">New Modules</a><a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_snmp_agent - Manage SNMP Agent (System &gt; Administration &gt; SNMP).</p></li>
+<li><p>sophos.sophos_firewall.sfos_snmp_user - Manage SNMPv3 User (System &gt; Administration &gt; SNMP).</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-0">
+<h2><a class="toc-backref" href="#id97" role="doc-backlink">v1.0.0</a><a class="headerlink" href="#v1-0-0" title="Link to this heading"></a></h2>
+<section id="id34">
+<h3><a class="toc-backref" href="#id98" role="doc-backlink">Release Summary</a><a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
+<p>This is the first proper release of the <code class="docutils literal notranslate"><span class="pre">sophos.sophos_firewall</span></code> collection.</p>
+</section>
+<section id="id35">
+<h3><a class="toc-backref" href="#id99" role="doc-backlink">New Modules</a><a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>sophos.sophos_firewall.sfos_admin_settings - Manage Admin and user settings (System &gt; Administration).</p></li>
+<li><p>sophos.sophos_firewall.sfos_atp - Manage Active Threat Protection (Protect &gt; Active threat response &gt; Sophos X-Ops threat feeds).</p></li>
+<li><p>sophos.sophos_firewall.sfos_backup - Manage Backup settings (System &gt; Backup &amp; firmware).</p></li>
+<li><p>sophos.sophos_firewall.sfos_device_access_profile - Manage Device Access Profiles (System &gt; Profiles &gt; Device Access).</p></li>
+<li><p>sophos.sophos_firewall.sfos_dns - Manage DNS settings (Configure &gt; Network &gt; DNS).</p></li>
+<li><p>sophos.sophos_firewall.sfos_firewall_rule - Manage Firewall Rules (Protect &gt; Rules &amp; policies).</p></li>
+<li><p>sophos.sophos_firewall.sfos_fqdn_host - Manage FQDN hosts (System &gt; Hosts &amp; services &gt; FQDN host).</p></li>
+<li><p>sophos.sophos_firewall.sfos_fqdn_hostgroup - Manage FQDN Host Groups (System &gt; Hosts &amp; services &gt; FQDN host group).</p></li>
+<li><p>sophos.sophos_firewall.sfos_ip_host - Manage IP Host (System &gt; Hosts &amp; services &gt; IP host).</p></li>
+<li><p>sophos.sophos_firewall.sfos_ip_hostgroup - Manage IP Hostgroup (System &gt; Hosts &amp; services &gt; IP host group).</p></li>
+<li><p>sophos.sophos_firewall.sfos_malware_protection - Manage Malware Protection (Configure &gt; System services &gt; Malware protection).</p></li>
+<li><p>sophos.sophos_firewall.sfos_service - Manage Service (System &gt; Hosts and services &gt; Services).</p></li>
+<li><p>sophos.sophos_firewall.sfos_service_acl_exception - Manage Local Service Exception ACL Rules (System &gt; Administration &gt; Device Access).</p></li>
+<li><p>sophos.sophos_firewall.sfos_servicegroup - Manage Service Group (System &gt; Hosts and services &gt; Service Group).</p></li>
+<li><p>sophos.sophos_firewall.sfos_time - Manage Date and Time settings (System &gt; Administration &gt; Time).</p></li>
+<li><p>sophos.sophos_firewall.sfos_user - Manage Users (Configure &gt; Authentication &gt; Users).</p></li>
+<li><p>sophos.sophos_firewall.sfos_xmlapi - Use the XML API to get, create, update, or delete settings on Sophos Firewall.</p></li>
+<li><p>sophos.sophos_firewall.sfos_zone - Manage Zones (Configure &gt; Network &gt; Zones).</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the firewall is a member of a group in Central, the changes made by Ansible
+will override the settings of the group. The actual configuration on the firewall may then differ from what is displayed
+for the same setting in the Central group.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Sophos.Sophos_Firewall" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="docsite/httpapi_example.html" class="btn btn-neutral float-right" title="New in version 2.0: HttpApi Plugin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Sophos, Ltd..</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
