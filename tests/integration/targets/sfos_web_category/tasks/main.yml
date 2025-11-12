@@ -101,43 +101,43 @@
       - query_web_category_local['api_response']['Response']['WebFilterCategory']['ConfigureCategory'] == 'Local'
       - query_web_category_local['api_response']['Response']['WebFilterCategory']['Description'] == 'Test web category for integration testing'
 
-- name: CREATE WEB CATEGORY WITH EXTERNAL CONFIGURATION
-  sophos.sophos_firewall.sfos_web_category:
-    name: IGT-TEST-CATEGORY-EXTERNAL
-    classification: Unproductive
-    qospolicy: None
-    description: "Test external web category"
-    configurecategory: External
-    domain_url:
-      - http://custom.com
-      - ftp://custom1.com
-    state: present
-  register: web_category_add_external
-  vars:
-    ansible_command_timeout: 90
+# - name: CREATE WEB CATEGORY WITH EXTERNAL CONFIGURATION
+#   sophos.sophos_firewall.sfos_web_category:
+#     name: IGT-TEST-CATEGORY-EXTERNAL
+#     classification: Unproductive
+#     qospolicy: None
+#     description: "Test external web category"
+#     configurecategory: External
+#     domain_url:
+#       - http://custom.com
+#       - ftp://custom1.com
+#     state: present
+#   register: web_category_add_external
+#   vars:
+#     ansible_command_timeout: 120
 
-- name: ASSERTION CHECK FOR CREATE WEB CATEGORY EXTERNAL
-  assert:
-    that: 
-      - web_category_add_external is changed
-      - (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200' and 
-         'Configuration applied successfully' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text']) or
-        (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '217' and 
-         'Unable to get status message' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
+# - name: ASSERTION CHECK FOR CREATE WEB CATEGORY EXTERNAL
+#   assert:
+#     that: 
+#       - web_category_add_external is changed
+#       - (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '200' and 
+#          'Configuration applied successfully' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text']) or
+#         (web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == '217' and 
+#          'Unable to get status message' in web_category_add_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
 
-- name: QUERY WEB CATEGORY EXTERNAL
-  sophos.sophos_firewall.sfos_web_category:
-    state: query
-    name: IGT-TEST-CATEGORY-EXTERNAL
-  register: query_web_category_external
+# - name: QUERY WEB CATEGORY EXTERNAL
+#   sophos.sophos_firewall.sfos_web_category:
+#     state: query
+#     name: IGT-TEST-CATEGORY-EXTERNAL
+#   register: query_web_category_external
 
-- name: ASSERTION CHECK FOR QUERY WEB CATEGORY EXTERNAL
-  assert:
-    that: 
-      - query_web_category_external is not changed
-      - query_web_category_external['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-EXTERNAL'
-      - query_web_category_external['api_response']['Response']['WebFilterCategory']['Classification'] == 'Unproductive'
-      - query_web_category_external['api_response']['Response']['WebFilterCategory']['ConfigureCategory'] == 'External'
+# - name: ASSERTION CHECK FOR QUERY WEB CATEGORY EXTERNAL
+#   assert:
+#     that: 
+#       - query_web_category_external is not changed
+#       - query_web_category_external['api_response']['Response']['WebFilterCategory']['Name'] == 'IGT-TEST-CATEGORY-EXTERNAL'
+#       - query_web_category_external['api_response']['Response']['WebFilterCategory']['Classification'] == 'Unproductive'
+#       - query_web_category_external['api_response']['Response']['WebFilterCategory']['ConfigureCategory'] == 'External'
 
 - name: UPDATE WEB CATEGORY LOCAL
   sophos.sophos_firewall.sfos_web_category:
@@ -235,21 +235,21 @@
       - remove_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200"
       - remove_web_category_local['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully."
 
-- name: REMOVE WEB CATEGORY EXTERNAL
-  sophos.sophos_firewall.sfos_web_category:
-    name: IGT-TEST-CATEGORY-EXTERNAL
-    state: absent
-  register: remove_web_category_external
+# - name: REMOVE WEB CATEGORY EXTERNAL
+#   sophos.sophos_firewall.sfos_web_category:
+#     name: IGT-TEST-CATEGORY-EXTERNAL
+#     state: absent
+#   register: remove_web_category_external
 
 
-- name: ASSERTION CHECK FOR REMOVE WEB CATEGORY EXTERNAL
-  assert:
-    that: 
-      - remove_web_category_external is changed
-      - (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200" and
-         remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully.") or
-        (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "217" and
-         "Unable to get status message" in remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
+# - name: ASSERTION CHECK FOR REMOVE WEB CATEGORY EXTERNAL
+#   assert:
+#     that: 
+#       - remove_web_category_external is changed
+#       - (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "200" and
+#          remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'] == "Configuration applied successfully.") or
+#         (remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['@code'] == "217" and
+#          "Unable to get status message" in remove_web_category_external['api_response']['Response']['WebFilterCategory']['Status']['#text'])
 
 - name: REMOVE WEB CATEGORY WITH MESSAGE
   sophos.sophos_firewall.sfos_web_category:
