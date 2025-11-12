@@ -123,22 +123,29 @@ def get_snmp_agent(connection, module, result):
     return {"exists": True, "api_response": resp["response"]}
 
 
-def update_snmp_agent(connection, module, result):
+def update_snmp_agent(connection, module, result, api_version):
     """Update SNMP agent configuration on Sophos Firewall
 
     Args:
         connection (Connection): Ansible Connection object
         module (AnsibleModule): AnsibleModule object
         result (dict): Result output to be sent to the console
+        api_version (str): API version of the Sophos Firewall
 
     Returns:
         dict: API response
     """
     update_params = {}
     if module.params.get("enabled") is True:
-        update_params["Configuration"] = "Enable"
+        if int(api_version[:2]) >= 22:
+            update_params["EnableAgent"] = "true"
+        else:
+            update_params["Configuration"] = "Enable"
     elif module.params.get("enabled") is False:
-        update_params["Configuration"] = "Disable"
+        if int(api_version[:2]) >= 22:
+            update_params["EnableAgent"] = "false"
+        else:
+            update_params["Configuration"] = "Disable"
 
     if module.params.get("description"):
         update_params["Description"] = module.params.get("description")
@@ -169,12 +176,13 @@ def update_snmp_agent(connection, module, result):
     return resp["response"]
 
 
-def eval_changed(module, exist_settings):
+def eval_changed(module, exist_settings, api_version):
     """Evaluate the provided arguments against existing settings.
 
     Args:
         module (AnsibleModule): AnsibleModule object
         exist_settings (dict): Response from the call to get_admin_settings()
+        api_version (str): API version of the Sophos Firewall
 
     Returns:
         bool: Return true if any settings are different, otherwise return false
@@ -182,11 +190,19 @@ def eval_changed(module, exist_settings):
     exist_settings = exist_settings["api_response"]["Response"]["SNMPAgentConfiguration"]
 
     if module.params.get("enabled"):
-        status = "Enable"
+        if int(api_version[:2]) >= 22:
+            status = "true"
+        else:
+            status = "Enable"
     else:
-        status = "Disable"
+        if int(api_version[:2]) >= 22:
+            status = "false"
+        else:
+            status = "Disable"
 
-    if not status == exist_settings["Configuration"] or (
+    enable_key = "EnableAgent" if int(api_version[:2]) >= 22 else "Configuration"
+
+    if not status == exist_settings[enable_key] or (
         module.params.get("location") and not module.params.get("location") == exist_settings["Location"] or
         module.params.get("name") and not module.params.get("name") == exist_settings["Name"] or
         module.params.get("description") and not module.params.get("description") == exist_settings["Description"] or
@@ -241,6 +257,7 @@ def main():
         module.fail_json(msg="HTTPAPI plugin is not initialized. Ensure the connection is set to 'httpapi'.")
 
     exist_settings = get_snmp_agent(connection, module, result)
+    api_version = exist_settings["api_response"]["Response"]["@APIVersion"]
     result["api_response"] = exist_settings["api_response"]
 
     if state == "query":
@@ -251,8 +268,8 @@ def main():
         module.exit_json(**result)
 
     elif state == "updated":
-        if eval_changed(module, exist_settings):
-            api_response = update_snmp_agent(connection, module, result)
+        if eval_changed(module, exist_settings, api_version=api_version):
+            api_response = update_snmp_agent(connection, module, result, api_version=api_version)
 
             if api_response:
                 result["api_response"] = api_response
