@@ -317,3 +317,25 @@ releases:
       name: sfos_notification_target
       namespace: ''
     release_date: '2025-10-16'
+  2.5.1:
+    changes:
+      bugfixes:
+      - Fixed an issue in sfos_admin_settings with the key HTTPSPort (should have
+        been HTTPSport) causing module failures
+      - Fixed an issue in sfos_device_access_profile where the DisconnectLiveUser
+        option is no longer available
+      - Fixed an issue in sfos_snmp_agent where the Configuration key is now renamed
+        to EnableAgent
+      - Fixed an issue in sfos_snmp_user where send_queries and accept_queries changed
+        from Enable/Disable to true/false
+      - Fixed an issue in sfos_snmp_user where the AuthorizedHosts key is now renamed
+        to AuthorizedHostsIpv4.
+      - Fixed an issue in sfos_syslog where Syslog no longer has an ATPEvents key
+        in the log settings
+      release_summary: 'This release implements bug fixes for working with Sophos
+        Firewall running SFOS version 22.0 and later versions.
+
+        '
+    fragments:
+    - 2.5.1.yaml
+    release_date: '2025-11-12'
