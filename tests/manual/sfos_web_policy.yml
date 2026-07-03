@@ -1,16 +1,16 @@
 ---
-# File: tests/manual/sfos_web_policy.yml
-# Purpose: Manual test for sfos_web_policy module
-# Usage: ansible-playbook tests/manual/sfos_web_policy.yml -i inventory.yml
+# File: tests/manual/sophos.sophos_firewall.sfos_web_policy.yml
+# Purpose: Manual test for sophos.sophos_firewall.sfos_web_policy module
+# Usage: ansible-playbook tests/manual/sophos.sophos_firewall.sfos_web_policy.yml -i inventory.yml
 
-- name: Test sfos_web_policy module
+- name: Test sophos.sophos_firewall.sfos_web_policy module
   hosts: all
   gather_facts: no
   
   tasks:
     # 1. Query an existing web filter policy (if any)
     - name: Query web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         state: query
       register: query_result
@@ -24,7 +24,7 @@
     
     # 2. Create a basic web filter policy
     - name: Create basic web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         default_action: "Allow"
         description: "Basic test policy created by Ansible"
@@ -39,7 +39,7 @@
     
     # 3. Query the created basic policy
     - name: Query created basic policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         state: query
       register: query_after_create_basic
@@ -52,7 +52,7 @@
     
     # 4. Create an advanced web filter policy
     - name: Create advanced web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Advanced Test Policy"
         default_action: "Deny"
         download_file_size_restriction: 100
@@ -75,7 +75,7 @@
     
     # 5. Create a web filter policy with rules
     - name: Create web filter policy with rules
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Policy with Rules"
         default_action: "Allow"
         download_file_size_restriction: 200
@@ -110,7 +110,7 @@
     
     # 6. Create a web filter policy with cloud services
     - name: Create web filter policy with cloud services
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Cloud Services Policy"
         default_action: "Allow"
         download_file_size_restriction: 500
@@ -132,7 +132,7 @@
     
     # 7. Update the basic policy
     - name: Update basic web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         default_action: "Deny"
         download_file_size_restriction: 75
@@ -148,7 +148,7 @@
     
     # 8. Update policy with rule replacement
     - name: Update policy with rule replacement
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Policy with Rules"
         description: "Updated policy with replaced rules"
         rules:
@@ -171,7 +171,7 @@
     
     # 9. Update policy with rule addition
     - name: Update policy with rule addition
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Policy with Rules"
         description: "Updated policy with additional rules"
         rules:
@@ -194,7 +194,7 @@
     
     # 10. Update advanced policy with all options
     - name: Update advanced policy with modified settings
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Advanced Test Policy"
         default_action: "Allow"
         download_file_size_restriction: 150
@@ -216,7 +216,7 @@
     
     # 11. Update cloud services policy
     - name: Update cloud services policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Cloud Services Policy"
         goog_app_domain_list: "newdomain.com,updated.org"
         goog_app_domain_list_enabled: false
@@ -235,7 +235,7 @@
 
     # 12. Create a policy with mixed rule types
     - name: Create policy with mixed rule types
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Mixed Rules Policy"
         default_action: "Deny"
         download_file_size_restriction: 250
@@ -264,7 +264,7 @@
     
     # 13. Create a policy with default file size restriction
     - name: Create policy with default file size restriction
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Default Size Policy"
         default_action: "Allow"
         enable_reporting: "Enable"
@@ -280,42 +280,42 @@
     
     # 14. Query all created policies
     - name: Query basic policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         state: query
       register: query_basic_final
       tags: query
     
     - name: Query advanced policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Advanced Test Policy"
         state: query
       register: query_advanced_final
       tags: query
     
     - name: Query rules policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Policy with Rules"
         state: query
       register: query_rules_final
       tags: query
     
     - name: Query cloud policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Cloud Services Policy"
         state: query
       register: query_cloud_final
       tags: query
     
     - name: Query mixed policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Mixed Rules Policy"
         state: query
       register: query_mixed_final
       tags: query
     
     - name: Query default size policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Default Size Policy"
         state: query
       register: query_default_size_final
@@ -334,7 +334,7 @@
     
     # 15. Remove all test policies (cleanup)
     - name: Remove basic web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Test Policy"
         state: absent
       register: remove_basic_result
@@ -346,7 +346,7 @@
       tags: remove
     
     - name: Remove advanced web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Advanced Test Policy"
         state: absent
       register: remove_advanced_result
@@ -358,7 +358,7 @@
       tags: remove
     
     - name: Remove rules web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Policy with Rules"
         state: absent
       register: remove_rules_result
@@ -370,7 +370,7 @@
       tags: remove
     
     - name: Remove cloud services web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Cloud Services Policy"
         state: absent
       register: remove_cloud_result
@@ -382,7 +382,7 @@
       tags: remove
     
     - name: Remove mixed rules web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Mixed Rules Policy"
         state: absent
       register: remove_mixed_result
@@ -394,7 +394,7 @@
       tags: remove
     
     - name: Remove default size web filter policy
-      sfos_web_policy:
+      sophos.sophos_firewall.sfos_web_policy:
         name: "Default Size Policy"
         state: absent
       register: remove_default_size_result
