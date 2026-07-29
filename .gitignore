@@ -6,3 +6,4 @@ tests/manual/inventory.yml
 changelogs/.plugin-cache.yaml
 *.tar.gz
 group_vars/all/credentials.yml
+.venv
