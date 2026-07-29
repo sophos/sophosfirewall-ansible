@@ -208,8 +208,8 @@ def update_backup(connection, module, result):
         backup_params["BackupFrequency"] = frequency
 
     if frequency and not frequency == "Never":
-        backup_params["Hour"] = module.params.get("hour")
-        backup_params["Minute"] = module.params.get("minute")
+        backup_params["Hour"] = str(module.params.get("hour")).zfill(2)
+        backup_params["Minute"] = str(module.params.get("minute")).zfill(2)
 
     if frequency == "Weekly":
         backup_params["Day"] = module.params.get("day")
@@ -267,9 +267,9 @@ def eval_changed(module, exist_settings):
         "EmailAddress": module.params.get("email_address"),
         "BackupFrequency": module.params.get("frequency"),
         "Day": module.params.get("day"),
-        "Hour": str(module.params["hour"]) if module.params.get("hour") else None,
-        "Minute": str(module.params.get("minute"))
-        if module.params.get("minute")
+        "Hour": str(module.params["hour"]).zfill(2) if module.params.get("hour") is not None else None,
+        "Minute": str(module.params.get("minute")).zfill(2)
+        if module.params.get("minute") is not None
         else None,
         "Date": str(module.params.get("date")) if module.params.get("date") else None,
     }
