@@ -339,3 +339,15 @@ releases:
     fragments:
     - 2.5.1.yaml
     release_date: '2025-11-12'
+  2.5.2:
+    changes:
+      bugfixes:
+      - Fixed an issue in sfos_backup where Hour and Minute schedule values lost their
+        zero-padding, causing the backup schedule to not be applied correctly
+      release_summary: 'This release implements a bug fix for working with the sfos_backup
+        module.
+
+        '
+    fragments:
+    - 2.5.2.yaml
+    release_date: '2026-08-03'
