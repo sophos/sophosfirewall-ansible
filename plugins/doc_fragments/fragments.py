@@ -9,7 +9,7 @@ __metaclass__ = type
 class ModuleDocFragment(object):
     BASE = r"""
 requirements:
-  - sophosfirewall-python
+  - sophosfirewall-python >= 0.1.68
   - Beginning in version 2.0.0, this module requires use of an httpapi connection plugin. See the  R(HTTPAPI example,ansible_collections.sophos.sophos_firewall.docsite.httpapi_example) for details.
 options: {}
 """

@@ -1,59 +1,127 @@
 name: Publish Ansible Collection
 
+# Releases are driven by the version in galaxy.yml.
+#
+# When a merge to main lands a version that has no matching vX.Y.Z tag, this
+# workflow tags the merge commit, builds the collection, creates a GitHub
+# release and publishes to Ansible Galaxy. Every other merge to main exits
+# early as a no-op.
+#
+# The changelog is expected to already be up to date at this point - the
+# /release-prep command runs `antsibull-changelog release` on the branch before
+# the PR is opened. This workflow verifies that and fails if it is missing.
 on:
   push:
-    tags:
-      - 'v*.*.*'  # Trigger on version tags like x.x.x
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build-and-publish:
+  release:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # fetch-depth: 0 so that tags are available for the already-released check
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: main
-          
-      # Set up Python environment
+
+      # galaxy.yml is the single source of truth for the release version.
+      # pyproject.toml must agree with it, or the bump was left half-done.
+      - name: Determine version
+        id: version
+        run: |
+          GALAXY_VERSION=$(grep -m1 '^version:' galaxy.yml | tr -d " \t\"'" | cut -d: -f2)
+          PYPROJECT_VERSION=$(grep -m1 '^version' pyproject.toml | tr -d " \t\"'" | cut -d= -f2)
+
+          if [ -z "$GALAXY_VERSION" ]; then
+            echo "::error::Could not read version from galaxy.yml"
+            exit 1
+          fi
+
+          if [ "$GALAXY_VERSION" != "$PYPROJECT_VERSION" ]; then
+            echo "::error::Version mismatch - galaxy.yml is $GALAXY_VERSION but pyproject.toml is $PYPROJECT_VERSION"
+            exit 1
+          fi
+
+          echo "version=$GALAXY_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$GALAXY_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Collection version is $GALAXY_VERSION"
+
+      - name: Check whether this version is already released
+        id: check
+        run: |
+          if git rev-parse -q --verify "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists - nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version ${{ steps.version.outputs.version }} is unreleased - proceeding."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify the changelog was released
+        if: steps.check.outputs.release == 'true'
+        run: |
+          if ! grep -q "^  ${{ steps.version.outputs.version }}:" changelogs/changelog.yaml; then
+            echo "::error::changelogs/changelog.yaml has no entry for ${{ steps.version.outputs.version }} - was 'antsibull-changelog release' run on the branch?"
+            exit 1
+          fi
+
+          if ls changelogs/fragments/*.yaml >/dev/null 2>&1; then
+            echo "::error::Unconsumed fragments remain in changelogs/fragments - 'antsibull-changelog release' was not run."
+            exit 1
+          fi
+
+      # Pushing the tag with GITHUB_TOKEN deliberately does not trigger another
+      # workflow run; the build steps below are part of this same run.
+      - name: Create and push tag
+        if: steps.check.outputs.release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        if: steps.check.outputs.release == 'true'
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      # Install ansible-core
       - name: Install Ansible
+        if: steps.check.outputs.release == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install ansible-core
 
-      # Build the collection
       - name: Build Ansible Collection
+        if: steps.check.outputs.release == 'true'
         run: |
           ansible-galaxy collection build
-        # Capture the built file name
-        id: build
+          COLLECTION_FILE="sophos-sophos_firewall-${{ steps.version.outputs.version }}.tar.gz"
+          if [ ! -f "$COLLECTION_FILE" ]; then
+            echo "::error::Expected build artifact $COLLECTION_FILE was not produced"
+            ls -la *.tar.gz || true
+            exit 1
+          fi
+          echo "COLLECTION_FILE=${COLLECTION_FILE}" >> "$GITHUB_ENV"
 
-      # Capture the tar.gz filename from the build output
-      - name: Get tar.gz filename
-        shell: bash
-        run: |
-          COLLECTION_FILE=$(ls *.tar.gz)
-          echo "COLLECTION_FILE=${COLLECTION_FILE}" >> $GITHUB_ENV
-
-      # Create a release and upload
       - name: Create Release and upload
-        id: create_release
+        if: steps.check.outputs.release == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           files: ${{ env.COLLECTION_FILE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
 
-      # Publish the collection to Ansible Galaxy
       - name: Publish to Ansible Galaxy
+        if: steps.check.outputs.release == 'true'
         env:
           GALAXY_TOKEN: ${{ secrets.GALAXY_TOKEN }}
         run: |
