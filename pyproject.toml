@@ -1,4 +1,8 @@
 [tool.poetry]
+# This repo is an Ansible collection, not a Python package - it is packaged by
+# `ansible-galaxy collection build`, never as a wheel. Poetry is used only for
+# dependency management, so there is no root package for it to install.
+package-mode = false
 name = "sophosfirewall-ansible"
 version = "2.5.1"
 description = "Ansible modules for Sophos Firewall"
@@ -9,7 +13,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 sophosfirewall-python = "^0.1.62"
-ansible = "^11.3.0"
+ansible = ">=11.3.0,<15.0.0"
 ansible-core = "^2.18.3"
 
 [tool.poetry.group.dev.dependencies]
