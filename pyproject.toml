@@ -4,7 +4,7 @@
 # dependency management, so there is no root package for it to install.
 package-mode = false
 name = "sophosfirewall-ansible"
-version = "2.5.2"
+version = "2.5.1"
 description = "Ansible modules for Sophos Firewall"
 authors = ["Matt Mullen <matt.mullen@sophos.com>"]
 license = "GNU GENERAL PUBLIC LICENSE"
