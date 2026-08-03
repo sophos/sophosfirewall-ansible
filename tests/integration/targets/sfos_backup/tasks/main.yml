@@ -121,7 +121,7 @@
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Weekly'
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Day'] == 'Sunday'
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '23'
-      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '0'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '00'
 
 - name: SET FTP BACKUP MONTHLY
   sophos.sophos_firewall.sfos_backup:
@@ -157,7 +157,7 @@
       - query_backup is not changed
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Date'] == '9'
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '23'
-      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '0'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '00'
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Monthly'
 
 
@@ -189,8 +189,8 @@
     that: 
       - query_backup is not changed
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupMode'] == 'Mail'
-      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '1'
-      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '1'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Hour'] == '01'
+      - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['Minute'] == '01'
       - query_backup['api_response']['Response']['BackupRestore']['ScheduleBackup']['BackupFrequency'] == 'Daily'
 
 - name: SET EMAIL BACKUP NO CHANGE
