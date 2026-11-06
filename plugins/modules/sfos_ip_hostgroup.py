@@ -282,9 +282,18 @@ def main():
         result["changed"] = False
 
     elif state == "updated" and exist_check["exists"]:
-        if sorted(
-            exist_check["api_response"]["Response"]["IPHostGroup"]["HostList"]["Host"]
-        ) != sorted(module.params.get("host_list")):
+        # SFOS returns HostList.Host as a bare string for a single member
+        # and as a list for multiple members. Normalize before comparing
+        # so single-member groups stay idempotent under state=updated.
+        existing = (
+            exist_check["api_response"]["Response"]["IPHostGroup"].get("HostList")
+            or {}
+        )
+        existing_hosts = existing.get("Host") or []
+        if not isinstance(existing_hosts, list):
+            existing_hosts = [existing_hosts]
+
+        if sorted(existing_hosts) != sorted(module.params.get("host_list") or []):
             api_response = update_hostgroup(connection, module, result)
             if (
                 api_response["Response"]["IPHostGroup"]["Status"]["#text"]
