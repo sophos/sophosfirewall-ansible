@@ -135,3 +135,6 @@ To test if your system is able to find the modules, run the command `ansible-doc
 
 ## Preparing for release
 Create a Pull Request against the `main` branch. The maintainers will review the PR, and run the included tests. If changes are needed, they will be requested in the PR review comments. When the review is complete, the PR will be merged and the CI/CD pipeline will publish a new version of the collection to Ansible Galaxy.
+
+# Vulnerabilities
+If you have found a vulnerability with the software, please report it using the Sophos Responsible disclosure process: https://www.sophos.com/en-us/trust/responsible-disclosure
